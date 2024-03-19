@@ -1,0 +1,58 @@
+{
+  "name": "rdt-utils",
+  "version": "0.2.10",
+  "description": "Library of typescript utilities",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "type": "module",
+  "private": false,
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./async": {
+      "types": "./dist/async/index.d.ts",
+      "import": "./dist/async/index.js"
+    },
+    "./buffer": {
+      "types": "./dist/buffer/index.d.ts",
+      "import": "./dist/buffer/index.js"
+    },
+    "./cancellation": {
+      "types": "./dist/cancellation/index.d.ts",
+      "import": "./dist/cancellation/index.js"
+    },
+    "./common": {
+      "types": "./dist/common/index.d.ts",
+      "import": "./dist/common/index.js"
+    },
+    "./crypto": {
+      "types": "./dist/crypto/index.d.ts",
+      "import": "./dist/crypto/index.js"
+    }
+  },
+  "files": [
+    "dist/**/*.js",
+    "dist/**/*.ts",
+    "!dist/**/*.map",
+    "!dist/**/*.test.js",
+    "!dist/**/*.test.ts",
+    "LICENSE"
+  ],
+  "devDependencies": {
+    "tsup": "^8.0.2",
+    "typescript": "^5.3.3"
+  },
+  "license": "MIT",
+  "scripts": {
+    "build": "tsup",
+    "rel:patch": "npm version patch && npm run build && npm pack && npm publish --access public",
+    "rel:minor": "npm version minor && npm run build && npm pack && npm publish --access public",
+    "rel:major": "npm version major && npm run build && npm pack && npm publish --access public",
+    "help": "tsup --help"
+  },
+  "dependencies": {
+    "ts-node": "^10.9.2"
+  }
+}

@@ -1,0 +1,32 @@
+{
+    "deno.enable": true,
+    "deno.lint": true,
+    "deno.enablePaths": [
+        "./src",
+        "./tsup.config.ts",
+        "./release.ts"
+    ],
+    "typescript.preferences.preferTypeOnlyAutoImports": true,
+    "files.trimTrailingWhitespace": true,
+    "[html]": {
+        "editor.defaultFormatter": "vscode.html-language-features"
+    },
+    "[javascript][javascriptreact][typescript]": {
+        "editor.defaultFormatter": "vscode.typescript-language-features"
+    },
+    "javascript.updateImportsOnFileMove.enabled": "always",
+    "typescript.updateImportsOnFileMove.enabled": "always",
+    "editor.guides.bracketPairs": true,
+    "editor.guides.highlightActiveIndentation": true,
+    "editor.guides.bracketPairsHorizontal": false,
+    // The number of spaces a tab is equal to. This setting is overridden
+    // based on the file contents when `editor.detectIndentation` is true.
+    "editor.tabSize": 2,
+    // Insert spaces when pressing Tab. This setting is overriden
+    // based on the file contents when `editor.detectIndentation` is true.
+    "editor.insertSpaces": true,
+    // When opening a file, `editor.tabSize` and `editor.insertSpaces`
+    // will be detected based on the file contents. Set to false to keep
+    // the values you've explicitly set, above.
+    "editor.detectIndentation": false
+}

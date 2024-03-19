@@ -1,0 +1,24 @@
+{
+  "tasks": {
+  },
+  "imports": {
+    "@std/": "https://deno.land/std@0.213.0/"
+  },
+  "compilerOptions": {
+    "lib": [
+      "deno.ns",
+      "dom"
+    ]
+  },
+  "lint": {
+    "include": ["src/"],
+    "exclude": ["dist/", "node_modules/", ".vscode/"],
+    "rules": {
+      "tags": ["recommended"]
+    }
+  },
+  "fmt": {
+    "include": ["src/"],
+    "exclude": ["dist/", "node_modules/", ".vscode/", "**/*.test.ts"]
+  }
+}

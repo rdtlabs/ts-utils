@@ -1,0 +1,17 @@
+export type BufferLike<T> = Disposable & Iterable<T> & {
+  write(value: T): void;
+  read(): T | undefined;
+  peek(): T | undefined;
+
+  get isFull(): boolean;
+  get isEmpty(): boolean;
+  get size(): number;
+
+  clear(): void;
+};
+
+export type BufferStrategySelector<T> = (value: T) => BufferStrategy;
+export type BufferStrategy = "drop" | "latest" | "error";
+export type BufferStrategyOptions<T = unknown> =
+  | BufferStrategy
+  | BufferStrategySelector<T>;
