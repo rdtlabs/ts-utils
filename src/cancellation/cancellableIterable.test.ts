@@ -5,7 +5,7 @@
 /// <reference lib="deno.ns" />
 
 import { assert } from "@std/assert/assert.ts";
-import { AsyncQueue } from "../async/queue/asyncQueue.ts";
+import { AsyncQueue } from "../async/queue/types.ts";
 import cancellableIterable from "./cancellableIterable.ts";
 import cancellationTimeout from "./cancellationTimeout.ts";
 import { delay } from "../async/delay.ts";

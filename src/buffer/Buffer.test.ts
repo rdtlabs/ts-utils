@@ -46,7 +46,7 @@ Deno.test("Buffer latest test", () => {
 });
 
 Deno.test("Buffer error test", () => {
-  const buffer = new Buffer(10, "error");
+  const buffer = new Buffer(10, "fixed");
   // deno-lint-ignore require-await
   assertRejects(async () => {
     for (let i = 0; i < 20; i++) {
@@ -56,7 +56,7 @@ Deno.test("Buffer error test", () => {
 });
 
 Deno.test("Buffer clear test", () => {
-  const buffer = new Buffer(5, "error");
+  const buffer = new Buffer(5, "fixed");
   assert(buffer.isEmpty);
 
   for (let i = 0; i < 5; i++) {
@@ -71,7 +71,7 @@ Deno.test("Buffer clear test", () => {
 
 
 Deno.test("Buffer iterator test", () => {
-  const buffer = new Buffer(5, "error");
+  const buffer = new Buffer(5, "fixed");
   assert(buffer.isEmpty);
 
   for (let i = 0; i < 5; i++) {

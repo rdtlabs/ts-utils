@@ -14,7 +14,7 @@ export default class RingBuffer<T> implements BufferLike<T> {
 
   constructor(
     capacity: number,
-    strategy: BufferStrategy | BufferStrategySelector<T> = "error",
+    strategy: BufferStrategy | BufferStrategySelector<T> = "fixed",
   ) {
     if (capacity < 1) {
       throw new Error("Buffer size must be at least 1");
@@ -42,7 +42,7 @@ export default class RingBuffer<T> implements BufferLike<T> {
           this.write(value);
         };
         break;
-      case "error":
+      case "fixed":
         this.#writeOnFull = () => {
           throw new BufferFullError();
         };
@@ -58,7 +58,7 @@ export default class RingBuffer<T> implements BufferLike<T> {
                 this.read();
                 this.write(value);
                 return;
-              case "error":
+              case "fixed":
                 throw new BufferFullError();
               default:
                 throw new Error("Invalid strategy");

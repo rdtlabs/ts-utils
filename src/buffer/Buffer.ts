@@ -11,7 +11,7 @@ export default class Buffer<T> implements BufferLike<T> {
 
   constructor(
     capacity = Infinity,
-    strategy: BufferStrategy | BufferStrategySelector<T> = "error",
+    strategy: BufferStrategy | BufferStrategySelector<T> = "fixed",
   ) {
     if (capacity < 1) {
       throw new Error("Buffer size must be at least 1");
@@ -40,7 +40,7 @@ export default class Buffer<T> implements BufferLike<T> {
           this.#buffer.push(value);
         };
         break;
-      case "error":
+      case "fixed":
         this.#writeOnFull = () => {
           throw new BufferFullError();
         };
@@ -56,7 +56,7 @@ export default class Buffer<T> implements BufferLike<T> {
                 this.#buffer.splice(0, 1);
                 this.#buffer.push(value);
                 return;
-              case "error":
+              case "fixed":
                 throw new BufferFullError();
               default:
                 throw new Error("Invalid strategy");

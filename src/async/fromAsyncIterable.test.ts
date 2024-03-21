@@ -6,7 +6,7 @@
 
 import { assert } from "@std/assert/assert.ts";
 import fromAsyncIterable from "./fromAsyncIterable.ts";
-import { AsyncQueue } from "./queue/asyncQueue.ts";
+import { AsyncQueue } from "./queue/types.ts";
 import { Deferred } from "./Deferred.ts";
 import cancellableIterable from "../cancellation/cancellableIterable.ts";
 import cancellationTimeout from "../cancellation/cancellationTimeout.ts";

@@ -11,7 +11,7 @@ export type BufferLike<T> = Disposable & Iterable<T> & {
 };
 
 export type BufferStrategySelector<T> = (value: T) => BufferStrategy;
-export type BufferStrategy = "drop" | "latest" | "error";
+export type BufferStrategy = "drop" | "latest" | "fixed";
 export type BufferStrategyOptions<T = unknown> =
   | BufferStrategy
   | BufferStrategySelector<T>;

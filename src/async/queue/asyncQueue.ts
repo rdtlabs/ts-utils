@@ -1,4 +1,3 @@
-import { type BufferStrategyOptions } from "../../buffer/BufferLike.ts";
 import {
   QueueClosedError,
   QueueFullError,
@@ -6,41 +5,41 @@ import {
 } from "./errors.ts";
 import { Deferred } from "../Deferred.ts";
 import { __getBufferFromOptions, __getQueueResolvers } from "./_utils.ts";
-
-export type QueueOptions<T> = {
-  bufferSize?: number;
-  bufferStrategy?: BufferStrategyOptions<T>;
-};
-
-export type AsyncQueue<T> = Disposable & AsyncIterable<T> & {
-  readonly state: "rw" | "r" | "-rw";
-  readonly size: number;
-  readonly isEmpty: boolean;
-  readonly isClosed: boolean;
-
-  enqueue(item: T): void;
-  dequeue(): Promise<T>;
-
-  setReadOnly(): void;
-  close(): void;
-  onClose(): Promise<void>;
-};
-
-export const AsyncQueue = function <T>(
-  options: QueueOptions<T> = { bufferSize: Infinity },
-): AsyncQueue<T> {
-  return asyncQueue(options ?? { bufferSize: Infinity });
-} as unknown as {
-  new <T>(options?: QueueOptions<T>): AsyncQueue<T>;
-};
+import { type AsyncQueue, type QueueOptions } from "./types.ts";
+import { MaybeResult } from "../../common/types.ts";
 
 type QueueState = "rw" | "r" | "-rw";
 
+/**
+ * asyncQueue creates a new async queue with the given {@linkcode QueueOptions options}.
+ *
+ * @example
+ * ```typescript
+ * const queue = asyncQueue<number>({
+ *   bufferSize: 2,
+ *   bufferStrategy: "fixed",
+ * });
+ *
+ * queue.enqueue(1);
+ *
+ * queueMicrotask(() => queue.enqueue(2)); // Enqueueing the item asynchronously
+ *
+ * queue.enqueue(3); // throws QueueFullError
+ * queue.setReadOnly();
+ * queue.enqueue(4); // throws QueueReadOnlyError
+ *
+ * console.log(queue.tryDequeue()); // prints { value: 1, ok: true }
+ * console.log(await queue.dequeue()); // prints 2 and closes the queue
+ *
+ * ```
+ *
+ * @param options: The buffer options used to create the queue.
+ */
 export function asyncQueue<T>(
   options: QueueOptions<T> = { bufferSize: Infinity },
 ): AsyncQueue<T> {
   const { dequeueResolvers, enqueueResolver } = __getQueueResolvers<T>();
-  const _buffer = __getBufferFromOptions(options);
+  const _buffer = __getBufferFromOptions<T>(options);
   let _onClose: Deferred<void> | undefined;
   let _state: 0 | 1 | 2 = 0;
 
@@ -120,6 +119,21 @@ export function asyncQueue<T>(
           "Queue is read-only and has been exhausted of its items",
         ),
       );
+    },
+    tryDequeue(): MaybeResult<T> {
+      if (_state === 2) {
+        throw new QueueClosedError();
+      }
+
+      if (!queue.isEmpty) {
+        return { value: _buffer.read()!, ok: true };
+      }
+
+      if (_state === 1) {
+        this[Symbol.dispose]();
+      }
+
+      return { ok: false };
     },
     [Symbol.dispose]() {
       if (_state === 2) {

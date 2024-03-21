@@ -21,3 +21,8 @@ export type Supplier<T> = () => T;
 // deno-lint-ignore no-explicit-any
 export type ErrorLike = Error | string | any;
 export type TimeoutInput = number | Date | Deadline;
+
+export type MaybeResult<T> = { value: T; ok: true } | {
+  value?: undefined;
+  ok: false;
+};

@@ -5,7 +5,7 @@
 /// <reference lib="deno.ns" />
 
 import fromAsyncIterable from "./fromAsyncIterable.ts";
-import { AsyncQueue } from "./queue/asyncQueue.ts";
+import { AsyncQueue } from "./queue/types.ts";
 import cancellableIterable from "../cancellation/cancellableIterable.ts";
 import cancellationTimeout from "../cancellation/cancellationTimeout.ts";
 import fromObservable from "./fromObservable.ts";

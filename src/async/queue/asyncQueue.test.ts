@@ -12,7 +12,7 @@ import { asyncQueue } from './asyncQueue.ts';
 Deno.test("AsyncQueue enqueue full error", async () => {
   const queue = asyncQueue<number>({
     bufferSize: 2,
-    bufferStrategy: "error",
+    bufferStrategy: "fixed",
   });
 
   queue.enqueue(1);
@@ -97,7 +97,7 @@ Deno.test("AsyncQueue iterate explicit close", async () => {
 
   queue.enqueue(1);
   queue.enqueue(2);
-  queue.enqueue(3);
+  queueMicrotask(() => queue.enqueue(3));
 
   setTimeout(() => queue[Symbol.dispose](), 10);
 

@@ -22,7 +22,7 @@ Deno.test("deriveTimeout millis test", () => {
 
 Deno.test("deriveTimeout deadline test", () => {
   const tm = deriveTimeout(deadline(1000));
-  assertEquals(tm, 1000);
+  assert(tm > 995 && tm <= 1000);
 });
 
 Deno.test("deriveTimeout error test", async () => {

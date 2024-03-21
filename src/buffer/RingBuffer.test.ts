@@ -46,7 +46,7 @@ Deno.test("RingBuffer latest test", () => {
 });
 
 Deno.test("RingBuffer error test", () => {
-  const buffer = new RingBuffer(10, "error");
+  const buffer = new RingBuffer(10, "fixed");
   // deno-lint-ignore require-await
   assertRejects(async () => {
     for (let i = 0; i < 20; i++) {
@@ -56,7 +56,7 @@ Deno.test("RingBuffer error test", () => {
 });
 
 Deno.test("RingBuffer clear test", () => {
-  const buffer = new RingBuffer(5, "error");
+  const buffer = new RingBuffer(5, "fixed");
   assert(buffer.isEmpty);
 
   for (let i = 0; i < 5; i++) {
@@ -70,7 +70,7 @@ Deno.test("RingBuffer clear test", () => {
 });
 
 Deno.test("RingBuffer iterator test", () => {
-  const buffer = new RingBuffer(5, "error");
+  const buffer = new RingBuffer(5, "fixed");
   assert(buffer.isEmpty);
 
   for (let i = 0; i < 5; i++) {

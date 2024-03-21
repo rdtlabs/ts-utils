@@ -1,6 +1,6 @@
 import { type BufferLike } from "../../buffer/BufferLike.ts";
 import Buffer from "../../buffer/Buffer.ts";
-import { type QueueOptions } from "./asyncQueue.ts";
+import { type QueueOptions } from "./types.ts";
 import { createQueue } from "../../common/Queue.ts";
 
 export function __getBufferFromOptions<T>(
@@ -9,7 +9,7 @@ export function __getBufferFromOptions<T>(
   if (options?.bufferSize !== Infinity) {
     return new Buffer<T>(
       options.bufferSize,
-      options.bufferStrategy ?? "error",
+      options.bufferStrategy ?? "fixed",
     );
   }
 
