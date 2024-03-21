@@ -21,18 +21,54 @@ type QueueState = "rw" | "r" | "-rw";
  * });
  *
  * queue.enqueue(1);
- *
- * queueMicrotask(() => queue.enqueue(2)); // Enqueueing the item asynchronously
- *
+ * queue.enqueue(2));
  * queue.enqueue(3); // throws QueueFullError
  * queue.setReadOnly();
- * queue.enqueue(4); // throws QueueReadOnlyError
  *
  * console.log(queue.tryDequeue()); // prints { value: 1, ok: true }
  * console.log(await queue.dequeue()); // prints 2 and closes the queue
+ * ```
+ *
+ * @example
+ * ```typescript
+ * // Iterating over the queue
+ * const queue = asyncQueue<number>();
+ * queue.enqueue(1);
+ * queue.enqueue(2);
+ * queue.enqueue(3);
+ *
+ * queue.setReadOnly();
+ *
+ * let count = 1;
+ * for await (const item of queue) {
+ *   assert(item === count++);
+ * }
  *
  * ```
  *
+ * @example
+ * ```typescript
+ * // Awaiting dequeues
+ * const queue = asyncQueue<number>();
+ * const dequeuers = new Array<Promise<number>>();
+ *
+ * dequeuers.push(queue.dequeue());
+ * dequeuers.push(queue.dequeue());
+ * dequeuers.push(queue.dequeue());
+ *
+ * queueMicrotask(() => queue.enqueue(1));
+ * queueMicrotask(() => queue.enqueue(2));
+ * queueMicrotask(() => queue.enqueue(3));
+ *
+ * queue.setReadOnly();
+ *
+ * const all = await Promise.all(dequeuers);
+ *
+ * all.forEach((value, index) => {
+ *   assert(value === index + 1);
+ * });
+ *
+ * ```
  * @param options: The buffer options used to create the queue.
  */
 export function asyncQueue<T>(
@@ -94,7 +130,8 @@ export function asyncQueue<T>(
       } else {
         try {
           _buffer.write(item);
-        } catch (e) {
+          // deno-lint-ignore no-explicit-any
+        } catch (e: any) {
           throw e.name === "BufferFullError" ? new QueueFullError() : e;
         }
       }

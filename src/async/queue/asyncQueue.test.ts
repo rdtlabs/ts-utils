@@ -133,9 +133,7 @@ Deno.test("AsyncQueue await dequeue", async () => {
 
   const all = await Promise.all(dequeuers);
 
-  assert(all[0] === 1);
-  assert(all[1] === 2);
-  assert(all[2] === 3);
+  all.forEach((v, i) => assert(v === i + 1));
 
   queue.close();
 
