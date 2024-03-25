@@ -38,6 +38,7 @@
     "!dist/**/*.map",
     "!dist/**/*.test.js",
     "!dist/**/*.test.ts",
+    "!.vscode",
     "LICENSE"
   ],
   "devDependencies": {
