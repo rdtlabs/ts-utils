@@ -15,7 +15,7 @@ export default function fromObservable<T>(
   },
 ): AsyncIterable<T> & Disposable {
   // deno-lint-ignore no-explicit-any
-  if ((observable as any)[Symbol.asyncIterator]) {
+  if (!options && (observable as any)[Symbol.asyncIterator]) {
     return {
       [Symbol.dispose]: () => dispose(Done),
       [Symbol.asyncIterator]: () => {
