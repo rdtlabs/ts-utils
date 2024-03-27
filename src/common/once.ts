@@ -37,7 +37,9 @@ const Once = Object.freeze({
 
     return wrapped as T;
   },
-});
+}) as {
+  of: <T extends (...args: any[]) => any>(fn: T) => T;
+};
 
 export const once = Once.of;
 

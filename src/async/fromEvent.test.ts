@@ -5,8 +5,8 @@
 /// <reference lib="deno.ns" />
 
 import { assertEquals } from "@std/assert/assert_equals.ts";
-import { fromCustomEvent } from "./fromEvent.ts";
-import { Cancellable } from "../index.ts";
+import { fromEvent } from "./fromEvent.ts";
+import { Cancellable } from "../cancellation/index.ts";
 import { WaitGroup } from "./WaitGroup.ts";
 
 Deno.test("fromEvent cancellation test", async () => {
@@ -20,7 +20,7 @@ Deno.test("fromEvent cancellation test", async () => {
   const cancellation = Cancellable.create();
   let counter = 0;
   for await (
-    const ev of fromCustomEvent<CountingEvent>("CountingEvent",
+    const ev of fromEvent<CountingEvent>("CountingEvent",
       {
         bufferSize: 4,
         bufferStrategy: "fixed",
@@ -38,7 +38,7 @@ Deno.test("fromEvent cancellation test", async () => {
 });
 
 Deno.test("fromEvent latest test", async () => {
-  const it = fromCustomEvent<CountingEvent>("CountingEvent"); //[Symbol.asyncIterator]();
+  const it = fromEvent<CountingEvent>("CountingEvent"); //[Symbol.asyncIterator]();
 
   const wg = new WaitGroup(1);
   queueMicrotask(() => {

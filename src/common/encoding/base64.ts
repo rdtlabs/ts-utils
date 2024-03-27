@@ -44,7 +44,15 @@ chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/",
   lookup = genLookup(chars),
   lookupUrl = genLookup(charsUrl);
 
-export const base64 = Object.freeze({
+type Base64 = {
+  toArrayBuffer: (data: string, urlMode?: boolean) => ArrayBuffer;
+  fromArrayBuffer: (arrBuf: ArrayBuffer, urlMode?: boolean) => string;
+  fromBase64: (str: string, urlMode?: boolean) => string;
+  toBase64: (str: string, urlMode?: boolean) => string;
+  validate: (encoded: string, urlMode?: boolean) => boolean;
+};
+
+export const base64: Base64 = Object.freeze({
   /**
    * Convenience function for converting a base64 encoded string to an ArrayBuffer instance
    * @public

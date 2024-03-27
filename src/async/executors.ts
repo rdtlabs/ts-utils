@@ -6,10 +6,13 @@ import { JobPool } from "./JobPool.ts";
 
 export const Executor = Object.freeze({
   concurrent: (
-    maxConcurrency: number,
-    maxQueueLength = 1024,
+    maxConcurrency?: number,
+    maxQueueLength?: number,
   ): ConcurrentExecutor => {
-    const pool = new JobPool({ maxConcurrency, maxQueueLength });
+    const pool = new JobPool({
+      maxConcurrency: maxConcurrency ?? 4,
+      maxQueueLength: maxQueueLength ?? 1024,
+    });
     return {
       execute: (callable, deadline) => {
         // deno-lint-ignore no-explicit-any
@@ -55,9 +58,6 @@ export const Executor = Object.freeze({
       return Executor.invoke(callable, cancellation);
     },
   },
-  /**
-   * @returns An executor that uses `setTimeout(fn, 0)` to schedule tasks.
-   */
   task: <T>(
     callable: Callable<T | PromiseLike<T>>,
     cancellation?: TimeoutInput | CancellationToken,
@@ -70,9 +70,6 @@ export const Executor = Object.freeze({
       );
     });
   },
-  /**
-   * @returns An executor that uses `queueMicrotask` to schedule tasks.
-   */
   micro: <T>(
     callable: Callable<T | PromiseLike<T>>,
     cancellation?: TimeoutInput | CancellationToken,
@@ -104,13 +101,108 @@ export const Executor = Object.freeze({
   ) => {
     return __invokeOn(callable, executor ??= Executor.immediate, deadline);
   },
-});
+}) as {
+  /**
+   * @param maxConcurrency The maximum number of tasks that can be executed concurrently. Defaults to 4.
+   * @param maxQueueLength The maximum number of tasks that can be queued. Defaults to 1024.
+   * @returns An executor that uses a pool of workers to execute tasks concurrently.
+   */
+  concurrent: (
+    maxConcurrency: number,
+    maxQueueLength?: number,
+  ) => ConcurrentExecutor;
 
+  /**
+   * @returns An executor that executes tasks sequentially.
+   */
+  sequential: () => Executor;
+
+  /**
+   * @returns An executor that executes tasks sequentially using the given executor.
+   */
+  sequentialize: (executor: Executor) => Executor;
+
+  /**
+   * @returns An executor that is synchronous.
+   */
+  immediate: Executor;
+
+  /**
+   * @returns An executor that uses `setTimeout(fn, 0)` to schedule tasks.
+   */
+  task: <T>(
+    callable: Callable<T | PromiseLike<T>>,
+    cancellation?: TimeoutInput | CancellationToken,
+  ) => Promise<T>;
+
+  /**
+   * @returns An executor that uses `queueMicrotask` to schedule tasks.
+   * @see https://developer.mozilla.org/en-US/docs/Web/API/WindowOrWorkerGlobalScope/queueMicrotask
+   */
+  micro: <T>(
+    callable: Callable<T | PromiseLike<T>>,
+    cancellation?: TimeoutInput | CancellationToken,
+  ) => Promise<T>;
+
+  /**
+   * @returns A promise that resolves with the result of the callable or rejects with an error.
+   */
+  invoke: <T>(
+    callable: Callable<T | PromiseLike<T>>,
+    cancellation?: TimeoutInput | CancellationToken,
+  ) => Promise<T>;
+
+  /**
+   * @returns A promise that resolves with the result of the callable or rejects with an error.
+   */
+  invokeOn: <T>(
+    callable: Callable<T | PromiseLike<T>>,
+    executor?: Executor,
+    deadline?: TimeoutInput | CancellationToken,
+  ) => Promise<T>;
+};
+
+/**
+ * An abstraction for executing tasks.
+ */
 export type Executor = {
+  /**
+   * @param callable The task to execute.
+   * @param deadline The deadline for the task to complete.
+   * @returns A promise that resolves with the result of the callable or rejects with an error.
+   */
   execute: <T>(
     callable: Callable<T | PromiseLike<T>>,
     deadline?: TimeoutInput | CancellationToken,
   ) => Promise<T>;
+};
+
+/**
+ * An executor that executes tasks concurrently.
+ */
+export type ConcurrentExecutor = Executor & {
+  /**
+   * Initiates an orderly shutdown in which previously submitted tasks are executed, but no new tasks will be accepted.
+   * Invocation has no additional effect if already shut down.
+   * @returns A promise that resolves when the executor has completed shutdown.
+   */
+  shutdown(): void;
+
+  /**
+   * Awaits completion of all tasks in the executor.
+   * @returns A promise that resolves when the executor has completed shutdown.
+   */
+  onShutdown(): Promise<void>;
+
+  /**
+   * @returns `true` if the executor has initiated shutdown.
+   */
+  readonly isShutdownInitiated: boolean;
+
+  /**
+   * @returns `true` if the executor has completed shutdown.
+   */
+  readonly isShutdown: boolean;
 };
 
 const __invoke = <T = void>(
@@ -131,27 +223,15 @@ function __invokeOn<T>(
   callable: Callable<T | PromiseLike<T>>,
   executor: Executor,
   deadline?: TimeoutInput | CancellationToken,
-) {
-  return new Promise<unknown>((resolve, reject) => {
+): Promise<T> {
+  return new Promise<T>((resolve, reject) => {
     try {
       executor
         .execute(() => __invoke(callable, resolve, reject, deadline))
-        .then((result) => resolve(result))
+        .then((result) => resolve(result as T))
         .catch((error) => reject(error));
     } catch (error) {
       reject(error); // in case execute throws an error
     }
   });
 }
-
-export type ConcurrentExecutor = {
-  execute: <T>(
-    callable: Callable<T | PromiseLike<T>>,
-    deadline?: TimeoutInput | CancellationToken,
-  ) => Promise<T>;
-
-  shutdown(): void;
-  onShutdown(): Promise<void>;
-  readonly isShutdownInitiated: boolean;
-  readonly isShutdown: boolean;
-};

@@ -1,4 +1,3 @@
-import { globalSelf } from "../globalSelf.ts";
 import { Md5 } from "../common/md5.ts";
 import {
   DecryptionError,
@@ -33,7 +32,7 @@ export default class Secret {
     this.#dispose = dispose;
   }
 
-  toString() {
+  toString(): string {
     return `Secret[${this.#id}]`;
   }
 
@@ -41,7 +40,7 @@ export default class Secret {
     const charset =
       "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
     let result = "";
-    const randomArray = globalSelf.crypto.getRandomValues(
+    const randomArray = globalThis.crypto.getRandomValues(
       new Uint8Array(secretKeyLength),
     );
 

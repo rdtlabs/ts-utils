@@ -7,7 +7,7 @@ const signalSym: unique symbol = Symbol("Symbol.CancellationToken");
 export function __injectOrCreate(
   signal: AbortSignal,
   token?: Record<PropertyKey, unknown>,
-) {
+): CancellationToken {
   // deno-lint-ignore no-explicit-any
   const isCancelled = (token as any)?.getIsCancelled ?? (() => signal.aborted);
   const getError = (() => {

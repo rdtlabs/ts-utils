@@ -1,6 +1,6 @@
 export { default as DisposedError } from "./DisposedError.ts";
-export { default as objects } from "./objects.ts";
-export { default as strings } from "./strings.ts";
+export { objects } from "./objects.ts";
+export { strings } from "./strings.ts";
 export { default as base64 } from "./encoding/base64.ts";
 export { default as Once } from "./once.ts";
 export * from "./Queue.ts";

@@ -28,7 +28,7 @@ export const Deferred = function <T = void>(
 
 export function deferred<T = void>(
   cancellationToken?: CancellationToken,
-) {
+): Deferred<T> {
   return new Deferred<T>(cancellationToken);
 }
 

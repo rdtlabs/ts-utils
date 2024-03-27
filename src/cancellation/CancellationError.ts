@@ -17,7 +17,7 @@ export default class CancellationError extends Error {
     }
   }
 
-  public get token() {
+  public get token(): CancellationToken | undefined {
     return this.#token;
   }
 

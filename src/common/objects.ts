@@ -151,5 +151,3 @@ export const objects = {
     return parseResult;
   },
 };
-
-export default objects;

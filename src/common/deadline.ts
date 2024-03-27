@@ -20,7 +20,13 @@ export const Deadline = Object.freeze({
     remainingMillis: 0,
     isExpired: true,
   }) as Deadline,
-});
+}) as {
+  after(timeoutMillis: number): Deadline;
+  afterSeconds(timeoutSeconds: number): Deadline;
+  afterMinutes(timeoutMinutes: number): Deadline;
+  from(date: Date): Deadline;
+  readonly EXPIRED: Deadline;
+};
 
 export function deadline(timeoutMillis: number): Deadline {
   if (timeoutMillis <= 0) {

@@ -5,7 +5,7 @@
 /// <reference lib="deno.ns" />
 
 import { assert } from "@std/assert/assert.ts";
-import strings from "./strings.ts";
+import { strings } from "./strings.ts";
 
 Deno.test("strings areEqual test", () => {
   assert(strings.areEqual("a", "a"));

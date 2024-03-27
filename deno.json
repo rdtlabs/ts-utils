@@ -1,4 +1,28 @@
 {
+  "name": "@rdtlabs/ts-utils",
+  "version": "0.2.14",
+  "exports": {
+    "./async": "./src/async/index.ts",
+    "./buffer": "./src/buffer/index.ts",
+    "./cancellation": "./src/cancellation/index.ts",
+    "./common": "./src/common/index.ts",
+    "./crypto": "./src/crypto/index.ts",
+    "./errors": "./src/errors/index.ts"
+  },
+  "publish": {
+    "include": [
+      "LICENSE",
+      "README.md",
+      "src/**/*.ts"
+    ],
+    "exclude": [
+      "dist/",
+      "node_modules/",
+      "main.local.ts",
+      ".vscode/",
+      "src/**/*.test.ts"
+    ]
+  },
   "tasks": {
   },
   "imports": {
@@ -19,6 +43,6 @@
   },
   "fmt": {
     "include": ["src/"],
-    "exclude": ["dist/", "node_modules/", ".vscode/", "**/*.test.ts"]
+    "exclude": ["dist/", "node_modules/", ".vscode/", "src/**/*.test.ts"]
   }
 }

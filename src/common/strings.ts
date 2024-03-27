@@ -3,9 +3,7 @@ import { type Supplier } from "./types.ts";
 import { base64 } from "./encoding/base64.ts";
 import { objects } from "./objects.ts";
 
-export const strings = getStringUtils();
-
-export default strings;
+export const strings: StringUtils = getStringUtils();
 
 function getStringUtils(): StringUtils {
   return {

@@ -1,10 +1,13 @@
-import { IterableLike } from "../async/fromIterableLike.ts";
+import { type IterableLike } from "../async/fromIterableLike.ts";
 import {
   type Callable,
   type ErrorLike,
   type TimeoutInput,
 } from "../common/types.ts";
-import { type CancellationToken } from "./CancellationToken.ts";
+import {
+  type CancellationController,
+  type CancellationToken,
+} from "./CancellationToken.ts";
 import { __isToken, __none } from "./_utils.ts";
 import cancellableIterable from "./cancellableIterable.ts";
 import cancellationRace from "./cancellationRace.ts";
@@ -63,6 +66,27 @@ const Cancellable = Object.freeze({
       return Promise.reject(error);
     }
   },
-});
+}) as {
+  None: CancellationToken;
+  from: (token?: CancellationToken) => CancellationController;
+  create: () => CancellationController;
+  cancelled: (reason?: ErrorLike) => CancellationToken;
+  timeout: (timeoutInput: TimeoutInput) => CancellationToken;
+  combine: (...cancellations: CancellationToken[]) => CancellationToken;
+  signal: (signal: AbortSignal) => CancellationToken;
+  race: <T>(
+    promises: Promise<T> | Promise<T>[],
+    cancellation?: TimeoutInput | CancellationToken,
+  ) => Promise<T>;
+  iterable: <T>(
+    iterable: IterableLike<T>,
+    token?: CancellationToken,
+  ) => AsyncIterable<T>;
+  isToken: (cancellation: unknown) => cancellation is CancellationToken;
+  invoke: <T>(
+    callable: Callable<T | PromiseLike<T>>,
+    cancellation?: TimeoutInput | CancellationToken,
+  ) => Promise<T>;
+};
 
 export default Cancellable;

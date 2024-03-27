@@ -12,7 +12,7 @@ type Raceable<T> =
 export default function cancellationRace<T>(
   promises: Raceable<T>,
   cancellation?: TimeoutInput | CancellationToken,
-) {
+): Promise<T> {
   const token = __isToken(cancellation)
     ? cancellation
     : cancellation

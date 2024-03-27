@@ -5,7 +5,7 @@
 /// <reference lib="deno.ns" />
 
 import { assert } from "@std/assert/assert.ts";
-import objects from "./objects.ts";
+import { objects } from "./objects.ts";
 import { assertRejects } from "@std/assert/assert_rejects.ts";
 import { assertFalse } from "@std/assert/assert_false.ts";
 

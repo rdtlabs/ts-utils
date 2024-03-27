@@ -1,4 +1,3 @@
-import { globalSelf } from "../globalSelf.ts";
 import { EncryptedData, EncryptionSource } from "./types.ts";
 
 export const __keyLength = 32;
@@ -37,8 +36,8 @@ export async function __encrypt(
 ): Promise<EncryptedData> {
   const resolvedKey = key.key ?? await key;
   const encoded = __getArrayBufferFor(data);
-  const iv = globalSelf.crypto.getRandomValues(new Uint8Array(16));
-  const encrypted = await globalSelf.crypto.subtle.encrypt(
+  const iv = globalThis.crypto.getRandomValues(new Uint8Array(16));
+  const encrypted = await globalThis.crypto.subtle.encrypt(
     {
       name: "AES-GCM",
       iv: iv,
@@ -58,7 +57,7 @@ export async function __decrypt(
   cipherData: EncryptedData,
 ): Promise<ArrayBuffer> {
   const resolvedKey = key.key ?? await key;
-  const clearData = await globalSelf.crypto.subtle.decrypt(
+  const clearData = await globalThis.crypto.subtle.decrypt(
     {
       name: "AES-GCM",
       iv: cipherData.iv,
@@ -95,7 +94,7 @@ export function __stringToCryptoKey(
   const stringBytes = encoder.encode(ensure64CharKeyFromKey(secret));
   const promise = new Promise<CryptoKey>((resolve, reject) => {
     try {
-      globalSelf.crypto.subtle.importKey(
+      globalThis.crypto.subtle.importKey(
         "raw",
         stringBytes,
         "AES-GCM",
