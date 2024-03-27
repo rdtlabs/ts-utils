@@ -1,3 +1,9 @@
+/**
+ * This module contains various async coordinated async primitives, some of which use familair
+ * semantics found across languages such as Go, Java, and C#.
+ * @module async
+ */
+
 export * from "./WaitGroup.ts";
 export * from "./workerpool/WorkerPool.ts";
 export * from "./JobPool.ts";
