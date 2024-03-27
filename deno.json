@@ -1,6 +1,6 @@
 {
-  "name": "@testjsrpub/na",
-  "version": "0.0.5",
+  "name": "@rdtlabs/ts-utils",
+  "version": "0.2.15",
   "exports": {
     "./async": "./src/async/index.ts",
     "./buffer": "./src/buffer/index.ts",
