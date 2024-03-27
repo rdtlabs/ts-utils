@@ -17,8 +17,11 @@ export function createQueue<T>(): Queue<T> {
   return new QueueImpl<T>();
 }
 
-export const Queue = function <T>() {
-  return createQueue<T>();
+export const Queue = function <T>(): {
+  new <T>(): Queue<T>;
+} {
+  // deno-lint-ignore no-explicit-any
+  return createQueue<T>() as any;
 } as unknown as {
   new <T>(): Queue<T>;
 };
@@ -99,9 +102,10 @@ class QueueImpl<T> {
         return self.size;
       },
       clear: this.clear.bind(this),
-      [Symbol.dispose]: () => {
+      [Symbol.dispose]: (): void => {
         self.clear();
       },
+      // deno-lint-ignore explicit-function-return-type
       *[Symbol.iterator]() {
         while (!self.isEmpty) {
           yield self.dequeue();

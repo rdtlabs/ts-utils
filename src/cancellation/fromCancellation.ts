@@ -16,10 +16,10 @@ export function fromCancellation(
 
   if (token.isCancelled) {
     return Object.freeze({
-      get token() {
+      get token(): CancellationToken {
         return token;
       },
-      cancel() {
+      cancel(): void {
         // no-op
       },
     });
@@ -31,7 +31,7 @@ export function fromCancellation(
     get token() {
       return cancellation;
     },
-    cancel(reason?: ErrorLike) {
+    cancel(reason?: ErrorLike): void {
       controller.cancel(reason);
     },
   });

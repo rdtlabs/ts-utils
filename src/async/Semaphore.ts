@@ -13,8 +13,11 @@ export interface Semaphore extends WaitHandle {
   waiters(): number;
 }
 
-export const Semaphore = function (permits: number) {
-  return semaphore(permits);
+export const Semaphore = function (permits: number): {
+  new (permits: number): Semaphore;
+} {
+  // deno-lint-ignore no-explicit-any
+  return semaphore(permits) as any;
 } as unknown as {
   new (permits: number): Semaphore;
 };
@@ -27,11 +30,11 @@ export function semaphore(permits: number): Semaphore {
   let _permits = permits;
   const _awaiters: Array<() => void> = [];
 
-  function addAwaiter(resolve: () => void) {
+  function addAwaiter(resolve: () => void): void {
     _awaiters.push(resolve);
   }
 
-  function removeAwaiter(resolve?: () => void) {
+  function removeAwaiter(resolve?: () => void): void {
     if (resolve) {
       const index = _awaiters.indexOf(resolve);
       if (index !== -1) {
@@ -43,14 +46,14 @@ export function semaphore(permits: number): Semaphore {
   return {
     waiters: () => _awaiters.length,
     permits: () => _permits,
-    tryAcquire() {
+    tryAcquire(): boolean {
       if (_permits > 0) {
         _permits--;
         return true;
       }
       return false;
     },
-    async acquire(cancellationToken?: CancellationToken) {
+    async acquire(cancellationToken?: CancellationToken): Promise<void> {
       if (this.tryAcquire()) {
         return;
       }
@@ -74,7 +77,7 @@ export function semaphore(permits: number): Semaphore {
 
       return await controller.promise;
     },
-    release(count = 1) {
+    release(count = 1): void {
       if (!count || count < 0) {
         throw new Error("Release count must be at least 1");
       }
@@ -89,7 +92,7 @@ export function semaphore(permits: number): Semaphore {
         });
     },
     // deno-lint-ignore no-explicit-any
-    wait(...args: any[]) {
+    wait(...args: any[]): Promise<void> {
       if (args.length === 0) {
         return this.acquire();
       }
@@ -102,7 +105,7 @@ export function semaphore(permits: number): Semaphore {
         ? args[0]
         : cancellationTimeout(args[0]);
 
-      return this.acquire(cancellation).then(() => true);
+      return this.acquire(cancellation);
     },
   } as Semaphore;
 }

@@ -9,9 +9,14 @@ export interface Deferred<T = void> {
 
 export const Deferred = function <T = void>(
   cancellationToken?: CancellationToken,
-) {
+): {
+  new <T = void>(
+    cancellationToken?: CancellationToken,
+  ): Deferred<T>;
+} {
   if (!cancellationToken || cancellationToken.state === "none") {
-    return create<T>();
+    // deno-lint-ignore no-explicit-any
+    return create<T>() as any;
   }
 
   const controller = create<T>();
@@ -19,7 +24,8 @@ export const Deferred = function <T = void>(
     promise: cancellationRace(controller.promise, cancellationToken),
     resolve: controller.resolve,
     reject: controller.reject,
-  };
+    // deno-lint-ignore no-explicit-any
+  } as any;
 } as unknown as {
   new <T = void>(
     cancellationToken?: CancellationToken,
@@ -32,6 +38,7 @@ export function deferred<T = void>(
   return new Deferred<T>(cancellationToken);
 }
 
+// deno-lint-ignore explicit-function-return-type
 function create<T>() {
   let resolve!: Resolve<T>;
   let reject!: (reason?: unknown) => void;

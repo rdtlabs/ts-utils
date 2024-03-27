@@ -25,8 +25,11 @@ export interface WorkerPool {
   readonly isFull: boolean;
 }
 
-export const WorkerPool = function (options?: WorkerPoolOptions) {
-  return workerPool(options) as WorkerPool;
+export const WorkerPool = function (options?: WorkerPoolOptions): {
+  new (options?: WorkerPoolOptions): WorkerPool;
+} {
+  // deno-lint-ignore no-explicit-any
+  return workerPool(options) as any;
 } as unknown as {
   new (options?: WorkerPoolOptions): WorkerPool;
 };
@@ -51,7 +54,7 @@ export function workerPool(options?: WorkerPoolOptions): WorkerPool {
   let active = 0;
 
   const pool = {
-    submit(runnable: Task) {
+    submit(runnable: Task): void {
       if (!pool.trySubmit(runnable)) {
         throw new QueueLengthExceededError(
           "Worker pool is max queue length reached",
@@ -59,7 +62,7 @@ export function workerPool(options?: WorkerPoolOptions): WorkerPool {
       }
     },
 
-    trySubmit(runnable: Task) {
+    trySubmit(runnable: Task): boolean {
       if (!runnable) {
         throw new ArgumentNilError("Runnable is null or undefined");
       }
@@ -80,11 +83,11 @@ export function workerPool(options?: WorkerPoolOptions): WorkerPool {
       return true;
     },
 
-    onShutdown() {
+    onShutdown(): Promise<void> {
       return onShutdownResolve.promise;
     },
 
-    shutdown() {
+    shutdown(): void {
       if (this.isShutdownInitiated) {
         return;
       }
@@ -95,7 +98,7 @@ export function workerPool(options?: WorkerPoolOptions): WorkerPool {
       }
     },
 
-    shutdownNow() {
+    shutdownNow(): Task[] {
       if (pool.isShutdown) {
         return [];
       }
@@ -119,7 +122,7 @@ export function workerPool(options?: WorkerPoolOptions): WorkerPool {
     },
   };
 
-  async function runNext() {
+  async function runNext(): Promise<void> {
     while (active < max_concurrency && !queue.isEmpty) {
       const runnable = queue.dequeue()!;
       active++;

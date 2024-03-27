@@ -6,8 +6,11 @@ export interface Monitor extends WaitHandle {
   pulseAll(): void;
 }
 
-export const Monitor = function () {
-  return monitor();
+export const Monitor = function (): {
+  new (): Monitor;
+} {
+  // deno-lint-ignore no-explicit-any
+  return monitor() as any;
 } as unknown as {
   new (): Monitor;
 };

@@ -127,7 +127,7 @@ export class RingBuffer<T> implements BufferLike<T> {
     this.#buffer.fill(undefined);
   }
 
-  private get isDisposed() {
+  private get isDisposed(): boolean {
     return this.#tail === -1;
   }
 

@@ -23,7 +23,9 @@ export function fromEvent<K extends keyof WindowEventMap>(
 ): AsyncIterable<WindowEventMap[K]> & Disposable;
 
 // deno-lint-ignore no-explicit-any
-export function fromEvent<T extends Event>(...args: any[]) {
+export function fromEvent<T extends Event>(
+  ...args: any[]
+): AsyncIterable<T> & Disposable {
   const {
     type,
     options,
@@ -31,7 +33,7 @@ export function fromEvent<T extends Event>(...args: any[]) {
   } = getArgs<T>(args);
 
   return fromObservable<T>({
-    subscribe(subscriber: { next: (value: T) => void }) {
+    subscribe(subscriber: { next: (value: T) => void }): () => void {
       // deno-lint-ignore no-explicit-any
       const next = (options as any)?.once !== true
         // deno-lint-ignore no-explicit-any
@@ -57,7 +59,7 @@ const defaultBufferOptions = {
   bufferStrategy: "latest",
 } as BufferOptions<Event>;
 
-// deno-lint-ignore no-explicit-any
+// deno-lint-ignore no-explicit-any, explicit-function-return-type,
 function getArgs<T>(args: any[]) {
   if (args.length === 0 || args.length > 2 || typeof args[0] !== "string") {
     throw new TypeError("Invalid arguments");
@@ -103,6 +105,7 @@ function getArgs<T>(args: any[]) {
   };
 }
 
+// deno-lint-ignore explicit-function-return-type
 function combineWithSignal<T>(
   options?: AddEventListenerOptions,
   bufferOptions?: BufferOptions<T>,

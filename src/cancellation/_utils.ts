@@ -42,13 +42,13 @@ export function __injectOrCreate(
     get isCancelled() {
       return isCancelled();
     },
-    throwIfCancelled() {
+    throwIfCancelled(): void {
       const error = getError();
       if (error) {
         throw error;
       }
     },
-    register(callback: (token: CancellationToken) => void) {
+    register(callback: (token: CancellationToken) => void): () => void {
       const cb = () => callback(cancellation);
 
       signal.addEventListener("abort", cb, { once: true });

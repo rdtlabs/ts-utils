@@ -5,14 +5,14 @@
 /// <reference lib="deno.ns" />
 
 import { assert } from "@std/assert/assert.ts";
-import { semaphore } from "./Semaphore.ts";
+import { semaphore, Semaphore } from "./Semaphore.ts";
 import { assertFalse } from "@std/assert/assert_false.ts";
 import { WaitGroup } from "./WaitGroup.ts";
 import { delay } from "./delay.ts";
 import { Signal } from "./index.ts";
 
 Deno.test("Semaphore tryAcquire test", () => {
-  const sema = semaphore(1);
+  const sema = new Semaphore(1);
   assert(sema.tryAcquire());
   assertFalse(sema.tryAcquire());
   assert(sema.permits() === 0);

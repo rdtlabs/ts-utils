@@ -17,8 +17,13 @@ export interface Signal extends WaitHandle {
 
 export const Signal = function (
   initialState: SignalState = false,
-) {
-  return signal(initialState ?? false);
+): {
+  new (
+    initialState?: SignalState,
+  ): Signal;
+} {
+  // deno-lint-ignore no-explicit-any
+  return signal(initialState ?? false) as any;
 } as unknown as {
   new (
     initialState?: SignalState,

@@ -7,8 +7,11 @@ export interface WaitGroup extends WaitHandle {
   readonly count: number;
 }
 
-export const WaitGroup = function (startCount?: number) {
-  return waitGroup(startCount) as WaitGroup;
+export const WaitGroup = function (startCount?: number): {
+  new (startCount?: number): WaitGroup;
+} {
+  // deno-lint-ignore no-explicit-any
+  return waitGroup(startCount) as any;
 } as unknown as {
   new (startCount?: number): WaitGroup;
 };
@@ -26,7 +29,7 @@ export function waitGroup(startCount?: number): WaitGroup {
     },
     done: () => wg.add(-1), // deno-lint-ignore no-explicit-any
     wait: (...args: any[]) => _signal.wait(...args),
-    add(delta: number) {
+    add(delta: number): void {
       const newCount = _count + delta;
       if (newCount < 0) {
         throw new Error("negative WaitGroup count");

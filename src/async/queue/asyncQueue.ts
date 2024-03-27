@@ -80,22 +80,22 @@ export function asyncQueue<T>(
   let _state: 0 | 1 | 2 = 0;
 
   const queue = {
-    get isClosed() {
+    get isClosed(): boolean {
       return _state === 2;
     },
-    get size() {
+    get size(): number {
       return _buffer.size;
     },
-    get isEmpty() {
+    get isEmpty(): boolean {
       return _buffer.isEmpty;
     },
     get state(): QueueState {
       return _state === 0 ? "rw" : _state === 1 ? "r" : "-rw";
     },
-    close() {
+    close(): void {
       this[Symbol.dispose]();
     },
-    onClose() {
+    onClose(): Promise<void> {
       if (!_onClose) {
         if (queue.isClosed) {
           return Promise.resolve();
@@ -105,7 +105,7 @@ export function asyncQueue<T>(
 
       return _onClose.promise;
     },
-    setReadOnly() {
+    setReadOnly(): void {
       if (_state === 2) {
         throw new QueueClosedError();
       }
@@ -115,7 +115,7 @@ export function asyncQueue<T>(
         this[Symbol.dispose]();
       }
     },
-    enqueue(item: T) {
+    enqueue(item: T): void {
       if (_state === 2) {
         throw new QueueClosedError();
       }
@@ -136,7 +136,7 @@ export function asyncQueue<T>(
         }
       }
     },
-    dequeue() {
+    dequeue(): Promise<T> {
       if (_state === 2) {
         return Promise.reject(new QueueClosedError());
       }
@@ -172,7 +172,7 @@ export function asyncQueue<T>(
 
       return { ok: false };
     },
-    [Symbol.dispose]() {
+    [Symbol.dispose](): void {
       if (_state === 2) {
         return;
       }
@@ -188,7 +188,7 @@ export function asyncQueue<T>(
         _onClose.resolve();
       }
     },
-    [Symbol.asyncIterator]() {
+    [Symbol.asyncIterator](): AsyncIterator<T> {
       return {
         next: async () => {
           try {

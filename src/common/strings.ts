@@ -105,7 +105,7 @@ function getStringUtils(): StringUtils {
       }
 
       // @ts-ignore: Unreachable code error
-      return arg1.toUpperCase() == arg2.toUpperCase();
+      return arg1.toUpperCase() === arg2.toUpperCase();
     },
     toBase64: (value: string, urlMode?: boolean): string => {
       return base64.toBase64(value, urlMode);

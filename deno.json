@@ -1,6 +1,6 @@
 {
   "name": "@testjsrpub/na",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "exports": {
     "./async": "./src/async/index.ts",
     "./buffer": "./src/buffer/index.ts",
@@ -37,9 +37,19 @@
   },
   "lint": {
     "include": ["src/"],
-    "exclude": ["dist/", "node_modules/", ".vscode/"],
+    "exclude": ["dist/", "node_modules/", ".vscode/", "src/**/*.test.ts"],
     "rules": {
-      "tags": ["recommended"]
+      "include": [
+        "eqeqeq",
+        "explicit-function-return-type",
+        "explicit-module-boundary-types",
+        "no-eval",
+        "no-undef",
+        "verbatim-module-syntax"
+      ],
+      "tags": [
+        "recommended"
+      ]
     }
   },
   "fmt": {

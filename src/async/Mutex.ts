@@ -9,8 +9,11 @@ export interface Mutex extends WaitHandle {
   readonly isLocked: boolean;
 }
 
-export const Mutex = function () {
-  return mutex();
+export const Mutex = function (): {
+  new (): Mutex;
+} {
+  // deno-lint-ignore no-explicit-any
+  return mutex() as any;
 } as unknown as {
   new (): Mutex;
 };
@@ -22,7 +25,7 @@ export function mutex(): Mutex {
     wait: (...args: any[]) => sem.acquire(...args),
     tryLock: () => sem.tryAcquire(),
     lock: (token?: CancellationToken) => sem.acquire(token),
-    unlock() {
+    unlock(): void {
       if (sem.permits() === 0) {
         sem.release();
       }

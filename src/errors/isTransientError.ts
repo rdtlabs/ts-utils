@@ -1,10 +1,10 @@
-// deno-lint-ignore no-explicit-any
-export function isTransientError(error: any): boolean {
+export function isTransientError(error: unknown): boolean {
   return isTransientInternal(error, 0);
 }
 
-// deno-lint-ignore no-explicit-any
-function isTransientInternal(error: any, depth: number): boolean {
+function isTransientInternal(err: unknown, depth: number): boolean {
+  // deno-lint-ignore no-explicit-any
+  let error = err as any;
   if (depth >= 3) {
     return false;
   }

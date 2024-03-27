@@ -82,7 +82,7 @@ export function jobPool(options?: {
 function wrap<T>(
   job: Job<T>,
   cancellation?: TimeoutInput | CancellationToken,
-) {
+): Job<T> {
   return !cancellation
     ? job
     : () => cancellationRace(() => Promise.resolve(job()), cancellation);
