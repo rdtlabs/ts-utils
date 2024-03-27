@@ -4,7 +4,7 @@ import { deferred } from "./Deferred.ts";
 import { type CancellationToken } from "../cancellation/CancellationToken.ts";
 import { type TimeoutInput } from "../common/types.ts";
 import { __isToken } from "../cancellation/_utils.ts";
-import { cancellationRace } from "../cancellation/index.ts";
+import { cancellationRace } from "../cancellation/cancellationRace.ts";
 
 export type Job<T> = Callable<PromiseLike<T> | T>;
 

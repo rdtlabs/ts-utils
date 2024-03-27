@@ -22,8 +22,8 @@ export function fromEvent<K extends keyof WindowEventMap>(
   options?: Options<WindowEventMap[K]>,
 ): AsyncIterable<WindowEventMap[K]> & Disposable;
 
-// deno-lint-ignore no-explicit-any
 export function fromEvent<T extends Event>(
+  // deno-lint-ignore no-explicit-any
   ...args: any[]
 ): AsyncIterable<T> & Disposable {
   const {

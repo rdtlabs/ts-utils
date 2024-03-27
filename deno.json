@@ -1,6 +1,6 @@
 {
   "name": "@testjsrpub/na",
-  "version": "0.0.4",
+  "version": "0.0.5",
   "exports": {
     "./async": "./src/async/index.ts",
     "./buffer": "./src/buffer/index.ts",
