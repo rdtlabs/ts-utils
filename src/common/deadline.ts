@@ -1,7 +1,7 @@
-export type Deadline = {
+export interface Deadline {
   readonly remainingMillis: number;
   readonly isExpired: boolean;
-};
+}
 
 export const Deadline = Object.freeze({
   after(timeoutMillis: number): Deadline {

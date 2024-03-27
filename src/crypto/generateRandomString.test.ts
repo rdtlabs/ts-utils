@@ -5,7 +5,7 @@
 /// <reference lib="deno.ns" />
 
 import { assertNotEquals } from "@std/assert/assert_not_equals.ts";
-import generateRandomString from "./generateRandomString.ts";
+import { generateRandomString } from "./generateRandomString.ts";
 
 Deno.test("generateRandomString test", () => {
   assertNotEquals(generateRandomString(10), generateRandomString(10));

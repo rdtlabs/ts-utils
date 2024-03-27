@@ -1,6 +1,6 @@
 import { type BufferLike } from "../buffer/BufferLike.ts";
 
-export type Queue<T> = {
+export interface Queue<T> {
   readonly size: number;
   readonly isEmpty: boolean;
 
@@ -11,7 +11,7 @@ export type Queue<T> = {
 
   toBufferLike(): BufferLike<T>;
   toArray(): T[];
-};
+}
 
 export const createQueue = <T>(): Queue<T> => new QueueImpl<T>();
 

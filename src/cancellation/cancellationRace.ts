@@ -2,14 +2,14 @@ import { deferred } from "../async/Deferred.ts";
 import { type TimeoutInput } from "../common/types.ts";
 import { type CancellationToken } from "./CancellationToken.ts";
 import { __isToken, __none } from "./_utils.ts";
-import cancellationTimeout from "./cancellationTimeout.ts";
+import { cancellationTimeout } from "./cancellationTimeout.ts";
 
 type Raceable<T> =
   | PromiseLike<T>
   | PromiseLike<T>[]
   | (() => PromiseLike<T> | PromiseLike<T>[]);
 
-export default function cancellationRace<T>(
+export function cancellationRace<T>(
   promises: Raceable<T>,
   cancellation?: TimeoutInput | CancellationToken,
 ): Promise<T> {

@@ -1,8 +1,8 @@
 import type { BufferStrategyOptions } from "../buffer/BufferLike.ts";
-import Cancellable from "../cancellation/Cancellable.ts";
+import { Cancellable } from "../cancellation/Cancellable.ts";
 import type { CancellationToken } from "../cancellation/CancellationToken.ts";
-import cancellationSignal from "../cancellation/cancellationSignal.ts";
-import fromObservable from "./fromObservable.ts";
+import { cancellationSignal } from "../cancellation/cancellationSignal.ts";
+import { fromObservable } from "./fromObservable.ts";
 
 type Options<T> =
   | boolean

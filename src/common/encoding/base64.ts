@@ -178,5 +178,3 @@ export const base64: Base64 = Object.freeze({
     }
   },
 });
-
-export default base64;

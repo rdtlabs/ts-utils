@@ -7,8 +7,8 @@
 import { assert } from "@std/assert/assert.ts";
 import { assertEquals } from '@std/assert/mod.ts';
 import { waitGroup, WaitGroup } from './WaitGroup.ts';
-import CancellationError from "../cancellation/CancellationError.ts";
-import cancellationTimeout from "../cancellation/cancellationTimeout.ts";
+import { CancellationError } from "../cancellation/CancellationError.ts";
+import { cancellationTimeout } from "../cancellation/cancellationTimeout.ts";
 
 Deno.test("WaitGroup test", async () => {
   let waiting = 0;

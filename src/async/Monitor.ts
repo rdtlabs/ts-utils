@@ -1,10 +1,10 @@
 import { Deferred } from "./Deferred.ts";
 import { WaitHandle } from "./WaitHandle.ts";
 
-export type Monitor = WaitHandle & {
+export interface Monitor extends WaitHandle {
   pulseOne(): void;
   pulseAll(): void;
-};
+}
 
 export const Monitor = function () {
   return monitor();

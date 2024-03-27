@@ -5,14 +5,14 @@
 /// <reference lib="deno.ns" />
 
 import { assert } from "@std/assert/assert.ts";
-import fromAsyncIterable from "./fromAsyncIterable.ts";
+import { fromAsyncIterable } from "./fromAsyncIterable.ts";
 import { AsyncQueue } from "./queue/types.ts";
 import { Deferred } from "./Deferred.ts";
-import cancellableIterable from "../cancellation/cancellableIterable.ts";
-import cancellationTimeout from "../cancellation/cancellationTimeout.ts";
+import { cancellableIterable } from "../cancellation/cancellableIterable.ts";
+import { cancellationTimeout } from "../cancellation/cancellationTimeout.ts";
 import { assertRejects } from "@std/assert/assert_rejects.ts";
 import { delay } from "./delay.ts";
-import CancellationError from "../cancellation/CancellationError.ts";
+import { CancellationError } from "../cancellation/CancellationError.ts";
 
 Deno.test("fromAsyncIterable test", async () => {
   const queue = new AsyncQueue<number>();

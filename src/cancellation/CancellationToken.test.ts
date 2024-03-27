@@ -5,8 +5,8 @@
 /// <reference lib="deno.ns" />
 
 import { assert } from "@std/assert/assert.ts";
-import Cancellable from "./Cancellable.ts";
-import CancellationError from "./CancellationError.ts";
+import { Cancellable } from "./Cancellable.ts";
+import { CancellationError } from "./CancellationError.ts";
 import { deferred } from "../async/Deferred.ts";
 
 Deno.test("CancellationToken combine and timeout test", async () => {

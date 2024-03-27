@@ -1,8 +1,8 @@
 import { type ErrorLike } from "../common/types.ts";
 import { type CancellationController } from "./CancellationToken.ts";
-import cancellationSignal from "./cancellationSignal.ts";
+import { cancellationSignal } from "./cancellationSignal.ts";
 
-export default function createCancellation(): CancellationController {
+export function createCancellation(): CancellationController {
   const abortController = new AbortController();
   const cancellation = cancellationSignal(abortController.signal);
 

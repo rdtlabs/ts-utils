@@ -1,5 +1,5 @@
 import { type BufferLike } from "../../buffer/BufferLike.ts";
-import Buffer from "../../buffer/Buffer.ts";
+import { Buffer } from "../../buffer/Buffer.ts";
 import { type QueueOptions } from "./types.ts";
 import { createQueue } from "../../common/Queue.ts";
 

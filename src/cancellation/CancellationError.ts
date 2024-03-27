@@ -2,7 +2,7 @@ import { type ErrorLike } from "../common/types.ts";
 import { type CancellationToken } from "./CancellationToken.ts";
 
 let counter = 0;
-export default class CancellationError extends Error {
+export class CancellationError extends Error {
   readonly #token?: CancellationToken;
   readonly #cause?: ErrorLike;
 

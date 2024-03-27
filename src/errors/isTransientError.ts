@@ -1,5 +1,5 @@
 // deno-lint-ignore no-explicit-any
-export default function isTransientError(error: any): boolean {
+export function isTransientError(error: any): boolean {
   return isTransientInternal(error, 0);
 }
 

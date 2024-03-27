@@ -5,11 +5,11 @@
 /// <reference lib="deno.ns" />
 
 import { assert } from "@std/assert/assert.ts";
-import isTransientError from "./isTransientError.ts";
-import RetryableError from "./RetryableError.ts";
-import NonRetryableError from "./NonRetryableError.ts";
-import getErrorForHttpCode from "./getErrorForHttpCode.ts";
 import { assertFalse } from "@std/assert/assert_false.ts";
+import { NonRetryableError } from "./NonRetryableError.ts";
+import { RetryableError } from "./RetryableError.ts";
+import { getErrorForHttpCode } from "./getErrorForHttpCode.ts";
+import { isTransientError } from "./isTransientError.ts";
 
 Deno.test("isTransientError code test", () => {
   assert(isTransientError(429));

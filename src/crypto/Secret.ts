@@ -17,7 +17,7 @@ const secretKeyLength = __keyLength;
 const runtimeHashSalt = Date.now().toString();
 const keys = new Map<string, Secret>();
 
-export default class Secret {
+export class Secret {
   static #idCounter = 1;
   #id: number = Secret.#idCounter++;
   #refCount = 1;

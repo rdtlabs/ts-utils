@@ -6,7 +6,7 @@
 
 import { assert } from "@std/assert/assert.ts";
 import { assertEquals, assertNotEquals } from '@std/assert/mod.ts';
-import Secret from './Secret.ts';
+import { Secret } from './Secret.ts';
 
 Deno.test("Secret encrypt/decrypt", async () => {
   const key = Secret.generateKey();

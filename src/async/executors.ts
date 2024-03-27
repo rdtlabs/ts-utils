@@ -1,7 +1,7 @@
 import { type Callable, type TimeoutInput } from "../common/types.ts";
 import { type ErrorLike } from "../common/types.ts";
 import { type CancellationToken } from "../cancellation/CancellationToken.ts";
-import cancellationRace from "../cancellation/cancellationRace.ts";
+import { cancellationRace } from "../cancellation/cancellationRace.ts";
 import { JobPool } from "./JobPool.ts";
 
 export const Executor = Object.freeze({
@@ -165,7 +165,7 @@ export const Executor = Object.freeze({
 /**
  * An abstraction for executing tasks.
  */
-export type Executor = {
+export interface Executor {
   /**
    * @param callable The task to execute.
    * @param deadline The deadline for the task to complete.
@@ -175,12 +175,12 @@ export type Executor = {
     callable: Callable<T | PromiseLike<T>>,
     deadline?: TimeoutInput | CancellationToken,
   ) => Promise<T>;
-};
+}
 
 /**
  * An executor that executes tasks concurrently.
  */
-export type ConcurrentExecutor = Executor & {
+export interface ConcurrentExecutor extends Executor {
   /**
    * Initiates an orderly shutdown in which previously submitted tasks are executed, but no new tasks will be accepted.
    * Invocation has no additional effect if already shut down.
@@ -203,7 +203,7 @@ export type ConcurrentExecutor = Executor & {
    * @returns `true` if the executor has completed shutdown.
    */
   readonly isShutdown: boolean;
-};
+}
 
 const __invoke = <T = void>(
   callable: Callable<T | PromiseLike<T>>,

@@ -1,9 +1,9 @@
 import type { BufferLike, BufferStrategy } from "./BufferLike.ts";
-import DisposedError from "../common/DisposedError.ts";
+import { DisposedError } from "../common/DisposedError.ts";
 import { BufferStrategySelector } from "./BufferLike.ts";
 import { BufferFullError } from "./BufferFullError.ts";
 
-export default class Buffer<T> implements BufferLike<T> {
+export class Buffer<T> implements BufferLike<T> {
   readonly #buffer: T[] = [];
   readonly #capacity: number;
   readonly #writeOnFull: (value: T) => void;

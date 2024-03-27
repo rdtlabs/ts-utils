@@ -9,16 +9,16 @@ import {
   type CancellationToken,
 } from "./CancellationToken.ts";
 import { __isToken, __none } from "./_utils.ts";
-import cancellableIterable from "./cancellableIterable.ts";
-import cancellationRace from "./cancellationRace.ts";
-import cancellationSignal from "./cancellationSignal.ts";
-import cancellationTimeout from "./cancellationTimeout.ts";
-import cancelledToken from "./cancelledToken.ts";
-import combineTokens from "./combineTokens.ts";
-import createCancellation from "./createCancellation.ts";
-import fromCancellation from "./fromCancellation.ts";
+import { cancellableIterable } from "./cancellableIterable.ts";
+import { cancellationRace } from "./cancellationRace.ts";
+import { cancellationSignal } from "./cancellationSignal.ts";
+import { cancellationTimeout } from "./cancellationTimeout.ts";
+import { cancelledToken } from "./cancelledToken.ts";
+import { combineTokens } from "./combineTokens.ts";
+import { createCancellation } from "./createCancellation.ts";
+import { fromCancellation } from "./fromCancellation.ts";
 
-const Cancellable = Object.freeze({
+export const Cancellable = Object.freeze({
   // An inert, cancellation token that is always in
   // a non-cancelled state and cannot be cancelled.
   None: __none,
@@ -88,5 +88,3 @@ const Cancellable = Object.freeze({
     cancellation?: TimeoutInput | CancellationToken,
   ) => Promise<T>;
 };
-
-export default Cancellable;

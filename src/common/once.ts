@@ -2,7 +2,7 @@
 
 const once_symbol = Symbol("once");
 
-const Once = Object.freeze({
+export const Once = Object.freeze({
   of: <T extends (...args: any[]) => any>(fn: T): T => {
     if ((fn as any)[once_symbol]) {
       return fn;
@@ -42,5 +42,3 @@ const Once = Object.freeze({
 };
 
 export const once = Once.of;
-
-export default Once;

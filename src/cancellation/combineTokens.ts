@@ -1,10 +1,10 @@
 import { type CancellationToken } from "./CancellationToken.ts";
 import { __none } from "./_utils.ts";
-import cancellationSignal from "./cancellationSignal.ts";
+import { cancellationSignal } from "./cancellationSignal.ts";
 import { getTimeout } from "./cancellationTimeout.ts";
-import unwrapAbortSignal from "./unwrapAbortSignal.ts";
+import { unwrapAbortSignal } from "./unwrapAbortSignal.ts";
 
-export default function combineTokens(
+export function combineTokens(
   ...cancellations: CancellationToken[]
 ): CancellationToken {
   if (cancellations.length === 0) {

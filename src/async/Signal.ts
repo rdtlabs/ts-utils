@@ -1,6 +1,6 @@
-import isCancellationToken from "../cancellation/isCancellationToken.ts";
-import cancellationTimeout from "../cancellation/cancellationTimeout.ts";
-import cancellationRace from "../cancellation/cancellationRace.ts";
+import { isCancellationToken } from "../cancellation/isCancellationToken.ts";
+import { cancellationTimeout } from "../cancellation/cancellationTimeout.ts";
+import { cancellationRace } from "../cancellation/cancellationRace.ts";
 import { WaitHandle } from "./WaitHandle.ts";
 
 type Signaled = true;
@@ -8,12 +8,12 @@ type Unsignaled = false;
 
 export type SignalState = Signaled | Unsignaled;
 
-export type Signal = WaitHandle & {
+export interface Signal extends WaitHandle {
   readonly state: SignalState;
   notify(): void;
   notifyAndReset(): void;
   reset(): void;
-};
+}
 
 export const Signal = function (
   initialState: SignalState = false,

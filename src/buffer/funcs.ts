@@ -1,10 +1,10 @@
-import Buffer from "./Buffer.ts";
+import { Buffer } from "./Buffer.ts";
 import {
   BufferLike,
   BufferStrategy,
   BufferStrategySelector,
 } from "./BufferLike.ts";
-import RingBuffer from "./RingBuffer.ts";
+import { RingBuffer } from "./RingBuffer.ts";
 
 export function buffer<T>(
   capacity: number,

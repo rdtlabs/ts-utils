@@ -1,4 +1,4 @@
-export default class Done {
+export class Done {
   private constructor() {}
 
   static is(value: unknown): value is Done {

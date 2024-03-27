@@ -1,8 +1,8 @@
 import type { CancellationToken } from "../cancellation/CancellationToken.ts";
 import type { Observable, Subscriber, Unsubscribe } from "./_rx.types.ts";
-import cancellableIterable from "../cancellation/cancellableIterable.ts";
+import { cancellableIterable } from "../cancellation/cancellableIterable.ts";
 
-export default function fromAsyncIterable<T>(
+export function fromAsyncIterable<T>(
   iterable: AsyncIterable<T>,
   cancellationToken?: CancellationToken,
 ): Observable<T> {

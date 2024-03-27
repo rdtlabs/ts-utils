@@ -9,8 +9,8 @@ import { signal } from "../Signal.ts";
 import { waitGroup } from "../WaitGroup.ts";
 import { delay } from "../delay.ts";
 import { assertRejects } from "@std/assert/assert_rejects.ts";
-import QueueLengthExceededError from "../../errors/QueueLengthExceededError.ts";
-import ShutdownError from "../../errors/ShutdownError.ts";
+import { QueueLengthExceededError } from "../../errors/QueueLengthExceededError.ts";
+import { ShutdownError } from "../../errors/ShutdownError.ts";
 import { assert } from "@std/assert/assert.ts";
 
 Deno.test("WorkerPool test", async () => {

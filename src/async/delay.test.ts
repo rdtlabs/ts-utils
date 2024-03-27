@@ -6,8 +6,8 @@
 
 import { delay } from "./delay.ts";
 import { assertRejects } from "@std/assert/assert_rejects.ts";
-import CancellationError from "../cancellation/CancellationError.ts";
-import Cancellable from "../cancellation/Cancellable.ts";
+import { CancellationError } from "../cancellation/CancellationError.ts";
+import { Cancellable } from "../cancellation/Cancellable.ts";
 
 Deno.test("delay test", async () => {
   const promise = delay<number>(0);

@@ -2,11 +2,11 @@ import type { BufferStrategyOptions } from "../buffer/BufferLike.ts";
 import type { ErrorLike } from "../common/types.ts";
 import type { CancellationToken } from "../cancellation/CancellationToken.ts";
 import type { Observable } from "./_rx.types.ts";
-import Done from "../common/done.ts";
-import cancellableIterable from "../cancellation/cancellableIterable.ts";
+import { Done } from "../common/done.ts";
+import { cancellableIterable } from "../cancellation/cancellableIterable.ts";
 import { asyncQueue } from "./queue/asyncQueue.ts";
 
-export default function fromObservable<T>(
+export function fromObservable<T>(
   observable: Observable<T>,
   options?: {
     bufferStrategy?: BufferStrategyOptions<T>;

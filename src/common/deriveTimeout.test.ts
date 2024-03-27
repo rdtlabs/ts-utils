@@ -5,7 +5,7 @@
 /// <reference lib="deno.ns" />
 
 import { assert } from "@std/assert/assert.ts";
-import deriveTimeout from "./deriveTimeout.ts"; import { assertEquals } from "@std/assert/assert_equals.ts";
+import { deriveTimeout } from "./deriveTimeout.ts"; import { assertEquals } from "@std/assert/assert_equals.ts";
 import { deadline } from "./deadline.ts";
 import { assertRejects } from "@std/assert/assert_rejects.ts";
 

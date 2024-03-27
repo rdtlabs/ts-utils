@@ -1,6 +1,6 @@
-import RetryableError from "./RetryableError.ts";
+import { RetryableError } from "./RetryableError.ts";
 
-export default class HttpRetryableError extends RetryableError {
+export class HttpRetryableError extends RetryableError {
   constructor(code: number, reason?: unknown) {
     super(typeof reason === "string" ? reason : "HTTP retryable error");
     this.httpCode = code;

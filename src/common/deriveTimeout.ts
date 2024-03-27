@@ -1,6 +1,6 @@
 import { type TimeoutInput } from "./types.ts";
 
-export default function deriveTimeout(timeout: TimeoutInput): number {
+export function deriveTimeout(timeout: TimeoutInput): number {
   if (timeout instanceof Date) {
     return Math.max(0, timeout.getTime() - Date.now());
   }

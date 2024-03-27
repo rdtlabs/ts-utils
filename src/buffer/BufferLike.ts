@@ -1,4 +1,4 @@
-export type BufferLike<T> = Disposable & Iterable<T> & {
+export interface BufferLike<T> extends Disposable, Iterable<T> {
   write(value: T): void;
   read(): T | undefined;
   peek(): T | undefined;
@@ -8,7 +8,7 @@ export type BufferLike<T> = Disposable & Iterable<T> & {
   get size(): number;
 
   clear(): void;
-};
+}
 
 export type BufferStrategySelector<T> = (value: T) => BufferStrategy;
 export type BufferStrategy = "drop" | "latest" | "fixed";

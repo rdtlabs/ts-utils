@@ -1,10 +1,10 @@
-import DataTooLargeError from "./DataTooLargeError.ts";
-import NonRetryableError from "./NonRetryableError.ts";
-import RateLimitError from "./RateLimitError.ts";
-import RetryableError from "./RetryableError.ts";
-import isTransientError from "./isTransientError.ts";
+import { DataTooLargeError } from "./DataTooLargeError.ts";
+import { NonRetryableError } from "./NonRetryableError.ts";
+import { RateLimitError } from "./RateLimitError.ts";
+import { RetryableError } from "./RetryableError.ts";
+import { isTransientError } from "./isTransientError.ts";
 
-export default function getErrorForHttpCode(
+export function getErrorForHttpCode(
   code: number,
   statusText?: string,
 ): Error {

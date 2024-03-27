@@ -2,12 +2,12 @@ import { type CancellationToken } from "../cancellation/CancellationToken.ts";
 import { semaphore } from "./Semaphore.ts";
 import { WaitHandle } from "./WaitHandle.ts";
 
-export type Mutex = WaitHandle & {
+export interface Mutex extends WaitHandle {
   tryLock(): boolean;
   lock(token?: CancellationToken): Promise<void>;
   unlock(): void;
   readonly isLocked: boolean;
-};
+}
 
 export const Mutex = function () {
   return mutex();

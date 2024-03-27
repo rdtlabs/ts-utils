@@ -1,11 +1,11 @@
 import { type CancellationToken } from "../cancellation/CancellationToken.ts";
-import cancellationRace from "../cancellation/cancellationRace.ts";
+import { cancellationRace } from "../cancellation/cancellationRace.ts";
 
-export type Deferred<T = void> = {
+export interface Deferred<T = void> {
   promise: Promise<T>;
   resolve: Resolve<T>;
   reject: (reason?: unknown) => void;
-};
+}
 
 export const Deferred = function <T = void>(
   cancellationToken?: CancellationToken,

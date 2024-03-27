@@ -5,7 +5,7 @@ import { __decryptAsString, __stringToCryptoKey } from "./_utils.ts";
 export * from "./types.ts";
 export * from "./Secret.ts";
 
-export default async function decryptOnce<T>(
+export async function decryptOnce<T>(
   key: string,
   data: EncryptedData,
 ): Promise<T> {

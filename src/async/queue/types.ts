@@ -3,8 +3,11 @@ import { __getBufferFromOptions, __getQueueResolvers } from "./_utils.ts";
 import { MaybeResult } from "../../common/types.ts";
 import { asyncQueue } from "./asyncQueue.ts";
 
+/**
+ *  The options to use when creating a new async queue
+ */
 export type QueueOptions<T> = {
-  /* The maximum number of items that can be enqueued before the buffer strategy is applied. */
+  /** The maximum number of items that can be enqueued before the buffer strategy is applied. */
   bufferSize?: number;
 
   /**
@@ -16,8 +19,8 @@ export type QueueOptions<T> = {
   bufferStrategy?: BufferStrategyOptions<T>;
 };
 
-/* An async queue that allows for enqueuing and dequeuing items concurrently */
-export type AsyncQueue<T> = Disposable & AsyncIterable<T> & {
+/** An async queue that allows for enqueuing and dequeuing items concurrently */
+export interface AsyncQueue<T> extends Disposable, AsyncIterable<T> {
   /**
    * Indicates the current state of the queue with respect to its
    * read/write capabilities.
@@ -28,13 +31,13 @@ export type AsyncQueue<T> = Disposable & AsyncIterable<T> & {
    */
   readonly state: "rw" | "r" | "-rw";
 
-  /* The current number of items in the queue */
+  /** The current number of items in the queue */
   readonly size: number;
 
-  /* Returns whether the queue is empty (true) or not (false) */
+  /** Returns whether the queue is empty (true) or not (false) */
   readonly isEmpty: boolean;
 
-  /* Returns whether the queue has been closed (true) or is still open (false) */
+  /** Returns whether the queue has been closed (true) or is still open (false) */
   readonly isClosed: boolean;
 
   /**
@@ -64,13 +67,18 @@ export type AsyncQueue<T> = Disposable & AsyncIterable<T> & {
    */
   setReadOnly(): void;
 
-  /* Closes the queue. */
+  /** Closes the queue. */
   close(): void;
 
-  /* Returns a promise that resolves when the queue is closed. */
+  /** Returns a promise that resolves when the queue is closed. */
   onClose(): Promise<void>;
-};
+}
 
+/**
+ * Creates a new async queue with the specified options.
+ * @param options The options to use when creating the queue.
+ * @returns A new async queue.
+ */
 export const AsyncQueue = function <T>(
   options: QueueOptions<T> = { bufferSize: Infinity },
 ): AsyncQueue<T> {

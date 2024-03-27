@@ -4,7 +4,7 @@
 /// <reference lib="dom.asynciterable" />
 /// <reference lib="deno.ns" />
 
-import base64 from "./encoding/base64.ts";
+import { base64 } from "./encoding/base64.ts";
 import { Md5 } from "./md5.ts";
 import { assertEquals } from "@std/assert/assert_equals.ts";
 

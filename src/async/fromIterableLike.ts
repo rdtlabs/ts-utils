@@ -1,6 +1,6 @@
 import { isThenable } from "../common/utils.ts";
 
-export default async function* fromIterableLike<T>(
+export async function* fromIterableLike<T>(
   iterable: IterableLike<T>,
 ): AsyncIterable<T> {
   if (Symbol.asyncIterator in iterable) {

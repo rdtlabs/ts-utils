@@ -1,6 +1,6 @@
-import QueueLengthExceededError from "../../errors/QueueLengthExceededError.ts";
-import ShutdownError from "../../errors/ShutdownError.ts";
-import ArgumentNilError from "../../errors/ArgumentNilError.ts";
+import { QueueLengthExceededError } from "../../errors/QueueLengthExceededError.ts";
+import { ShutdownError } from "../../errors/ShutdownError.ts";
+import { ArgumentNilError } from "../../errors/ArgumentNilError.ts";
 import { Deferred } from "../Deferred.ts";
 import { fromOptions } from "./_utils.ts";
 import { Queue } from "../../common/Queue.ts";
@@ -14,7 +14,7 @@ export type WorkerPoolOptions = {
   maxQueueLength?: number;
 };
 
-export type WorkerPool = {
+export interface WorkerPool {
   submit(runnable: Task): void;
   trySubmit(runnable: Task): boolean;
   shutdown(): void;
@@ -23,7 +23,7 @@ export type WorkerPool = {
   readonly isShutdownInitiated: boolean;
   readonly isShutdown: boolean;
   readonly isFull: boolean;
-};
+}
 
 export const WorkerPool = function (options?: WorkerPoolOptions) {
   return workerPool(options) as WorkerPool;

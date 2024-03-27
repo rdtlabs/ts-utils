@@ -1,11 +1,11 @@
 import { signal } from "./Signal.ts";
 import { WaitHandle } from "./WaitHandle.ts";
 
-export type WaitGroup = WaitHandle & {
+export interface WaitGroup extends WaitHandle {
   add(delta: number): void;
   done(): void;
   readonly count: number;
-};
+}
 
 export const WaitGroup = function (startCount?: number) {
   return waitGroup(startCount) as WaitGroup;

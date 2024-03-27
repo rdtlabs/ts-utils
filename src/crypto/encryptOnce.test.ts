@@ -4,11 +4,11 @@
 /// <reference lib="dom.asynciterable" />
 /// <reference lib="deno.ns" />
 
-import encryptOnce from "./encryptOnce.ts";
+import { encryptOnce } from "./encryptOnce.ts";
 import { TEST_STRING_KEY } from "./_utils.test.ts";
 import { assertEquals } from "@std/assert/assert_equals.ts";
 import { TEST_CLEAR_DATA } from "./_utils.test.ts";
-import decryptOnce from "./decryptOnce.ts";
+import { decryptOnce } from "./decryptOnce.ts";
 
 Deno.test("encryptOnce test", async () => {
   const enc = await encryptOnce(TEST_STRING_KEY, TEST_CLEAR_DATA);

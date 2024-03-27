@@ -6,8 +6,8 @@
 
 import { assert } from "@std/assert/assert.ts";
 import { signal } from './Signal.ts';
-import CancellationError from "../cancellation/CancellationError.ts";
-import cancellationTimeout from "../cancellation/cancellationTimeout.ts";
+import { CancellationError } from "../cancellation/CancellationError.ts";
+import { cancellationTimeout } from "../cancellation/cancellationTimeout.ts";
 import { assertFalse } from "@std/assert/assert_false.ts";
 
 Deno.test("Signal notify test", async () => {

@@ -1,17 +1,17 @@
 import { type CancellationToken } from "../cancellation/CancellationToken.ts";
 import { deferred } from "./Deferred.ts";
-import cancellationTimeout from "../cancellation/cancellationTimeout.ts";
-import isCancellationToken from "../cancellation/isCancellationToken.ts";
+import { cancellationTimeout } from "../cancellation/cancellationTimeout.ts";
+import { isCancellationToken } from "../cancellation/isCancellationToken.ts";
 import { WaitHandle } from "./WaitHandle.ts";
-import CancellationError from "../cancellation/CancellationError.ts";
+import { CancellationError } from "../cancellation/CancellationError.ts";
 
-export type Semaphore = WaitHandle & {
+export interface Semaphore extends WaitHandle {
   tryAcquire(): boolean;
   acquire(cancellationToken?: CancellationToken): Promise<void>;
   release(count?: number): void;
   permits(): number;
   waiters(): number;
-};
+}
 
 export const Semaphore = function (permits: number) {
   return semaphore(permits);

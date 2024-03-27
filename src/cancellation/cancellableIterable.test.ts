@@ -6,8 +6,8 @@
 
 import { assert } from "@std/assert/assert.ts";
 import { AsyncQueue } from "../async/queue/types.ts";
-import cancellableIterable from "./cancellableIterable.ts";
-import cancellationTimeout from "./cancellationTimeout.ts";
+import { cancellableIterable } from "./cancellableIterable.ts";
+import { cancellationTimeout } from "./cancellationTimeout.ts";
 import { delay } from "../async/delay.ts";
 
 Deno.test("cancellableIterable with cancellation test", async () => {

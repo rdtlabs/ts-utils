@@ -5,7 +5,7 @@
 /// <reference lib="deno.ns" />
 
 import { assertEquals } from "@std/assert/assert_equals.ts";
-import RingBuffer from "./RingBuffer.ts";
+import { RingBuffer } from "./RingBuffer.ts";
 import { assertRejects } from "@std/assert/assert_rejects.ts";
 import { BufferFullError } from "./BufferFullError.ts";
 import { assert } from "@std/assert/assert.ts";

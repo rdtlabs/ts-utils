@@ -4,10 +4,10 @@ import {
   type CancellationToken,
 } from "./CancellationToken.ts";
 
-import createCancellation from "./createCancellation.ts";
-import combineTokens from "./combineTokens.ts";
+import { createCancellation } from "./createCancellation.ts";
+import { combineTokens } from "./combineTokens.ts";
 
-export default function fromCancellation(
+export function fromCancellation(
   token?: CancellationToken,
 ): CancellationController {
   if (!token || token.state === "none") {

@@ -6,9 +6,9 @@
 
 import { assert } from "@std/assert/assert.ts";
 import { deferred } from "./Deferred.ts";
-import Cancellable from "../cancellation/Cancellable.ts";
+import { Cancellable } from "../cancellation/Cancellable.ts";
 import { assertRejects } from "@std/assert/assert_rejects.ts";
-import CancellationError from "../cancellation/CancellationError.ts";
+import { CancellationError } from "../cancellation/CancellationError.ts";
 
 Deno.test("Deferred test", async () => {
   const def = deferred<number>();

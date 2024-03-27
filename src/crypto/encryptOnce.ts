@@ -5,7 +5,7 @@ import { __encrypt, __stringToCryptoKey } from "./_utils.ts";
 export * from "./types.ts";
 export * from "./Secret.ts";
 
-export default function encryptOnce<T extends object>(
+export function encryptOnce<T extends object>(
   key: string,
   data: T,
 ): Promise<EncryptedData> {

@@ -6,10 +6,10 @@ import { type TimeoutInput } from "../common/types.ts";
 const timeoutSym: unique symbol = Symbol("Symbol.CancellationTimeout");
 
 // deno-fmt-ignore
-export default function cancellationTimeout(timeoutMillis: number): CancellationToken; // deno-fmt-ignore
-export default function cancellationTimeout(date: Date): CancellationToken; // deno-fmt-ignore
-export default function cancellationTimeout(timeoutInput: TimeoutInput): CancellationToken; // deno-fmt-ignore
-export default function cancellationTimeout(timeoutInput: TimeoutInput) {
+export function cancellationTimeout(timeoutMillis: number): CancellationToken; // deno-fmt-ignore
+export function cancellationTimeout(date: Date): CancellationToken; // deno-fmt-ignore
+export function cancellationTimeout(timeoutInput: TimeoutInput): CancellationToken; // deno-fmt-ignore
+export function cancellationTimeout(timeoutInput: TimeoutInput) {
   const derivedTimeout = __deriveTimeout(timeoutInput);
   const signal = AbortSignal.timeout(derivedTimeout);
 

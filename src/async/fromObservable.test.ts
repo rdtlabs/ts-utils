@@ -4,11 +4,11 @@
 /// <reference lib="dom.asynciterable" />
 /// <reference lib="deno.ns" />
 
-import fromAsyncIterable from "./fromAsyncIterable.ts";
+import { fromAsyncIterable } from "./fromAsyncIterable.ts";
 import { AsyncQueue } from "./queue/types.ts";
-import cancellableIterable from "../cancellation/cancellableIterable.ts";
-import cancellationTimeout from "../cancellation/cancellationTimeout.ts";
-import fromObservable from "./fromObservable.ts";
+import { cancellableIterable } from "../cancellation/cancellableIterable.ts";
+import { cancellationTimeout } from "../cancellation/cancellationTimeout.ts";
+import { fromObservable } from "./fromObservable.ts";
 import { assertEquals } from "@std/assert/assert_equals.ts";
 
 Deno.test("fromObservable test", async () => {
