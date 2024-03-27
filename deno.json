@@ -41,7 +41,6 @@
     "rules": {
       "include": [
         "eqeqeq",
-        "explicit-function-return-type",
         "explicit-module-boundary-types",
         "no-eval",
         "no-undef",
