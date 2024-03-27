@@ -8,6 +8,7 @@ export * from "./Signal.ts";
 export * from "./Deferred.ts";
 export * from "./delay.ts";
 export * from "./fromEvent.ts";
+export * from "./queue/index.ts";
 export { default as fromIterableLike } from "./fromIterableLike.ts";
 export { default as fromAsyncIterable } from "./fromAsyncIterable.ts";
 export { default as fromObservable } from "./fromObservable.ts";
