@@ -109,11 +109,11 @@ export class Secret {
     }
   }
 
-  [Symbol.dispose]() {
+  [Symbol.dispose](): void {
     this.dispose();
   }
 
-  dispose() {
+  dispose(): void {
     this.#dispose();
   }
 

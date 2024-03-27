@@ -104,7 +104,7 @@ export const base64: Base64 = Object.freeze({
    * @param {boolean} [urlMode] - If set to true, URL mode string will be returned
    * @returns {string} - Base64 representation of data
    */
-  fromArrayBuffer: (arrBuf: ArrayBuffer, urlMode = false) => {
+  fromArrayBuffer: (arrBuf: ArrayBuffer, urlMode = false): string => {
     const bytes = new Uint8Array(arrBuf);
     let i,
       result = "";
@@ -136,7 +136,7 @@ export const base64: Base64 = Object.freeze({
    * @param {boolean} [urlMode] - If set to true, URL mode string will be expected
    * @returns {string} - Decoded string
    */
-  fromBase64: (str: string, urlMode = false) => {
+  fromBase64: (str: string, urlMode = false): string => {
     return new TextDecoder().decode(base64.toArrayBuffer(str, urlMode));
   },
 
@@ -148,7 +148,7 @@ export const base64: Base64 = Object.freeze({
    * @param {boolean} [urlMode] - If set to true, URL mode string will be returned
    * @returns {string} - Base64 encoded string
    */
-  toBase64: (str: string, urlMode = false) => {
+  toBase64: (str: string, urlMode = false): string => {
     return base64.fromArrayBuffer(new TextEncoder().encode(str), urlMode);
   },
 
@@ -159,7 +159,7 @@ export const base64: Base64 = Object.freeze({
    * @param {boolean} [urlMode] - If set to true, base64url will be expected
    * @returns {boolean} - Valid base64/base64url?
    */
-  validate: (encoded: string, urlMode = false) => {
+  validate: (encoded: string, urlMode = false): boolean => {
     // Bail out if not string
     // noinspection SuspiciousTypeOfGuard
     if (typeof encoded !== "string") {

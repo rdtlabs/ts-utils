@@ -41,4 +41,4 @@ export const Once = Object.freeze({
   of: <T extends (...args: any[]) => any>(fn: T) => T;
 };
 
-export const once = Once.of;
+export const once: <T extends (...args: any[]) => any>(fn: T) => T = Once.of;

@@ -1,5 +1,8 @@
 import { type ErrorLike } from "../common/types.ts";
-import { type CancellationController } from "./CancellationToken.ts";
+import {
+  type CancellationController,
+  type CancellationToken,
+} from "./CancellationToken.ts";
 import { cancellationSignal } from "./cancellationSignal.ts";
 
 export function createCancellation(): CancellationController {
@@ -7,10 +10,10 @@ export function createCancellation(): CancellationController {
   const cancellation = cancellationSignal(abortController.signal);
 
   const controller = Object.freeze({
-    get token() {
+    get token(): CancellationToken {
       return cancellation;
     },
-    cancel(reason?: ErrorLike) {
+    cancel(reason?: ErrorLike): void {
       if (!abortController.signal.aborted) {
         abortController.abort(reason);
       }

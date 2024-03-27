@@ -13,7 +13,9 @@ export interface Queue<T> {
   toArray(): T[];
 }
 
-export const createQueue = <T>(): Queue<T> => new QueueImpl<T>();
+export function createQueue<T>(): Queue<T> {
+  return new QueueImpl<T>();
+}
 
 export const Queue = function <T>() {
   return createQueue<T>();

@@ -5,5 +5,5 @@ export class NonRetryableError extends Error {
     });
   }
 
-  public readonly isRetryable = false;
+  public readonly isRetryable: boolean = false;
 }

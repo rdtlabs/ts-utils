@@ -1,7 +1,10 @@
 export function fromOptions(options?: {
   maxConcurrency?: number;
   maxQueueLength?: number;
-}) {
+}): {
+  maxConcurrency: number;
+  maxQueueLength: number;
+} {
   const maxQueueLength = options?.maxQueueLength ?? 1024;
   const maxConcurrency = options?.maxConcurrency ?? 4;
 

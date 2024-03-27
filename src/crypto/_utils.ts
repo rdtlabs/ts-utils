@@ -2,7 +2,7 @@ import { EncryptedData, EncryptionSource } from "./types.ts";
 
 export const __keyLength = 32;
 
-export function __getArrayBufferFor(data: EncryptionSource) {
+export function __getArrayBufferFor(data: EncryptionSource): ArrayBufferLike {
   if (data instanceof ArrayBuffer) {
     return data;
   }

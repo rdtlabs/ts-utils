@@ -9,7 +9,7 @@ const timeoutSym: unique symbol = Symbol("Symbol.CancellationTimeout");
 export function cancellationTimeout(timeoutMillis: number): CancellationToken; // deno-fmt-ignore
 export function cancellationTimeout(date: Date): CancellationToken; // deno-fmt-ignore
 export function cancellationTimeout(timeoutInput: TimeoutInput): CancellationToken; // deno-fmt-ignore
-export function cancellationTimeout(timeoutInput: TimeoutInput) {
+export function cancellationTimeout(timeoutInput: TimeoutInput): CancellationToken {
   const derivedTimeout = __deriveTimeout(timeoutInput);
   const signal = AbortSignal.timeout(derivedTimeout);
 

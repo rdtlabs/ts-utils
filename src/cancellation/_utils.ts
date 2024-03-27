@@ -78,7 +78,7 @@ export function __isToken(
   return !!cancellation && (cancellation as any)[signalSym] !== undefined;
 }
 
-export function __deriveTimeout(timeout: TimeoutInput) {
+export function __deriveTimeout(timeout: TimeoutInput): number {
   if (timeout instanceof Date) {
     return timeout.getTime() - Date.now();
   }

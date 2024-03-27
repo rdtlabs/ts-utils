@@ -7,11 +7,11 @@
 
 const hexTable = new TextEncoder().encode("0123456789abcdef");
 
-function errInvalidByte(byte: number) {
+function errInvalidByte(byte: number): TypeError {
   return new TypeError(`Invalid byte '${String.fromCharCode(byte)}'`);
 }
 
-function errLength() {
+function errLength(): RangeError {
   return new RangeError("Odd length hex string");
 }
 

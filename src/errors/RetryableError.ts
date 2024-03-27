@@ -8,6 +8,6 @@ export class RetryableError extends Error {
     this.retryAfter = retryAfter;
   }
 
-  public readonly isRetryable = true;
+  public readonly isRetryable: boolean = true;
   public readonly retryAfter?: number;
 }
