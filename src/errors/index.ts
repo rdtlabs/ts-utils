@@ -10,6 +10,7 @@ import { getErrorForHttpCode } from "./getErrorForHttpCode.ts";
 
 export { getErrorForHttpCode } from "./getErrorForHttpCode.ts";
 export { isTransientError } from "./isTransientError.ts";
+export { DataTooLargeError } from "./DataTooLargeError.ts";
 
 export const Errors = Object.freeze({
   isTransient: (error: unknown): boolean => {

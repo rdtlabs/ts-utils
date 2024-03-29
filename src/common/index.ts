@@ -8,7 +8,7 @@
 export { objects } from "./objects.ts";
 export { strings } from "./strings.ts";
 export { base64 } from "./encoding/base64.ts";
-export { once } from "./once.ts";
+export { once, Once } from "./once.ts";
 export * from "./Queue.ts";
 export {
   Deadline as Deadline,
