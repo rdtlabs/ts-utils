@@ -75,7 +75,7 @@ const listSym: unique symbol = Symbol("List");
 /**
  * The `ListConstructor` implementation.
  */
-export const List = (() => {
+export const List: ListConstructor = (() => {
   const ctor = function <T>(...args: T[]) {
     const list = [...args];
     return Object.defineProperties(list, {
