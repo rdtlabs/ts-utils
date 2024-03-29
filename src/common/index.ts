@@ -17,3 +17,4 @@ export {
 } from "./deadline.ts";
 export { deriveTimeout } from "./deriveTimeout.ts";
 export { type ErrorLike, type TimeoutInput } from "./types.ts";
+export * from "./List.ts";

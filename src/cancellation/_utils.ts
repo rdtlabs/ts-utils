@@ -4,7 +4,7 @@ import { type CancellationToken } from "./CancellationToken.ts";
 
 const signalSym: unique symbol = Symbol("Symbol.CancellationToken");
 
-export function __injectOrCreate(
+export function __createToken(
   signal: AbortSignal,
   token?: Record<PropertyKey, unknown>,
 ): CancellationToken {
@@ -42,6 +42,7 @@ export function __injectOrCreate(
     get isCancelled() {
       return isCancelled();
     },
+    toSignal: () => signal,
     throwIfCancelled(): void {
       const error = getError();
       if (error) {
@@ -102,6 +103,7 @@ export const __none = Object.freeze({
   state: "none",
   reason: undefined,
   throwIfCancelled: () => {},
+  toSignal: () => NEVER_SIGNAL,
   register: () => {
     return () => {};
   },

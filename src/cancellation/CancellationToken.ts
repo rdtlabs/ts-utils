@@ -8,6 +8,7 @@ export interface CancellationToken {
   get reason(): ErrorLike | undefined;
   throwIfCancelled(): void;
   register(callback: (token: CancellationToken) => void): Unregister;
+  toSignal(): AbortSignal;
 }
 
 export interface CancellationController {

@@ -1,6 +1,6 @@
 import { type CancellationToken } from "./CancellationToken.ts";
 import { __deriveTimeout } from "./_utils.ts";
-import { __injectOrCreate } from "./_utils.ts";
+import { __createToken } from "./_utils.ts";
 import { type TimeoutInput } from "../common/types.ts";
 
 const timeoutSym: unique symbol = Symbol("Symbol.CancellationTimeout");
@@ -13,7 +13,7 @@ export function cancellationTimeout(timeoutInput: TimeoutInput): CancellationTok
   const derivedTimeout = __deriveTimeout(timeoutInput);
   const signal = AbortSignal.timeout(derivedTimeout);
 
-  return __injectOrCreate(signal, {
+  return __createToken(signal, {
     [timeoutSym]: derivedTimeout,
   });
 }
