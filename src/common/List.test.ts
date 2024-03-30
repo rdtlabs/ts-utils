@@ -5,8 +5,9 @@
 /// <reference lib="deno.ns" />
 
 import { assert } from "@std/assert/assert.ts";
-import { List } from "./List.ts";
 import { assertRejects } from "@std/assert/assert_rejects.ts";
+import { List } from "./List.ts";
+import { assertEquals } from "@std/assert/assert_equals.ts";
 
 Deno.test("List groupBy function test", () => {
   const list = new List(1, 2, 3, 4, 5);
@@ -75,4 +76,16 @@ Deno.test("List readonly groupBy key test", () => {
   assert(groups.get("female")!.length === 3);
   assert(groups.get("male")!.length === 1);
   assert(groups.get("nonbinary")!.length === 1);
+});
+
+Deno.test("List distinct test", () => {
+  const list = List.of(1, 2, 3, 4, 5, 1, 2, 3, 4, 5);
+
+  const uniqueList = list.distinct();
+  assert(uniqueList.length === 5);
+  assertEquals(uniqueList[0], 1);
+  assertEquals(uniqueList[1], 2);
+  assertEquals(uniqueList[2], 3);
+  assertEquals(uniqueList[3], 4);
+  assertEquals(uniqueList[4], 5);
 });
