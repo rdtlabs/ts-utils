@@ -1,5 +1,5 @@
 import type { BufferLike, BufferStrategy } from "./BufferLike.ts";
-import { DisposedError } from "../common/DisposedError.ts";
+import { DisposedError } from "../DisposedError.ts";
 import { BufferStrategySelector } from "./BufferLike.ts";
 import { BufferFullError } from "./BufferFullError.ts";
 
@@ -34,7 +34,7 @@ export class RingBuffer<T> implements BufferLike<T> {
 
     switch (strategy) {
       case "drop":
-        this.#writeOnFull = () => {};
+        this.#writeOnFull = () => { };
         return;
       case "latest":
         this.#writeOnFull = (value: T) => {

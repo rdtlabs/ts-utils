@@ -1,4 +1,4 @@
-import { isThenable } from "../common/utils.ts";
+import { isThenable } from "../utils.ts";
 
 export async function* fromIterableLike<T>(
   iterable: IterableLike<T>,

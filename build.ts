@@ -1,27 +1,33 @@
 import { build, emptyDir } from "https://deno.land/x/dnt/mod.ts";
+import { moveSync, copySync } from "https://deno.land/x/std/fs/mod.ts";
 
+await emptyDir("./dist");
 await emptyDir("./npm");
 
 await build({
+  scriptModule: false,
   importMap: "./deno.json",
+  typeCheck: "both",
   entryPoints: ["./src/index.ts",
     {
-      name: "./src/async",
+      name: "./async",
       path: "./src/async/index.ts",
     }, {
-      name: "./src/buffer",
+      name: "./buffer",
       path: "./src/buffer/index.ts",
     }, {
-      name: "./src/cancellation",
+      name: "./cancellation",
       path: "./src/cancellation/index.ts",
     }, {
-      name: "./src/crypto",
+      name: "./crypto",
       path: "./src/crypto/index.ts",
     }, {
-      name: "./src/errors",
+      name: "./errors",
       path: "./src/errors/index.ts",
     }],
+  declaration: 'inline',
   compilerOptions: {
+    sourceMap: true,
     lib: ["ESNext", "DOM"],
   },
   test: false,
@@ -30,6 +36,7 @@ await build({
   shims: {
     // see JS docs for overview and more options
     deno: true,
+    timers: true
   },
   package: {
     // package.json properties
@@ -39,9 +46,17 @@ await build({
     license: "MIT"
   },
   postBuild() {
-    // steps to run after building and before running the tests
-    Deno.copyFileSync("./LICENSE", "./npm/LICENSE");
-    Deno.copyFileSync("./README.md", "./npm/README.md");
-    Deno.copyFileSync("./.npmignore", "./npm/.npmignore");
-  },
+    moveSync("./npm/esm", "./dist", { overwrite: true });
+
+    Deno.writeTextFileSync("./dist/package.json",
+      Deno
+        .readTextFileSync("./npm/package.json")
+        .replaceAll('./esm/', './')
+    );
+
+    Deno.removeSync("./npm", { recursive: true });
+    Deno.copyFileSync("./LICENSE", "./dist/LICENSE");
+    Deno.copyFileSync("./README.md", "./dist/README.md");
+    Deno.copyFileSync("./.npmignore", "./dist/.npmignore");
+  }
 });

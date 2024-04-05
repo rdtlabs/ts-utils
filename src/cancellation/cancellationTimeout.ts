@@ -1,7 +1,7 @@
 import { type CancellationToken } from "./CancellationToken.ts";
 import { __deriveTimeout } from "./_utils.ts";
 import { __createToken } from "./_utils.ts";
-import { type TimeoutInput } from "../common/types.ts";
+import { type TimeoutInput } from "../types.ts";
 
 const timeoutSym: unique symbol = Symbol("Symbol.CancellationTimeout");
 

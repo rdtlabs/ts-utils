@@ -1,6 +1,6 @@
 import { type BufferStrategyOptions } from "../../buffer/BufferLike.ts";
 import { __getBufferFromOptions, __getQueueResolvers } from "./_utils.ts";
-import { MaybeResult } from "../../common/types.ts";
+import { MaybeResult } from "../../types.ts";
 import { asyncQueue } from "./asyncQueue.ts";
 
 /**

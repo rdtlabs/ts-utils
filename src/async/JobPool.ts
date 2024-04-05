@@ -1,8 +1,8 @@
-import { type Callable } from "../common/types.ts";
+import { type Callable } from "../types.ts";
 import { WorkerPool } from "./workerpool/WorkerPool.ts";
 import { deferred } from "./Deferred.ts";
 import { type CancellationToken } from "../cancellation/CancellationToken.ts";
-import { type TimeoutInput } from "../common/types.ts";
+import { type TimeoutInput } from "../types.ts";
 import { __isToken } from "../cancellation/_utils.ts";
 import { cancellationRace } from "../cancellation/cancellationRace.ts";
 
@@ -29,7 +29,7 @@ export const JobPool = function (options?: {
 }): JobPool {
   return jobPool(options);
 } as unknown as {
-  new (options?: {
+  new(options?: {
     maxConcurrency?: number;
     maxQueueLength?: number;
   }): JobPool;

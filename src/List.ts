@@ -1,6 +1,6 @@
 // deno-lint-ignore-file no-explicit-any
 
-import { fromIterableLike } from "../async/fromIterableLike.ts";
+import { fromIterableLike } from "./async/fromIterableLike.ts";
 
 /**
  * A List type that extends Array providing additional functionl

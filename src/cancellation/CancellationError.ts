@@ -1,4 +1,4 @@
-import { type ErrorLike } from "../common/types.ts";
+import { type ErrorLike } from "../types.ts";
 import { type CancellationToken } from "./CancellationToken.ts";
 
 let counter = 0;

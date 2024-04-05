@@ -6,7 +6,7 @@ import {
 import { Deferred } from "../Deferred.ts";
 import { __getBufferFromOptions, __getQueueResolvers } from "./_utils.ts";
 import { type AsyncQueue, type QueueOptions } from "./types.ts";
-import { MaybeResult } from "../../common/types.ts";
+import { MaybeResult } from "../../types.ts";
 
 type QueueState = "rw" | "r" | "-rw";
 

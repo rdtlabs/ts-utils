@@ -1,4 +1,4 @@
-import { Md5 } from "../common/md5.ts";
+import { Md5 } from "../md5.ts";
 import {
   DecryptionError,
   EncryptedData,

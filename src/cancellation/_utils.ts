@@ -1,4 +1,4 @@
-import { type ErrorLike, type TimeoutInput } from "../common/types.ts";
+import { type ErrorLike, type TimeoutInput } from "../types.ts";
 import { CancellationError } from "./CancellationError.ts";
 import { type CancellationToken } from "./CancellationToken.ts";
 
@@ -102,9 +102,9 @@ export const __none = Object.freeze({
   isCancelled: false,
   state: "none",
   reason: undefined,
-  throwIfCancelled: () => {},
+  throwIfCancelled: () => { },
   toSignal: () => NEVER_SIGNAL,
   register: () => {
-    return () => {};
+    return () => { };
   },
 }) as CancellationToken;

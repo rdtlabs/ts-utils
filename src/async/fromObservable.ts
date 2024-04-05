@@ -1,8 +1,8 @@
 import type { BufferStrategyOptions } from "../buffer/BufferLike.ts";
-import type { ErrorLike } from "../common/types.ts";
+import type { ErrorLike } from "../types.ts";
 import type { CancellationToken } from "../cancellation/CancellationToken.ts";
 import type { Observable } from "./_rx.types.ts";
-import { Done } from "../common/done.ts";
+import { Done } from "../done.ts";
 import { cancellableIterable } from "../cancellation/cancellableIterable.ts";
 import { asyncQueue } from "./queue/asyncQueue.ts";
 
@@ -70,7 +70,7 @@ export function fromObservable<T>(
         if (Done.is(done)) {
           throw new Error(
             "Observable is already completed or " +
-              "iterator was asked to stop via the return option",
+            "iterator was asked to stop via the return option",
           );
         }
         throw done;

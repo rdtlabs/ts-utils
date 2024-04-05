@@ -3,7 +3,7 @@ import { ShutdownError } from "../../errors/ShutdownError.ts";
 import { ArgumentNilError } from "../../errors/ArgumentNilError.ts";
 import { Deferred } from "../Deferred.ts";
 import { fromOptions } from "./_utils.ts";
-import { Queue } from "../../common/Queue.ts";
+import { Queue } from "../../Queue.ts";
 
 type Task = () => Promise<unknown> | unknown;
 
@@ -26,12 +26,12 @@ export interface WorkerPool {
 }
 
 export const WorkerPool = function (options?: WorkerPoolOptions): {
-  new (options?: WorkerPoolOptions): WorkerPool;
+  new(options?: WorkerPoolOptions): WorkerPool;
 } {
   // deno-lint-ignore no-explicit-any
   return workerPool(options) as any;
 } as unknown as {
-  new (options?: WorkerPoolOptions): WorkerPool;
+  new(options?: WorkerPoolOptions): WorkerPool;
 };
 
 export function workerPool(options?: WorkerPoolOptions): WorkerPool {

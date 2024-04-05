@@ -3,7 +3,7 @@ import {
   type Callable,
   type ErrorLike,
   type TimeoutInput,
-} from "../common/types.ts";
+} from "../types.ts";
 import {
   type CancellationController,
   type CancellationToken,
@@ -54,8 +54,8 @@ export const Cancellable = Object.freeze({
     const token = __isToken(cancellation)
       ? cancellation
       : cancellation
-      ? cancellationTimeout(cancellation)
-      : __none;
+        ? cancellationTimeout(cancellation)
+        : __none;
 
     try {
       return Cancellable.race(

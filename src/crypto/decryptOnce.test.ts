@@ -5,7 +5,7 @@
 /// <reference lib="deno.ns" />
 
 import { decryptOnce } from "./decryptOnce.ts";
-import { base64 } from "../common/encoding/base64.ts";
+import { base64 } from "../encoding/base64.ts";
 import { TEST_STRING_KEY } from "./_utils.test.ts";
 import { assertEquals } from "@std/assert/assert_equals.ts";
 import { TEST_ENCRYPTED_DATA } from "./_utils.test.ts";

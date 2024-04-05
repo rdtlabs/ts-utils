@@ -1,8 +1,8 @@
 import { type BufferLike } from "../../buffer/BufferLike.ts";
 import { Buffer } from "../../buffer/Buffer.ts";
 import { type QueueOptions } from "./types.ts";
-import { createQueue } from "../../common/Queue.ts";
-import { Queue } from "../../common/Queue.ts";
+import { createQueue } from "../../Queue.ts";
+import { Queue } from "../../Queue.ts";
 
 export function __getBufferFromOptions<T>(
   options: QueueOptions<T>,

@@ -1,5 +1,5 @@
-import { type Callable, type TimeoutInput } from "../common/types.ts";
-import { type ErrorLike } from "../common/types.ts";
+import { type Callable, type TimeoutInput } from "../types.ts";
+import { type ErrorLike } from "../types.ts";
 import { type CancellationToken } from "../cancellation/CancellationToken.ts";
 import { cancellationRace } from "../cancellation/cancellationRace.ts";
 import { JobPool } from "./JobPool.ts";
@@ -50,7 +50,7 @@ export const Executor = Object.freeze({
       },
     };
   },
-  immediate: <Executor> {
+  immediate: <Executor>{
     execute: <T>(
       callable: Callable<T | PromiseLike<T>>,
       cancellation?: TimeoutInput | CancellationToken,

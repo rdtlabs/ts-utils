@@ -8,9 +8,7 @@ import { assert } from "@std/assert/assert.ts";
 import { assertRejects } from "@std/assert/assert_rejects.ts";
 import { List } from "./List.ts";
 import { assertEquals } from "@std/assert/assert_equals.ts";
-import { deferred } from "../async/Deferred.ts";
-import { Deferred } from "../index.ts";
-import { waitGroup } from "../async/WaitGroup.ts";
+import { Deferred, deferred } from "./async/Deferred.ts";
 
 Deno.test("List groupBy function test", () => {
   const list = new List(1, 2, 3, 4, 5);

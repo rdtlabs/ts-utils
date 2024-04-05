@@ -6,7 +6,7 @@
 
 import { assert } from "@std/assert/assert.ts";
 import { deadline, Deadline } from "./deadline.ts";
-import { delay } from "../async/delay.ts";
+import { delay } from "./async/delay.ts";
 import { assertEquals } from "@std/assert/assert_equals.ts";
 import { assertFalse } from "@std/assert/assert_false.ts";
 

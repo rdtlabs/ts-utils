@@ -1,4 +1,4 @@
-import { ErrorLike } from "../common/types.ts";
+import { ErrorLike } from "../types.ts";
 
 export type Unsubscribe = () => void;
 

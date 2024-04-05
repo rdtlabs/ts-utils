@@ -1,4 +1,4 @@
-import { type BufferLike } from "../buffer/BufferLike.ts";
+import { type BufferLike } from "./buffer/BufferLike.ts";
 
 export interface Queue<T> {
   readonly size: number;

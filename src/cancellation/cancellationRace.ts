@@ -1,5 +1,5 @@
 import { deferred } from "../async/Deferred.ts";
-import { type TimeoutInput } from "../common/types.ts";
+import { type TimeoutInput } from "../types.ts";
 import { type CancellationToken } from "./CancellationToken.ts";
 import { __isToken, __none } from "./_utils.ts";
 import { cancellationTimeout } from "./cancellationTimeout.ts";
@@ -16,8 +16,8 @@ export function cancellationRace<T>(
   const token = __isToken(cancellation)
     ? cancellation
     : cancellation
-    ? cancellationTimeout(cancellation)
-    : __none;
+      ? cancellationTimeout(cancellation)
+      : __none;
 
   if (token.isCancelled) {
     return Promise.reject(token.reason);
