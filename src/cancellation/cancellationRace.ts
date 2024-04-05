@@ -16,8 +16,8 @@ export function cancellationRace<T>(
   const token = __isToken(cancellation)
     ? cancellation
     : cancellation
-      ? cancellationTimeout(cancellation)
-      : __none;
+    ? cancellationTimeout(cancellation)
+    : __none;
 
   if (token.isCancelled) {
     return Promise.reject(token.reason);

@@ -35,15 +35,15 @@ await build({
   packageManager: "pnpm",
   shims: {
     // see JS docs for overview and more options
-    deno: true,
-    timers: true
+    deno: false
   },
   package: {
     // package.json properties
     name: "rdt-utils",
     version: Deno.args[0],
     description: "Library of typescript utilities",
-    license: "MIT"
+    license: "MIT",
+    type: "module"
   },
   postBuild() {
     moveSync("./npm/esm", "./dist", { overwrite: true });

@@ -26,12 +26,12 @@ export interface WorkerPool {
 }
 
 export const WorkerPool = function (options?: WorkerPoolOptions): {
-  new(options?: WorkerPoolOptions): WorkerPool;
+  new (options?: WorkerPoolOptions): WorkerPool;
 } {
   // deno-lint-ignore no-explicit-any
   return workerPool(options) as any;
 } as unknown as {
-  new(options?: WorkerPoolOptions): WorkerPool;
+  new (options?: WorkerPoolOptions): WorkerPool;
 };
 
 export function workerPool(options?: WorkerPoolOptions): WorkerPool {

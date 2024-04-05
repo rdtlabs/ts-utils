@@ -102,9 +102,9 @@ export const __none = Object.freeze({
   isCancelled: false,
   state: "none",
   reason: undefined,
-  throwIfCancelled: () => { },
+  throwIfCancelled: () => {},
   toSignal: () => NEVER_SIGNAL,
   register: () => {
-    return () => { };
+    return () => {};
   },
 }) as CancellationToken;

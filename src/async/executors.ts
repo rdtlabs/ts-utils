@@ -50,7 +50,7 @@ export const Executor = Object.freeze({
       },
     };
   },
-  immediate: <Executor>{
+  immediate: <Executor> {
     execute: <T>(
       callable: Callable<T | PromiseLike<T>>,
       cancellation?: TimeoutInput | CancellationToken,

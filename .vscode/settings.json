@@ -7,6 +7,7 @@
         "./tsup.config.ts",
         "./release.ts",
         "./build.ts",
+        "./build-npm.ts",
     ],
     "typescript.preferences.preferTypeOnlyAutoImports": true,
     "files.trimTrailingWhitespace": true,

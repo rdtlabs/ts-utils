@@ -70,7 +70,7 @@ export function fromObservable<T>(
         if (Done.is(done)) {
           throw new Error(
             "Observable is already completed or " +
-            "iterator was asked to stop via the return option",
+              "iterator was asked to stop via the return option",
           );
         }
         throw done;

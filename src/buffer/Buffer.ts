@@ -32,7 +32,7 @@ export class Buffer<T> implements BufferLike<T> {
 
     switch (strategy) {
       case "drop":
-        this.#writeOnFull = () => { };
+        this.#writeOnFull = () => {};
         return;
       case "latest":
         this.#writeOnFull = (value: T) => {

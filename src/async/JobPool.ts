@@ -29,7 +29,7 @@ export const JobPool = function (options?: {
 }): JobPool {
   return jobPool(options);
 } as unknown as {
-  new(options?: {
+  new (options?: {
     maxConcurrency?: number;
     maxQueueLength?: number;
   }): JobPool;
