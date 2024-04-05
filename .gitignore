@@ -96,3 +96,5 @@ pnpm-lock.yaml
 pnpm-lock.yaml
 **/**/pnpm-lock.yaml
 main.local.ts
+/npm
+src/npm

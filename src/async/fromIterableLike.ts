@@ -6,20 +6,20 @@ export async function* fromIterableLike<T>(
   if (Symbol.asyncIterator in iterable) {
     yield* iterable;
   } else if (Symbol.iterator in iterable) {
-    console.log("Symbol.iterator", iterable);
-    for (const value of iterable) {
-      yield await value;
-    }
+    yield* iterate(iterable);
   } else if (Array.isArray(iterable)) {
-    console.log("Array.isArray(iterable)", iterable);
-    for (const value of iterable) {
-      yield await value;
-    }
+    yield* iterate(iterable);
   } else if (isThenable<IterableLike<T>>(iterable)) {
-    console.log("isThenable<IterableLike<T>>(iterable)", iterable);
     yield* fromIterableLike(await iterable);
   } else {
     throw new Error("Invalid iterable input type");
+  }
+}
+
+// deno-lint-ignore no-explicit-any
+async function* iterate(it: Iterable<any>) {
+  for (const value of it) {
+    yield await value;
   }
 }
 

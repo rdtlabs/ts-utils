@@ -1,4 +1,7 @@
 // deno-lint-ignore-file no-explicit-any
+
+import { fromIterableLike } from "../async/fromIterableLike.ts";
+
 /**
  * A List type that extends Array providing additional functionl
  * methods (e.g., `groupBy`)
@@ -61,12 +64,90 @@ export class List<T> extends Array<T> {
   }
 
   /**
+   * Creates a List from an array-like object.
+   * @param arrayLike An array-like object to convert to an List.
+   */
+  static from<T>(arrayLike: ArrayLike<T>): List<T>;
+
+  /**
+   * Creates an array from an iterable object.
+   * @param arrayLike An array-like object to convert to an array.
+   * @param mapfn A mapping function to call on every element of the array.
+   * @param thisArg Value of 'this' used to invoke the mapfn.
+   */
+  static from<T, U>(
+    arrayLike: ArrayLike<T>,
+    mapfn: (v: T, k: number) => U,
+    // deno-lint-ignore explicit-module-boundary-types
+    thisArg?: any,
+  ): List<T>;
+
+  static from<T>(...args: any[]): List<T> {
+    if (args.length === 0) {
+      throw new TypeError("List.from requires at least 1 argument");
+    }
+
+    const arrayLike = args[0];
+    const list = new List<T>();
+    if (args.length === 1) {
+      for (const value of arrayLike) {
+        list.push(value);
+      }
+    } else {
+      const mapfn = args[1] ?? ((v: T) => v);
+      const thisArg = args[2];
+      for (let i = 0; i < arrayLike.length; i++) {
+        list.push(mapfn.call(thisArg, arrayLike[i], i));
+      }
+    }
+
+    return list;
+  }
+
+  static fromAsync<T>(
+    iterableOrArrayLike:
+      | AsyncIterable<T>
+      | Iterable<T | Promise<T>>
+      | ArrayLike<T | Promise<T>>,
+  ): Promise<List<T>>;
+
+  static fromAsync<T, U>(
+    iterableOrArrayLike: AsyncIterable<T> | Iterable<T> | ArrayLike<T>,
+    mapFn: (value: Awaited<T>) => U,
+    // deno-lint-ignore explicit-module-boundary-types
+    thisArg?: any,
+  ): Promise<Awaited<List<T>>>;
+
+  static async fromAsync<T>(...args: any[]): Promise<Awaited<List<T>>> {
+    if (args.length === 0) {
+      throw new TypeError("List.fromAsync requires at least 1 argument");
+    }
+
+    const iterableOrArrayLike = fromIterableLike<T>(args[0]);
+    const list = new List<T>();
+    if (args.length === 1) {
+      for await (const value of iterableOrArrayLike) {
+        list.push(value);
+      }
+    } else {
+      const mapfn = args[1] ?? ((v: T) => v);
+      const thisArg = args[2];
+      for await (const value of iterableOrArrayLike) {
+        list.push(await mapfn.call(thisArg, value));
+      }
+    }
+
+    return list;
+  }
+
+  /**
    * This static method creates a new instance of the `ReadonlyList` interface.
    * The object is frozen and cannot be modified.
    * @param array items to be added to the ReadonlyList
    * @returns a new instance of the `ReadonlyList` interface
    */
   static readonly<T>(...array: readonly T[]): ReadonlyList<T> {
+    Array.from;
     return Object.freeze(new List(...array)) as ReadonlyList<T>;
   }
 

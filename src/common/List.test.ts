@@ -8,6 +8,9 @@ import { assert } from "@std/assert/assert.ts";
 import { assertRejects } from "@std/assert/assert_rejects.ts";
 import { List } from "./List.ts";
 import { assertEquals } from "@std/assert/assert_equals.ts";
+import { deferred } from "../async/Deferred.ts";
+import { Deferred } from "../index.ts";
+import { waitGroup } from "../async/WaitGroup.ts";
 
 Deno.test("List groupBy function test", () => {
   const list = new List(1, 2, 3, 4, 5);
@@ -88,4 +91,39 @@ Deno.test("List distinct test", () => {
   assertEquals(uniqueList[2], 3);
   assertEquals(uniqueList[3], 4);
   assertEquals(uniqueList[4], 5);
+});
+
+Deno.test("List from test", () => {
+  const list = List.from(new Array(1, 2, 3, 4, 5));
+  assert(list.length === 5);
+  assertEquals(list[0], 1);
+  assertEquals(list[1], 2);
+  assertEquals(list[2], 3);
+  assertEquals(list[3], 4);
+  assertEquals(list[4], 5);
+});
+
+Deno.test("List fromAsync test", async () => {
+  const defs = new List<Deferred<number>>();
+  const list = new List<Promise<number>>();
+  for (let i = 1; i <= 5; i++) {
+    const def = deferred<number>();
+    defs.push(def);
+    list.push(def.promise);
+  }
+
+  queueMicrotask(() => {
+    for (let i = 1; i <= 5; i++) {
+      defs[i - 1].resolve(i);
+    }
+  });
+
+  const asyncList = await List.fromAsync(list);
+
+  assert(asyncList.length === 5);
+  assertEquals(asyncList[0], 1);
+  assertEquals(asyncList[1], 2);
+  assertEquals(asyncList[2], 3);
+  assertEquals(asyncList[3], 4);
+  assertEquals(asyncList[4], 5);
 });

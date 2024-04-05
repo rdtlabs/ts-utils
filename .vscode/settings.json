@@ -5,7 +5,8 @@
     "deno.enablePaths": [
         "./src",
         "./tsup.config.ts",
-        "./release.ts"
+        "./release.ts",
+        "./build.ts",
     ],
     "typescript.preferences.preferTypeOnlyAutoImports": true,
     "files.trimTrailingWhitespace": true,
