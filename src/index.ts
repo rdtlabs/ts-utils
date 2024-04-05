@@ -24,4 +24,4 @@ export * from "./async/index.ts";
 export * from "./buffer/index.ts";
 export * from "./cancellation/index.ts";
 export * from "./crypto/index.ts";
-export * as t from "./errors/index.ts";
+export * from "./errors/index.ts";
