@@ -6,8 +6,8 @@
         "./src",
         "./tsup.config.ts",
         "./release.ts",
-        "./build.ts",
-        "./build-npm.ts",
+        "./build-deno.ts",
+        "./build.ts"
     ],
     "typescript.preferences.preferTypeOnlyAutoImports": true,
     "files.trimTrailingWhitespace": true,

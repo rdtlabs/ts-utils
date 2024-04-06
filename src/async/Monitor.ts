@@ -21,9 +21,6 @@ export function monitor(): Monitor {
   const monitor = {
     pulseOne: () => {
       running++;
-      if (running > 1) {
-        console.log("pulseOne", ++running);
-      }
 
       if (waiters.length > 0) {
         const def = waiters.shift()!;
@@ -44,9 +41,6 @@ export function monitor(): Monitor {
     // deno-lint-ignore no-explicit-any
     wait: (...args: any[]): any => {
       running++;
-      if (running > 1) {
-        console.log("wait", ++running);
-      }
       const def = new Deferred<boolean>(args[0]);
       waiters.push(def);
 

@@ -1,4 +1,5 @@
-import { type ErrorLike } from "../types.ts";
+import { deriveTimeout } from "../deriveTimeout.ts";
+import { type ErrorLike, TimeoutInput } from "../types.ts";
 import {
   type CancellationController,
   type CancellationToken,
@@ -17,6 +18,30 @@ export function createCancellation(): CancellationController {
       if (!abortController.signal.aborted) {
         abortController.abort(reason);
       }
+    },
+    cancelAfter(
+      timeoutMillis: TimeoutInput,
+      reason?: ErrorLike,
+    ): Promise<void> {
+      if (abortController.signal.aborted) {
+        return Promise.resolve();
+      }
+
+      return new Promise((resolve) => {
+        const timerId = setTimeout(() => {
+          try {
+            controller.cancel(reason);
+          } finally {
+            resolve();
+            unregister();
+          }
+        }, Math.max(0, deriveTimeout(timeoutMillis)));
+
+        const unregister = controller.token.register(() => {
+          clearTimeout(timerId);
+          resolve();
+        });
+      });
     },
   });
 

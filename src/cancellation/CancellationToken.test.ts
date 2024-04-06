@@ -89,3 +89,12 @@ Deno.test("Cancellation Controller test", async () => {
 
   await d.promise;
 });
+
+Deno.test("Cancellation Controller cancelAfter test", async () => {
+  const controller = Cancellable.create();
+  const currentTime = Date.now();
+
+  await controller.cancelAfter(10);
+
+  assert(Date.now() - currentTime < 20);
+});

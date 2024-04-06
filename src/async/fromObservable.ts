@@ -34,29 +34,58 @@ export function fromObservable<T>(
   disposables.push(() => buffer[Symbol.dispose]());
 
   // deno-lint-ignore no-explicit-any
-  let done: Done | ErrorLike | any | undefined;
+  let returnValue: any;
+  let thrownError: ErrorLike | undefined;
+
+  const isDone = () => returnValue || thrownError;
 
   // deno-lint-ignore no-explicit-any
-  const dispose = (v: any) => {
-    if (!done) {
-      done = v;
-      disposables.forEach((d) => d());
+  const dispose = (v?: any, e?: ErrorLike) => {
+    if (isDone()) {
+      return;
     }
+
+    thrownError = e;
+    if (!thrownError) {
+      returnValue = {
+        done: true,
+        value: v,
+      };
+    }
+
+    for (let i = disposables.length - 1; i >= 0; i--) {
+      try {
+        disposables[i]();
+      } catch {
+        // no-op
+      }
+    }
+
+    disposables.length = 0;
+
+    buffer.close();
   };
 
-  disposables.push(observable.subscribe({
-    next: (value) => {
-      if (!done) {
+  const subscriber = {
+    next: (value: T) => {
+      if (isDone()) {
+        return;
+      }
+      try {
         buffer.enqueue(value);
+      } catch (e) {
+        subscriber.error(e);
       }
     },
-    error: (e) => {
-      dispose(e);
+    error: (e: unknown) => {
+      dispose(undefined, e ?? new Error("Observable error"));
     },
     complete: () => {
-      dispose(Done);
+      dispose();
     },
-  }));
+  };
+
+  disposables.push(observable.subscribe(subscriber));
 
   const cancellable = cancellableIterable(
     buffer,
@@ -66,23 +95,42 @@ export function fromObservable<T>(
   return {
     [Symbol.dispose]: () => dispose(Done),
     [Symbol.asyncIterator]: () => {
-      if (done) {
-        if (Done.is(done)) {
-          throw new Error(
-            "Observable is already completed or " +
-              "iterator was asked to stop via the return option",
-          );
-        }
-        throw done;
-      }
-
       const it = cancellable[Symbol.asyncIterator]();
       return {
-        next: () => it.next(),
+        next: async () => {
+          if (isDone()) {
+            if (thrownError) {
+              throw thrownError;
+            }
+            return returnValue;
+          }
+
+          try {
+            const tpl = await it.next();
+            if (tpl.done) {
+              dispose(tpl.value);
+              return returnValue;
+            }
+
+            return tpl;
+          } catch (e) {
+            dispose(e);
+            throw e;
+          }
+        },
+        throw: (e) => {
+          dispose(e);
+          return Promise.reject(e);
+        },
         // deno-lint-ignore no-explicit-any
-        return: async (value: any) => {
+        return: (value: any) => {
+          if (returnValue !== undefined) {
+            return Promise.resolve(returnValue);
+          }
+
           dispose(value);
-          return await { done: true, value: undefined };
+
+          return Promise.resolve(returnValue);
         },
       };
     },

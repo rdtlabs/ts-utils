@@ -4,7 +4,7 @@ import type { CancellationToken } from "../cancellation/CancellationToken.ts";
 import { cancellationSignal } from "../cancellation/cancellationSignal.ts";
 import { fromObservable } from "./fromObservable.ts";
 
-type Options<T> =
+export type EventOptions<T> =
   | boolean
   | (AddEventListenerOptions & {
     bufferStrategy?: BufferStrategyOptions<T>;
@@ -14,12 +14,12 @@ type Options<T> =
 
 export function fromEvent<T extends Event>(
   type: string,
-  options?: Options<T>,
+  options?: EventOptions<T>,
 ): AsyncIterable<T> & Disposable;
 
 export function fromEvent<K extends keyof WindowEventMap>(
   type: K,
-  options?: Options<WindowEventMap[K]>,
+  options?: EventOptions<WindowEventMap[K]>,
 ): AsyncIterable<WindowEventMap[K]> & Disposable;
 
 export function fromEvent<T extends Event>(

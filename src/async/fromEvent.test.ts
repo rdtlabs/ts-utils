@@ -57,8 +57,8 @@ Deno.test("fromEvent latest test", async () => {
   }
 });
 
-class CountingEvent extends Event {
-  constructor(readonly count: number) {
+export class CountingEvent extends Event {
+  constructor(public readonly count: number) {
     super("CountingEvent");
   }
 }

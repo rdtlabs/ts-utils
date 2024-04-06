@@ -1,4 +1,4 @@
-import { type ErrorLike } from "../types.ts";
+import { type ErrorLike, TimeoutInput } from "../types.ts";
 
 export type Unregister = () => void;
 
@@ -14,4 +14,5 @@ export interface CancellationToken {
 export interface CancellationController {
   get token(): CancellationToken;
   cancel(reason?: ErrorLike): void;
+  cancelAfter(timeoutMillis: TimeoutInput, reason?: ErrorLike): Promise<void>;
 }

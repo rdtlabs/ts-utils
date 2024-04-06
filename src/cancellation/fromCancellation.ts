@@ -22,6 +22,9 @@ export function fromCancellation(
       cancel(): void {
         // no-op
       },
+      cancelAfter(): Promise<void> {
+        return Promise.resolve();
+      },
     });
   }
 
@@ -33,6 +36,9 @@ export function fromCancellation(
     },
     cancel(reason?: ErrorLike): void {
       controller.cancel(reason);
+    },
+    cancelAfter(timeoutMillis: number, reason?: ErrorLike): Promise<void> {
+      return controller.cancelAfter(timeoutMillis, reason);
     },
   });
 }

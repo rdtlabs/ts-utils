@@ -11,11 +11,34 @@ export function cancellationTimeout(date: Date): CancellationToken; // deno-fmt-
 export function cancellationTimeout(timeoutInput: TimeoutInput): CancellationToken; // deno-fmt-ignore
 export function cancellationTimeout(timeoutInput: TimeoutInput): CancellationToken {
   const derivedTimeout = __deriveTimeout(timeoutInput);
-  const signal = AbortSignal.timeout(derivedTimeout);
-
-  return __createToken(signal, {
+  const abortController = new AbortController();
+  const cancellation = __createToken(abortController.signal, {
     [timeoutSym]: derivedTimeout,
   });
+
+  const sysShutdown = () => {
+    try {
+      clearTimeout(timerId);
+      if (!abortController.signal.aborted) {
+        abortController.abort("beforeunload event. shutting down cancellation timer");
+      }
+    } catch (error) {
+      console.error(error);
+    }
+  }
+
+  const timerId = setTimeout(() => {
+    globalThis.removeEventListener(
+      "beforeunload", sysShutdown
+    );
+    abortController.abort();
+  }, Math.max(0, derivedTimeout));
+
+  globalThis.addEventListener(
+    "beforeunload", sysShutdown
+  );
+
+  return cancellation;
 }
 
 export function getTimeout(

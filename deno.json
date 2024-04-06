@@ -1,13 +1,8 @@
 {
   "name": "@rdtlabs/ts-utils",
-  "version": "0.2.27",
+  "version": "0.2.28",
   "exports": {
-    "./async": "./src/async/index.ts",
-    "./buffer": "./src/buffer/index.ts",
-    "./cancellation": "./src/cancellation/index.ts",
-    "./common": "./src/common/index.ts",
-    "./crypto": "./src/crypto/index.ts",
-    "./errors": "./src/errors/index.ts"
+    "./": "./src/index.ts"
   },
   "publish": {
     "include": [
@@ -17,7 +12,17 @@
       "deno.json"
     ],
     "exclude": [
+      ".github/",
+      ".vscode/",
       "dist/",
+      "build*",
+      "package/",
+      "tsconfig.ts",
+      "tsup.config.ts",
+      ".npmignore",
+      ".gitignore",
+      ".editorconfig",
+      ".gitattributes",
       "node_modules/",
       "main.local.ts",
       ".vscode/",
