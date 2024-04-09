@@ -22,7 +22,7 @@ export interface List<T> extends Array<T> {
   groupBy<K extends keyof T>(key: K): Map<T[K], List<T>>;
 
   /**
-   * Returns a new list with all elements that pass the test implemented by the provided function.
+   * Returns a new distinct list (similar to includes() on an array)
    */
   distinct(): List<T>;
 }
@@ -186,7 +186,7 @@ export class List<T> extends Array<T> {
   }
 
   /**
-   * Returns a new list with all elements that pass the test implemented by the provided function.
+   * Returns a new distinct list (similar to includes() on an array)
    */
   distinct(): List<T> {
     return this.reduce((uniqueList, item) => {

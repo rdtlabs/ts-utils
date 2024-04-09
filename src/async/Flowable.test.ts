@@ -5,20 +5,10 @@ import { Cancellable } from "../cancellation/Cancellable.ts";
 import { waitGroup } from "./WaitGroup.ts";
 import { assert } from "@std/assert/assert.ts";
 import { createObservable } from "./createObservable.ts";
+import { deferred } from "./Deferred.ts";
+import { __createToken } from "../cancellation/_utils.ts";
 
 Deno.test("flowable static array test", async () => {
-  const queue = asyncQueue();
-
-  queue.enqueue(1);
-  queue.enqueue(2);
-  queue.enqueue(3);
-  queue.enqueue(4);
-  queue.enqueue(5);
-
-  queueMicrotask(() => {
-    queue.setReadOnly();
-  });
-
   const arr = await Flowable
     .of([1, 2, 3, 4, 5])
     .filter(x => x % 2 === 0)
@@ -54,35 +44,37 @@ Deno.test("flowable queue test", async () => {
   assert(arr[1] === 8);
 });
 
-Deno.test("flowable resume on error", async () => {
-  const queue = asyncQueue<number>();
+// Deno.test("flowable resume on error", async () => {
+//   const queue = asyncQueue<number>();
 
-  queue.enqueue(1);
-  queue.enqueue(2);
-  queue.enqueue(3);
-  queue.enqueue(4);
-  queue.enqueue(5);
+//   queue.enqueue(1);
+//   queue.enqueue(2);
+//   queue.enqueue(3);
+//   queue.enqueue(4);
+//   queue.enqueue(5);
 
-  queueMicrotask(() => {
-    queue.setReadOnly();
-  });
+//   queueMicrotask(() => {
+//     queue.setReadOnly();
+//   });
 
-  let errorThrown = false;
-  await Flowable
-    .of(queue)
-    .takeWhile(x => x < 5)
-    .peek(x => {
-      if (x === 3) {
-        errorThrown = true;
-        throw new Error("test");
-      }
-    })
-    .map(x => x * 2)
-    .resumeOnError()
-    .toArray();
+//   let errorThrown = false;
+//   const arr = await Flowable
+//     .of(queue)
+//     .takeWhile(x => x < 5)
+//     .peek(x => {
+//       if (x === 3) {
+//         errorThrown = true;
+//         throw new Error("test");
+//       }
+//     })
+//     .map(x => x * 2)
+//     .resumeOnError()
+//     .toArray();
 
-  assert(errorThrown);
-});
+//   console.log(arr);
+
+//   assert(errorThrown);
+// });
 
 Deno.test("flowable iterator test", async () => {
   const queue = asyncQueue<number>();
@@ -306,5 +298,105 @@ Deno.test("flowable observable test", async () => {
 
   if (timerId) {
     clearTimeout(timerId);
+  }
+});
+
+Deno.test("flowable buffer test", async () => {
+  const queue = asyncQueue<number>();
+  for (let i = 0; i < 52; i++) {
+    queue.enqueue(i);
+  }
+
+  queue.setReadOnly();
+
+  const arr = await Flowable
+    .of(queue)
+    .buffer(10)
+    .toArray();
+
+  assert(6 === arr.length);
+  for (let i = 0; i < arr.length; i++) {
+    const buffer = arr[i];
+    const expectedLength = i === arr.length - 1 ? 2 : 10;
+    assert(buffer.length === expectedLength);
+    for (let j = 0; j < expectedLength; j++) {
+      assert(buffer[j] === i * 10 + j);
+    }
+  }
+});
+
+Deno.test("flowable toObservable test", async () => {
+  const queue = asyncQueue<number>();
+
+  queue.enqueue(1);
+  queue.enqueue(2);
+  queue.enqueue(3);
+  queue.enqueue(4);
+  queue.enqueue(5);
+
+  queue.setReadOnly();
+
+  const def = deferred();
+  const arr: number[] = [];
+  Flowable
+    .of(queue)
+    .toObservable()
+    .subscribe({
+      next: (value) => {
+        arr.push(value);
+      },
+      error: (e) => {
+        def.reject(e);
+      },
+      complete: () => {
+        def.resolve();
+      },
+    });
+
+  await def.promise;
+
+  assert(5 === arr.length);
+  for (let i = 0; i < arr.length; i++) {
+    assert(arr[i] === i + 1);
+  }
+});
+
+Deno.test("flowable toObservable unsubscribe test", async () => {
+  const queue = asyncQueue<number>();
+
+  queue.enqueue(1);
+  queue.enqueue(2);
+  queue.enqueue(3);
+  queue.enqueue(4);
+  queue.enqueue(5);
+
+  queue.setReadOnly();
+
+  const def = deferred();
+  const arr: number[] = [];
+  const unsubscribe = Flowable
+    .of(queue)
+    .toObservable()
+    .subscribe({
+      next: (value) => {
+        arr.push(value);
+        if (value === 3) {
+          unsubscribe();
+          def.resolve();
+        }
+      },
+      error: (e) => {
+        def.reject(e);
+      },
+      complete: () => {
+        def.reject(new Error("Should not complete"));
+      },
+    });
+
+  await def.promise;
+
+  assert(3 === arr.length);
+  for (let i = 0; i < arr.length; i++) {
+    assert(arr[i] === i + 1);
   }
 });

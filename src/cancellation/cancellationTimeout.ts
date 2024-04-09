@@ -2,18 +2,26 @@ import { type CancellationToken } from "./CancellationToken.ts";
 import { __deriveTimeout } from "./_utils.ts";
 import { __createToken } from "./_utils.ts";
 import { type TimeoutInput } from "../types.ts";
+import { DisposedError } from "../DisposedError.ts";
 
 const timeoutSym: unique symbol = Symbol("Symbol.CancellationTimeout");
 
 // deno-fmt-ignore
-export function cancellationTimeout(timeoutMillis: number): CancellationToken; // deno-fmt-ignore
-export function cancellationTimeout(date: Date): CancellationToken; // deno-fmt-ignore
-export function cancellationTimeout(timeoutInput: TimeoutInput): CancellationToken; // deno-fmt-ignore
-export function cancellationTimeout(timeoutInput: TimeoutInput): CancellationToken {
+export function cancellationTimeout(timeoutMillis: number): CancellationToken & Disposable; // deno-fmt-ignore
+export function cancellationTimeout(date: Date): CancellationToken & Disposable; // deno-fmt-ignore
+export function cancellationTimeout(timeoutInput: TimeoutInput): CancellationToken & Disposable; // deno-fmt-ignore
+export function cancellationTimeout(timeoutInput: TimeoutInput): CancellationToken & Disposable {
   const derivedTimeout = __deriveTimeout(timeoutInput);
   const abortController = new AbortController();
   const cancellation = __createToken(abortController.signal, {
     [timeoutSym]: derivedTimeout,
+    [Symbol.dispose]: () => {
+      clearTimeout(timerId);
+      globalThis.removeEventListener(
+        "beforeunload", sysShutdown
+      );
+      abortController.abort(new DisposedError());
+    }
   });
 
   const sysShutdown = () => {
@@ -38,7 +46,7 @@ export function cancellationTimeout(timeoutInput: TimeoutInput): CancellationTok
     "beforeunload", sysShutdown
   );
 
-  return cancellation;
+  return cancellation as CancellationToken & Disposable;
 }
 
 export function getTimeout(

@@ -5,20 +5,20 @@ import { type CancellationToken } from "../cancellation/CancellationToken.ts";
 import { EventOptions } from "./fromEvent.ts";
 import { fromEvent } from "./fromEvent.ts";
 import { fromObservable } from "./fromObservable.ts";
+import { createObservable } from "./createObservable.ts";
 import { Observable } from "./_rx.types.ts";
 import { BufferStrategyOptions } from "../buffer/BufferLike.ts";
 
-export function flowable<T>(it: IterableLike<T>): Flowable<T> {
-  return Flowable.of(it);
-}
-
-export class Flowable<T> implements Flowable<T> {
-  #generator: () => AsyncGenerator;
+export class Flowable<T> {
+  readonly #flowCount: number;
+  readonly #generator: () => AsyncGenerator;
 
   private constructor(
     generator: () => AsyncGenerator,
+    flowCount: number,
     onError?: (e: ErrorLike) => Promise<boolean> | boolean,
   ) {
+    this.#flowCount = flowCount + 1;
     if (onError) {
       this.#generator = () => {
         const it = generator();
@@ -112,7 +112,7 @@ export class Flowable<T> implements Flowable<T> {
           yield await item;
         }
       }
-    });
+    }, this.#flowCount);
   }
 
   map<R>(
@@ -124,7 +124,7 @@ export class Flowable<T> implements Flowable<T> {
       for await (const item of generator()) {
         yield await mapper(item as T, index++);
       }
-    });
+    }, this.#flowCount);
   }
 
   peek(cb: (item: T) => void): Flowable<T> {
@@ -134,7 +134,7 @@ export class Flowable<T> implements Flowable<T> {
         cb(item as T);
         yield item;
       }
-    });
+    }, this.#flowCount);
   }
 
   skipUntil(predicate: (t: T) => Promise<boolean> | boolean): Flowable<T> {
@@ -150,7 +150,7 @@ export class Flowable<T> implements Flowable<T> {
         }
         yield item;
       }
-    });
+    }, this.#flowCount);
   }
 
   takeWhile(predicate: (t: T) => Promise<boolean> | boolean): Flowable<T> {
@@ -162,14 +162,14 @@ export class Flowable<T> implements Flowable<T> {
         }
         yield item;
       }
-    });
+    }, this.#flowCount);
   }
 
-  resumeOnError(
-    onError?: (error: ErrorLike) => Promise<boolean> | boolean,
-  ): Flowable<T> {
-    return new Flowable<T>(this.#generator, onError ?? (() => true));
-  }
+  // resumeOnError(
+  //   onError?: (error: ErrorLike) => Promise<boolean> | boolean,
+  // ): Flowable<T> {
+  //   return new Flowable<T>(this.#generator, this.#flowCount, onError ?? (() => true));
+  // }
 
   concat(...sources: Flowable<T>[]): Flowable<T> {
     const generator = this.#generator;
@@ -178,6 +178,47 @@ export class Flowable<T> implements Flowable<T> {
       for (const source of sources) {
         yield* source.#generator();
       }
+    }, this.#flowCount);
+  }
+
+  buffer(size: number): Flowable<T[]> {
+    if (size < 1 || size === Infinity) {
+      throw new TypeError(`Invalid buffer size ${size}`);
+    }
+
+    const generator = this.#generator;
+    return new Flowable<T[]>(async function* () {
+      let buffer: T[] = [];
+      for await (const item of generator()) {
+        buffer.push(item as T);
+        if (buffer.length >= size) {
+          const toYield = buffer;
+          buffer = [];
+          yield toYield;
+        }
+      }
+      if (buffer.length > 0) {
+        yield buffer;
+      }
+    }, this.#flowCount);
+  }
+
+  toObservable(): Observable<T> {
+    const generator = this.#generator;
+    return createObservable<T>((subscriber) => {
+      (async () => {
+        try {
+          for await (const item of generator()) {
+            if (subscriber.isCancelled) {
+              return;
+            }
+            subscriber.next(item as T);
+          }
+          subscriber.complete();
+        } catch (error) {
+          subscriber.error(error);
+        }
+      })();
     });
   }
 
@@ -186,7 +227,7 @@ export class Flowable<T> implements Flowable<T> {
       for await (const item of fromIterableLike(it)) {
         yield item;
       }
-    });
+    }, 0);
   }
 
   static fromEvent<T extends Event>(

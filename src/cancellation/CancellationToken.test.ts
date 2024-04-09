@@ -8,6 +8,8 @@ import { assert } from "@std/assert/assert.ts";
 import { Cancellable } from "./Cancellable.ts";
 import { CancellationError } from "./CancellationError.ts";
 import { deferred } from "../async/Deferred.ts";
+import { assertRejects } from "@std/assert/assert_rejects.ts";
+import { DisposedError } from "../DisposedError.ts";
 
 Deno.test("CancellationToken combine and timeout test", async () => {
   const token1 = Cancellable.timeout(1);
@@ -97,4 +99,19 @@ Deno.test("Cancellation Controller cancelAfter test", async () => {
   await controller.cancelAfter(10);
 
   assert(Date.now() - currentTime < 20);
+});
+
+Deno.test("Cancellation timeout dispose test", async () => {
+  const token = Cancellable.timeout(10);
+  token[Symbol.dispose]();
+  assertRejects(async () => {
+    try {
+      await deferred(token).promise
+    } catch (e) {
+      if (e.cause) {
+        throw e.cause;
+      }
+      throw e;
+    }
+  }, DisposedError);
 });

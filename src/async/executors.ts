@@ -58,28 +58,32 @@ export const Executor = Object.freeze({
       return Executor.invoke(callable, cancellation);
     },
   },
-  task: <T>(
-    callable: Callable<T | PromiseLike<T>>,
-    cancellation?: TimeoutInput | CancellationToken,
-  ) => {
-    return new Promise((resolve, reject) => {
-      setTimeout(
-        // deno-lint-ignore no-explicit-any
-        () => __invoke<T>(callable, resolve as any, reject, cancellation),
-        0,
-      );
-    });
+  macro: <Executor> {
+    execute: <T>(
+      callable: Callable<T | PromiseLike<T>>,
+      cancellation?: TimeoutInput | CancellationToken,
+    ): Promise<T> => {
+      return new Promise((resolve, reject) => {
+        setTimeout(
+          // deno-lint-ignore no-explicit-any
+          () => __invoke<T>(callable, resolve as any, reject, cancellation),
+          0,
+        );
+      });
+    },
   },
-  micro: <T>(
-    callable: Callable<T | PromiseLike<T>>,
-    cancellation?: TimeoutInput | CancellationToken,
-  ) => {
-    return new Promise((resolve, reject) => {
-      queueMicrotask(() =>
-        // deno-lint-ignore no-explicit-any
-        __invoke<T>(callable, resolve as any, reject, cancellation)
-      );
-    });
+  micro: <Executor> {
+    execute: <T>(
+      callable: Callable<T | PromiseLike<T>>,
+      cancellation?: TimeoutInput | CancellationToken,
+    ): Promise<T> => {
+      return new Promise((resolve, reject) => {
+        queueMicrotask(() =>
+          // deno-lint-ignore no-explicit-any
+          __invoke<T>(callable, resolve as any, reject, cancellation)
+        );
+      });
+    },
   },
   invoke: <T>(
     callable: Callable<T | PromiseLike<T>>,
@@ -99,7 +103,7 @@ export const Executor = Object.freeze({
     executor?: Executor,
     deadline?: TimeoutInput | CancellationToken,
   ) => {
-    return __invokeOn(callable, executor ??= Executor.immediate, deadline);
+    return __invokeOn(callable, executor ?? Executor.immediate, deadline);
   },
 }) as {
   /**
@@ -130,19 +134,13 @@ export const Executor = Object.freeze({
   /**
    * @returns An executor that uses `setTimeout(fn, 0)` to schedule tasks.
    */
-  task: <T>(
-    callable: Callable<T | PromiseLike<T>>,
-    cancellation?: TimeoutInput | CancellationToken,
-  ) => Promise<T>;
+  macro: Executor;
 
   /**
    * @returns An executor that uses `queueMicrotask` to schedule tasks.
    * @see https://developer.mozilla.org/en-US/docs/Web/API/WindowOrWorkerGlobalScope/queueMicrotask
    */
-  micro: <T>(
-    callable: Callable<T | PromiseLike<T>>,
-    cancellation?: TimeoutInput | CancellationToken,
-  ) => Promise<T>;
+  micro: Executor;
 
   /**
    * @returns A promise that resolves with the result of the callable or rejects with an error.
@@ -204,7 +202,16 @@ export interface ConcurrentExecutor extends Executor {
    */
   readonly isShutdown: boolean;
 }
-
+/**
+    try {
+      return cancellationRace(
+        Promise.resolve(callable()),
+        cancellation,
+      );
+    } catch (error) {
+      return Promise.reject<T>(error);
+    }
+ */
 const __invoke = <T = void>(
   callable: Callable<T | PromiseLike<T>>,
   resolve: (value: T | PromiseLike<T>) => void,
@@ -213,9 +220,9 @@ const __invoke = <T = void>(
 ) => {
   try {
     const result = Promise.resolve(callable());
-    return resolve(cancellationRace(result, deadline));
+    resolve(cancellationRace(result, deadline));
   } catch (error) {
-    return reject(error);
+    reject(error);
   }
 };
 

@@ -5,9 +5,9 @@ export function createObservable<T>(
   onSubscribed: (
     subscriber: Required<Subscriber<T>> & { isCancelled: boolean },
   ) => void,
-  options?: "micro" | "task" | "sync" | {
-    scheduler: "micro" | "task" | "sync";
-    completionScheduler: "micro" | "task" | "sync";
+  options?: "micro" | "macro" | "sync" | {
+    scheduler: "micro" | "macro" | "sync";
+    completionScheduler: "micro" | "macro" | "sync";
   },
 ): Observable<T> {
   let scheduler: Scheduler<T>;
@@ -15,14 +15,14 @@ export function createObservable<T>(
 
   if (!options) {
     scheduler = getScheduler("sync");
-    completionScheduler = getCompletionScheduler("task");
+    completionScheduler = getCompletionScheduler("macro");
   } else if (typeof options === "string") {
     scheduler = getScheduler(options);
     completionScheduler = getCompletionScheduler(options);
   } else {
     scheduler = getScheduler(options.scheduler ?? "sync");
     completionScheduler = getCompletionScheduler(
-      options.completionScheduler ?? "task",
+      options.completionScheduler ?? "macro",
     );
   }
 
@@ -63,40 +63,41 @@ class ObservableImpl<T> {
     }
 
     const subRef = { current: subscriber };
+    // deno-lint-ignore no-this-alias
+    const self = this;
+
     try {
-      this.#isSubscribed = true;
-      // deno-lint-ignore no-this-alias
-      const self = this;
+      self.#isSubscribed = true;
       const subscription = {
         get isCancelled(): boolean {
           return !self.#isSubscribed;
         },
         next: (value: T): void => {
-          if (this.#isSubscribed) {
-            this.#scheduler(subRef, value);
+          if (self.#isSubscribed) {
+            self.#scheduler(subRef, value);
           }
         },
         error: (error: ErrorLike): void => {
-          if (this.#isSubscribed) {
-            this.#isSubscribed = false;
+          if (self.#isSubscribed) {
+            self.#isSubscribed = false;
             if (subscriber.error) {
-              this.#completionScheduler(subRef, error);
+              self.#completionScheduler(subRef, error);
             }
           }
         },
         complete: (): void => {
-          if (this.#isSubscribed) {
-            this.#isSubscribed = false;
+          if (self.#isSubscribed) {
+            self.#isSubscribed = false;
             if (subscriber.complete) {
-              this.#completionScheduler(subRef);
+              self.#completionScheduler(subRef);
             }
           }
         },
       };
 
-      this.#onSubscribed(subscription);
+      self.#onSubscribed(subscription);
     } catch (e: unknown) {
-      this.#isSubscribed = false;
+      self.#isSubscribed = false;
       // deno-lint-ignore no-explicit-any
       subscriber = null as any;
       throw e;
@@ -105,7 +106,7 @@ class ObservableImpl<T> {
     return () => {
       // deno-lint-ignore no-explicit-any
       subscriber = null as any;
-      this.#isSubscribed = false;
+      self.#isSubscribed = false;
     };
   }
 }
@@ -114,7 +115,7 @@ type SubRef<T> = { current: Subscriber<T> };
 type Scheduler<T> = (ref: SubRef<T>, value: T) => void;
 type CompletionScheduler<T> = (ref: SubRef<T>, e?: unknown) => void;
 
-function getScheduler<T>(type: "micro" | "task" | "sync"): Scheduler<T> {
+function getScheduler<T>(type: "micro" | "macro" | "sync"): Scheduler<T> {
   if (type === "sync") {
     return (ref, value) => {
       ref.current?.next?.(value);
@@ -127,7 +128,7 @@ function getScheduler<T>(type: "micro" | "task" | "sync"): Scheduler<T> {
     };
   }
 
-  if (type === "task") {
+  if (type === "macro") {
     return (ref, value) => {
       setTimeout(() => ref.current?.next?.(value), 0);
     };
@@ -137,7 +138,7 @@ function getScheduler<T>(type: "micro" | "task" | "sync"): Scheduler<T> {
 }
 
 function getCompletionScheduler<T>(
-  type: "micro" | "task" | "sync",
+  type: "micro" | "macro" | "sync",
 ): CompletionScheduler<T> {
   if (type === "sync") {
     return (ref, e) => {
@@ -161,7 +162,7 @@ function getCompletionScheduler<T>(
     };
   }
 
-  if (type === "task") {
+  if (type === "macro") {
     return (ref, e) => {
       setTimeout(() => {
         if (e) {

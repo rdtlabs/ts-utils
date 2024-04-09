@@ -67,7 +67,7 @@ export const Cancellable = Object.freeze({
   from: (token?: CancellationToken) => CancellationController;
   create: () => CancellationController;
   cancelled: (reason?: ErrorLike) => CancellationToken;
-  timeout: (timeoutInput: TimeoutInput) => CancellationToken;
+  timeout: (timeoutInput: TimeoutInput) => CancellationToken & Disposable;
   combine: (...cancellations: CancellationToken[]) => CancellationToken;
   signal: (signal: AbortSignal) => CancellationToken;
   race: <T>(

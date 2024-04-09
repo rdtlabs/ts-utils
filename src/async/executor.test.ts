@@ -34,7 +34,7 @@ Deno.test("executor sequential test", async () => {
 
     executor.execute(async () => {
       if (index % 3 === 0) {
-        await Executor.task(increment);
+        await Executor.macro.execute(increment);
       } else {
         increment();
       }
@@ -62,9 +62,9 @@ Deno.test("executor task/micro/seqential", async () => {
 
     executor.execute(async () => {
       if (index % 3 === 0) {
-        await Executor.task(increment);
+        await Executor.macro.execute(increment);
       } else if (index % 3 === 1) {
-        await Executor.micro(increment);
+        await Executor.micro.execute(increment);
       } else {
         increment();
       }
