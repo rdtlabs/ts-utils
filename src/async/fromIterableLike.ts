@@ -26,6 +26,7 @@ async function* iterate(it: Iterable<any>) {
 export type IterableLike<T> =
   | readonly T[]
   | readonly PromiseLike<T>[]
+  | AsyncGenerator<T>
   | AsyncIterable<T>
   | Iterable<T>
   | Iterable<PromiseLike<T>>

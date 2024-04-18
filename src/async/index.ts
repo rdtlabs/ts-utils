@@ -19,3 +19,4 @@ export { fromIterableLike } from "./fromIterableLike.ts";
 export { fromAsyncIterable } from "./fromAsyncIterable.ts";
 export { fromObservable } from "./fromObservable.ts";
 export { Task } from "./Task.ts";
+export * from "./flowable/Flowable.ts";

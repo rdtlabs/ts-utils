@@ -1,12 +1,14 @@
-import { asyncQueue } from "./queue/asyncQueue.ts";
+import { asyncQueue } from "../queue/asyncQueue.ts";
 import { Flowable } from "./Flowable.ts";
-import { CountingEvent } from "./fromEvent.test.ts";
-import { Cancellable } from "../cancellation/Cancellable.ts";
-import { waitGroup } from "./WaitGroup.ts";
+import { CountingEvent } from "../fromEvent.test.ts";
+import { Cancellable } from "../../cancellation/Cancellable.ts";
+import { waitGroup } from "../WaitGroup.ts";
 import { assert } from "@std/assert/assert.ts";
-import { createObservable } from "./createObservable.ts";
-import { deferred } from "./Deferred.ts";
-import { __createToken } from "../cancellation/_utils.ts";
+import { createObservable } from "../createObservable.ts";
+import { deferred } from "../Deferred.ts";
+import { __createToken } from "../../cancellation/_utils.ts";
+import { CancellationError } from "../../cancellation/CancellationError.ts";
+import { assertRejects } from "@std/assert/assert_rejects.ts";
 
 Deno.test("flowable static array test", async () => {
   const arr = await Flowable
@@ -44,37 +46,68 @@ Deno.test("flowable queue test", async () => {
   assert(arr[1] === 8);
 });
 
-// Deno.test("flowable resume on error", async () => {
-//   const queue = asyncQueue<number>();
+Deno.test("flowable resume on error", async () => {
+  const queue = asyncQueue<number>();
 
-//   queue.enqueue(1);
-//   queue.enqueue(2);
-//   queue.enqueue(3);
-//   queue.enqueue(4);
-//   queue.enqueue(5);
+  queue.enqueue(1);
+  queue.enqueue(2);
+  queue.enqueue(3);
+  queue.enqueue(4);
+  queue.enqueue(5);
 
-//   queueMicrotask(() => {
-//     queue.setReadOnly();
-//   });
+  queueMicrotask(() => {
+    queue.setReadOnly();
+  });
 
-//   let errorThrown = false;
-//   const arr = await Flowable
-//     .of(queue)
-//     .takeWhile(x => x < 5)
-//     .peek(x => {
-//       if (x === 3) {
-//         errorThrown = true;
-//         throw new Error("test");
-//       }
-//     })
-//     .map(x => x * 2)
-//     .resumeOnError()
-//     .toArray();
+  let errorThrown = false;
+  const arr = await Flowable
+    .of(queue)
+    .resumeOnError()
+    .takeWhile(x => {
+      return x < 5;
+    })
+    .peek(x => {
+      if (x === 3) {
+        errorThrown = true;
+        throw new Error("test");
+      }
+    })
+    .map(x => x * 2)
+    .toArray();
 
-//   console.log(arr);
+  assert(3 === arr.length);
 
-//   assert(errorThrown);
-// });
+  assert(errorThrown);
+});
+
+Deno.test("flowable resume on error with throw", async () => {
+  const queue = asyncQueue<number>();
+
+  queue.enqueue(1);
+  queue.enqueue(2);
+  queue.enqueue(3);
+  queue.enqueue(4);
+  queue.enqueue(5);
+
+  queueMicrotask(() => {
+    queue.setReadOnly();
+  });
+
+  assertRejects(async () => {
+    await Flowable
+      .of(queue)
+      .resumeOnError(c => !(c instanceof CancellationError))
+      .map(x => {
+        if (x === 3) {
+          throw new CancellationError();
+        }
+        return x * 2;
+      })
+      .forEach(() => {
+        // do nothing
+      });
+  });
+});
 
 Deno.test("flowable iterator test", async () => {
   const queue = asyncQueue<number>();
@@ -128,8 +161,6 @@ Deno.test("flowable fromEvent test", async () => {
       globalThis.dispatchEvent(new CountingEvent(1));
       globalThis.dispatchEvent(new CountingEvent(2));
       globalThis.dispatchEvent(new CountingEvent(3));
-    } catch (e) {
-      console.error("### ERROR ###", counter);
     } finally {
       wg.done();
     }
@@ -264,7 +295,7 @@ Deno.test("flowable concat test", async () => {
 
   const f1 = create(1, 5);
   const f2 = create(6, 5);
-  const arr = await f1.concat(f2).toArray();
+  const arr = await Flowable.concat(f1, f2).toArray();
 
   assert(10 === arr.length);
   for (let i = 0; i < arr.length; i++) {
@@ -398,5 +429,64 @@ Deno.test("flowable toObservable unsubscribe test", async () => {
   assert(3 === arr.length);
   for (let i = 0; i < arr.length; i++) {
     assert(arr[i] === i + 1);
+  }
+});
+
+Deno.test("flowable onError test", async () => {
+  const queue = asyncQueue<number>();
+
+  queue.enqueue(1);
+  queue.enqueue(2);
+
+  queueMicrotask(() => {
+    queue.setReadOnly();
+  });
+
+  let onErrorCallCount = 0;
+  await assertRejects(async () => {
+    await Flowable
+      .of(queue)
+      .onError(() => {
+        onErrorCallCount++;
+      })
+      .peek(x => {
+        if (x === 2) {
+          throw new CancellationError();
+        }
+      })
+      .onError(() => {
+        onErrorCallCount++;
+      })
+      .toArray();
+  });
+
+  assert(onErrorCallCount === 2);
+});
+
+Deno.test("flowable into test", async () => {
+  const queue = asyncQueue<number>();
+
+  queue.enqueue(1);
+  queue.enqueue(2);
+  queue.enqueue(3);
+  queue.enqueue(4);
+  queue.enqueue(5);
+
+  queueMicrotask(() => {
+    queue.setReadOnly();
+  });
+
+  const into = Flowable
+    .of<number>()
+    .map(x => x * 2);
+
+  const arr = await Flowable
+    .of(queue)
+    .into(into)
+    .toArray();
+
+  assert(5 === arr.length);
+  for (let i = 0; i < arr.length; i++) {
+    assert(arr[i] === (i + 1) * 2);
   }
 });

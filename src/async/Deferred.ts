@@ -1,10 +1,12 @@
 import { type CancellationToken } from "../cancellation/CancellationToken.ts";
 import { cancellationRace } from "../cancellation/cancellationRace.ts";
+import { ErrorLike } from "../types.ts";
 
 export interface Deferred<T = void> {
   promise: Promise<T>;
   resolve: Resolve<T>;
   reject: (reason?: unknown) => void;
+  readonly isDone: boolean;
 }
 
 export const Deferred = function <T = void>(
@@ -19,11 +21,21 @@ export const Deferred = function <T = void>(
     return create<T>() as any;
   }
 
+  let isDone = false;
   const controller = create<T>();
   return {
     promise: cancellationRace(controller.promise, cancellationToken),
-    resolve: controller.resolve,
-    reject: controller.reject,
+    resolve: (value: T) => {
+      isDone = true;
+      controller.resolve(value);
+    },
+    reject: (err: ErrorLike) => {
+      isDone = true;
+      controller.reject(err);
+    },
+    get isDone() {
+      return isDone;
+    },
     // deno-lint-ignore no-explicit-any
   } as any;
 } as unknown as {

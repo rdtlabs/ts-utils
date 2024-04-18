@@ -99,3 +99,4 @@ main.local.ts
 /npm
 src/npm
 /jsr
+*.zip
