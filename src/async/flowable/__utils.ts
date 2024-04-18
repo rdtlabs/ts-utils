@@ -5,18 +5,19 @@ import { cancellableIterable } from "../../cancellation/cancellableIterable.ts";
 import { Deferred } from "../Deferred.ts";
 import { createObservable } from "../createObservable.ts";
 import { Flowable } from "./Flowable.ts";
-import { type Connectable } from "./Connectable.ts";
+import { type FlowProcessor } from "./FlowProcessor.ts";
 import * as p from "../pipeable/pipeable-funcs.ts";
 import { fromIterableLike, type IterableLike } from "../fromIterableLike.ts";
+import { FlowPublisher } from "./FlowPublisher.ts";
 
-export function __createConnectable<T>(): Connectable<T, T> {
+export function __createConnectable<T>(): FlowProcessor<T, T> {
   const onErrorListeners: Array<(e: ErrorLike) => void> = [];
   const onCompleteListeners: Array<() => void> = [];
   const onTerminateListeners: Array<() => void> = [];
 
   // deno-lint-ignore no-explicit-any
   const pipeables = new Array<Pipeable<any>>();
-  const connectable: Connectable<T, T> = {
+  const connectable: FlowProcessor<T, T> = {
     filter: (predicate) => {
       pipeables.push(p.filter(predicate));
       return connectable;
@@ -24,12 +25,12 @@ export function __createConnectable<T>(): Connectable<T, T> {
     map: (mapper) => {
       pipeables.push(p.map(mapper));
       // deno-lint-ignore no-explicit-any
-      return connectable as Connectable<any, any>;
+      return connectable as FlowProcessor<any, any>;
     },
     compose: (mapper) => {
       pipeables.push(p.compose(mapper));
       // deno-lint-ignore no-explicit-any
-      return connectable as Connectable<any, any>;
+      return connectable as FlowProcessor<any, any>;
     },
     peek: (cb) => {
       pipeables.push(p.peek(cb));
@@ -50,7 +51,7 @@ export function __createConnectable<T>(): Connectable<T, T> {
     buffer: (size) => {
       pipeables.push(p.buffer(size));
       // deno-lint-ignore no-explicit-any
-      return connectable as Connectable<any, any>;
+      return connectable as FlowProcessor<any, any>;
     },
     onError: (cb) => {
       if (!cb || typeof cb !== "function") {
@@ -94,9 +95,9 @@ export function __createConnectable<T>(): Connectable<T, T> {
 
 export function __createFlowable<T>(
   generator: () => AsyncGenerator<T>,
-): Flowable<T> {
+): FlowPublisher<T> {
   const connectable = __createConnectable<T>();
-  const flowable: Flowable<T> = {
+  const flowable: FlowPublisher<T> = {
     filter: (predicate) => {
       connectable.filter(predicate);
       return flowable;
@@ -104,12 +105,12 @@ export function __createFlowable<T>(
     map: (mapper) => {
       connectable.map(mapper);
       // deno-lint-ignore no-explicit-any
-      return flowable as Flowable<any>;
+      return flowable as FlowPublisher<any>;
     },
     compose: (mapper) => {
       connectable.compose(mapper);
       // deno-lint-ignore no-explicit-any
-      return flowable as Flowable<any>;
+      return flowable as FlowPublisher<any>;
     },
     peek: (cb) => {
       connectable.peek(cb);
@@ -130,7 +131,7 @@ export function __createFlowable<T>(
     buffer: (size) => {
       connectable.buffer(size);
       // deno-lint-ignore no-explicit-any
-      return flowable as Flowable<any>;
+      return flowable as FlowPublisher<any>;
     },
     onError: (cb) => {
       connectable.onError(cb);

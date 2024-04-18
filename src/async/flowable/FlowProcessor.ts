@@ -2,38 +2,38 @@ import { type CancellationToken } from "../../cancellation/CancellationToken.ts"
 import { type ErrorLike } from "../../types.ts";
 import { type IterableLike } from "../fromIterableLike.ts";
 
-export interface Connectable<S, T> {
+export interface FlowProcessor<S, T> {
   filter(
     predicate: (t: T) => Promise<boolean> | boolean,
-  ): Connectable<S, T>;
+  ): FlowProcessor<S, T>;
 
   map<R>(
     mapper: (t: T, index: number) => Promise<R> | R,
-  ): Connectable<S, R>;
+  ): FlowProcessor<S, R>;
 
   compose<R>(
     mapper: (t: T, index: number) => AsyncIterable<R>,
-  ): Connectable<S, R>;
+  ): FlowProcessor<S, R>;
 
-  peek(cb: (item: T) => void): Connectable<S, T>;
+  peek(cb: (item: T) => void): FlowProcessor<S, T>;
 
   skipUntil(
     predicate: (t: T) => Promise<boolean> | boolean,
-  ): Connectable<S, T>;
+  ): FlowProcessor<S, T>;
 
   takeWhile(
     predicate: (t: T) => Promise<boolean> | boolean,
-  ): Connectable<S, T>;
+  ): FlowProcessor<S, T>;
 
   resumeOnError(
     onError?: (error: ErrorLike) => Promise<boolean> | boolean,
-  ): Connectable<S, T>;
+  ): FlowProcessor<S, T>;
 
-  buffer(size: number): Connectable<S, T[]>;
+  buffer(size: number): FlowProcessor<S, T[]>;
 
-  onError(cb: (error: ErrorLike) => void): Connectable<S, T>;
-  onComplete(cb: () => void): Connectable<S, T>;
-  onTerminate(cb: () => void): Connectable<S, T>;
+  onError(cb: (error: ErrorLike) => void): FlowProcessor<S, T>;
+  onComplete(cb: () => void): FlowProcessor<S, T>;
+  onTerminate(cb: () => void): FlowProcessor<S, T>;
 
   toIterable(
     input: IterableLike<S>,
