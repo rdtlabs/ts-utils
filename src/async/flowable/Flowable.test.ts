@@ -432,37 +432,6 @@ Deno.test("flowable toObservable unsubscribe test", async () => {
   }
 });
 
-Deno.test("flowable onError test", async () => {
-  const queue = asyncQueue<number>();
-
-  queue.enqueue(1);
-  queue.enqueue(2);
-
-  queueMicrotask(() => {
-    queue.setReadOnly();
-  });
-
-  let onErrorCallCount = 0;
-  await assertRejects(async () => {
-    await Flowable
-      .of(queue)
-      .onError(() => {
-        onErrorCallCount++;
-      })
-      .peek(x => {
-        if (x === 2) {
-          throw new CancellationError();
-        }
-      })
-      .onError(() => {
-        onErrorCallCount++;
-      })
-      .toArray();
-  });
-
-  assert(onErrorCallCount === 2);
-});
-
 Deno.test("flowable into test", async () => {
   const queue = asyncQueue<number>();
 

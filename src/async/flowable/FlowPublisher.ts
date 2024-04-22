@@ -32,10 +32,6 @@ export interface FlowPublisher<T> {
 
   buffer(size: number): FlowPublisher<T[]>;
 
-  onError(cb: (error: ErrorLike) => void): FlowPublisher<T>;
-  onComplete(cb: () => void): FlowPublisher<T>;
-  onTerminate(cb: () => void): FlowPublisher<T>;
-
   into<R>(connectable: FlowProcessor<T, R>): FlowPublisher<R>;
 
   toObservable(): Observable<T>;

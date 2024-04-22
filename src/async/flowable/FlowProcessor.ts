@@ -31,10 +31,6 @@ export interface FlowProcessor<S, T> {
 
   buffer(size: number): FlowProcessor<S, T[]>;
 
-  onError(cb: (error: ErrorLike) => void): FlowProcessor<S, T>;
-  onComplete(cb: () => void): FlowProcessor<S, T>;
-  onTerminate(cb: () => void): FlowProcessor<S, T>;
-
   toIterable(
     input: IterableLike<S>,
     cancellationToken?: CancellationToken,
