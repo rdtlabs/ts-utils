@@ -1,5 +1,5 @@
 import { type CancellationToken } from "./CancellationToken.ts";
-import { __none } from "./_utils.ts";
+import { __never } from "./_utils.ts";
 import { cancellationSignal } from "./cancellationSignal.ts";
 import { getTimeout } from "./cancellationTimeout.ts";
 import { unwrapAbortSignal } from "./unwrapAbortSignal.ts";
@@ -8,7 +8,7 @@ export function combineTokens(
   ...cancellations: CancellationToken[]
 ): CancellationToken {
   if (cancellations.length === 0) {
-    return __none;
+    return __never;
   }
 
   if (cancellations.length === 1) {
@@ -60,7 +60,7 @@ function _combine(
   }
 
   if (listeners.length === 0) {
-    return earliest ?? __none;
+    return earliest ?? __never;
   }
 
   if (earliest) {

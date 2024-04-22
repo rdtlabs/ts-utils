@@ -1,3 +1,3 @@
-import { __none } from "./_utils.ts";
+import { __never } from "./_utils.ts";
 
-export const uncancellable = __none;
+export const uncancellable = __never;

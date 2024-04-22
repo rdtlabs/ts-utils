@@ -1,12 +1,20 @@
 import { type CancellationToken } from "../../cancellation/CancellationToken.ts";
 import { Pipeable } from "../pipeable/Pipeable.ts";
-import { cancellableIterable } from "../../cancellation/cancellableIterable.ts";
+import {
+  cancellableIterable,
+  type CancellationOptions,
+} from "../../cancellation/cancellableIterable.ts";
 import { createObservable } from "../createObservable.ts";
 import { Flowable } from "./Flowable.ts";
 import { type FlowProcessor } from "./FlowProcessor.ts";
 import * as p from "../pipeable/pipeable-funcs.ts";
-import { type IterableLike } from "../fromIterableLike.ts";
+import { fromIterableLike, type IterableLike } from "../fromIterableLike.ts";
 import { type FlowPublisher } from "./FlowPublisher.ts";
+import { CancellablePromise } from "../../cancellation/CancellablePromise.ts";
+import { CancellableDeferred } from "../../cancellation/CancellableDeferred.ts";
+import { CancellationError } from "../../cancellation/CancellationError.ts";
+import { Cancellable } from "../../cancellation/Cancellable.ts";
+import { objects } from "../../objects.ts";
 
 export function __createConnectable<T>(): FlowProcessor<T, T> {
   return __createConnectableWithParams();
@@ -59,67 +67,17 @@ export function __createFlowable<T>(
         ),
       );
     },
-    toIterable: (cancellationToken?) => {
-      return connectable.toIterable(
-        generator(),
-        cancellationToken,
-      );
+    toIterable: (options?) => {
+      return connectable.toIterable(generator(), options);
     },
-    toArray: (cancellationToken) => {
-      return new Promise<T[]>((resolve, reject) => {
-        const items: T[] = [];
-        (async () => {
-          try {
-            const it = flowable.toIterable(cancellationToken);
-            for await (const item of it) {
-              items.push(item);
-            }
-            if (cancellationToken?.isCancelled === true) {
-              reject(cancellationToken.reason);
-            } else {
-              resolve(items);
-            }
-          } catch (error) {
-            reject(error);
-          }
-        })();
-      });
+    toArray: (options) => {
+      return connectable.toArray(generator(), options);
     },
-    forEach: (cb, cancellationToken) => {
-      return new Promise<void>((resolve, reject) => {
-        (async () => {
-          try {
-            const it = flowable.toIterable(cancellationToken);
-            for await (const item of it) {
-              cb(item as T);
-            }
-            if (cancellationToken?.isCancelled === true) {
-              reject(cancellationToken.reason);
-            } else {
-              resolve();
-            }
-          } catch (error) {
-            reject(error);
-          }
-        })();
-      });
+    forEach: (cb, options) => {
+      return connectable.forEach(generator(), cb, options);
     },
     toObservable: () => {
-      return createObservable<T>((subscriber) => {
-        (async () => {
-          try {
-            for await (const item of flowable.toIterable()) {
-              if (subscriber.isCancelled) {
-                return;
-              }
-              subscriber.next(item as T);
-            }
-            subscriber.complete();
-          } catch (error) {
-            subscriber.error(error);
-          }
-        })();
-      });
+      return connectable.toObservable(generator());
     },
   };
 
@@ -128,7 +86,7 @@ export function __createFlowable<T>(
 
 function __createConnectableWithParams<T>(
   // deno-lint-ignore no-explicit-any
-  pipeables = new Array<Pipeable<any>>()
+  pipeables = new Array<Pipeable<any>>(),
 ): FlowProcessor<T, T> {
   if (pipeables.length > 0) {
     pipeables = pipeables.slice(); //copy
@@ -141,13 +99,21 @@ function __createConnectableWithParams<T>(
     },
     map: (mapper) => {
       pipeables.push(p.map(mapper));
-      // deno-lint-ignore no-explicit-any
-      return __createConnectableWithParams(pipeables) as FlowProcessor<any, any>;
+      return __createConnectableWithParams(pipeables) as FlowProcessor<
+        // deno-lint-ignore no-explicit-any
+        any,
+        // deno-lint-ignore no-explicit-any
+        any
+      >;
     },
     compose: (mapper) => {
       pipeables.push(p.compose(mapper));
-      // deno-lint-ignore no-explicit-any
-      return __createConnectableWithParams(pipeables) as FlowProcessor<any, any>;
+      return __createConnectableWithParams(pipeables) as FlowProcessor<
+        // deno-lint-ignore no-explicit-any
+        any,
+        // deno-lint-ignore no-explicit-any
+        any
+      >;
     },
     peek: (cb) => {
       pipeables.push(p.peek(cb));
@@ -167,18 +133,151 @@ function __createConnectableWithParams<T>(
     },
     buffer: (size) => {
       pipeables.push(p.buffer(size));
-      // deno-lint-ignore no-explicit-any
-      return __createConnectableWithParams(pipeables) as FlowProcessor<any, any>;
+      return __createConnectableWithParams(pipeables) as FlowProcessor<
+        // deno-lint-ignore no-explicit-any
+        any,
+        // deno-lint-ignore no-explicit-any
+        any
+      >;
     },
     toIterable(
       input: IterableLike<T>,
-      cancellationToken?: CancellationToken,
+      options?: CancellationOptions,
     ): AsyncIterable<T> {
       return cancellableIterable(
         Pipeable.toIterable(input, ...pipeables),
-        cancellationToken
+        options,
       );
+    },
+    toArray(
+      input: IterableLike<T>,
+      options?: CancellationOptions,
+    ): CancellablePromise<T[]> {
+      const tpl = getOptions(options);
+      const controller = Cancellable.create();
+      const token = tpl.token
+        ? Cancellable.combine(controller.token, tpl.token)
+        : controller.token;
+
+      const it = this.toIterable(input, {
+        token,
+        onCancel: (r) => {
+          deferred.promise.cancel(r);
+          if (tpl.onCancel) {
+            tpl.onCancel(r);
+          }
+        },
+        throwOnCancellation: tpl.throwOnCancellation,
+      });
+
+      const deferred = new CancellableDeferred<T[]>(controller.cancel);
+
+      (async () => {
+        const items: T[] = [];
+        try {
+          for await (const item of it) {
+            items.push(item);
+          }
+          if (token?.isCancelled === true) {
+            deferred.promise.cancel(token.reason);
+          } else {
+            deferred.resolve(items);
+          }
+        } catch (error) {
+          deferred.reject(error);
+        }
+      })();
+
+      return deferred.promise;
+    },
+    forEach(
+      input: IterableLike<T>,
+      cb: (item: T) => void,
+      options?: CancellationOptions,
+    ): CancellablePromise<void> {
+      const tpl = getOptions(options);
+      const controller = Cancellable.create();
+      const token = tpl.token
+        ? Cancellable.combine(controller.token, tpl.token)
+        : controller.token;
+
+      const it = this.toIterable(input, {
+        token,
+        onCancel: (r) => {
+          deferred.promise.cancel(r);
+          if (tpl.onCancel) {
+            tpl.onCancel(r);
+          }
+        },
+        throwOnCancellation: tpl.throwOnCancellation,
+      });
+
+      const deferred = new CancellableDeferred<void>(controller.cancel);
+
+      (async () => {
+        try {
+          for await (const item of it) {
+            cb(item as T);
+          }
+          if (token?.isCancelled === true) {
+            deferred.promise.cancel(token.reason);
+          } else {
+            deferred.resolve();
+          }
+        } catch (error) {
+          deferred.reject(error);
+        }
+      })();
+
+      return deferred.promise;
+    },
+    toObservable: (input: IterableLike<T>) => {
+      return createObservable<T>((subscriber) => {
+        (async () => {
+          try {
+            for await (const item of fromIterableLike(input)) {
+              if (subscriber.isCancelled) {
+                return;
+              }
+              subscriber.next(item as T);
+            }
+            subscriber.complete();
+          } catch (error) {
+            subscriber.error(error);
+          }
+        })();
+      });
     },
   };
   return connectable;
+}
+
+function getOptions(options?: CancellationOptions): {
+  token?: CancellationToken;
+  onCancel?: (error: CancellationError) => void;
+  throwOnCancellation?: boolean;
+} {
+  if (objects.isNil(options)) {
+    return { throwOnCancellation: true };
+  }
+
+  if (typeof options === "boolean") {
+    return { throwOnCancellation: options === true };
+  }
+
+  if (typeof options === "function") {
+    return { onCancel: options, throwOnCancellation: true };
+  }
+
+  if ("throwIfCancelled" in options) {
+    return { token: options, throwOnCancellation: true };
+  }
+
+  return {
+    token: options.token,
+    onCancel: options.onCancel,
+    throwOnCancellation: objects.isNil(options.throwOnCancellation)
+      ? true
+      : options.throwOnCancellation === true,
+  };
 }

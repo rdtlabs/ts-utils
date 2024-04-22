@@ -1,10 +1,12 @@
 import { type IterableLike } from "../async/fromIterableLike.ts";
 import { type Callable, type ErrorLike, type TimeoutInput } from "../types.ts";
+import { cancellableDeferred } from "./CancellableDeferred.ts";
+import { CancellationError } from "./CancellationError.ts";
 import {
   type CancellationController,
   type CancellationToken,
 } from "./CancellationToken.ts";
-import { __isToken, __none } from "./_utils.ts";
+import { __isToken, __never } from "./_utils.ts";
 import { cancellableIterable } from "./cancellableIterable.ts";
 import { cancellationRace } from "./cancellationRace.ts";
 import { cancellationSignal } from "./cancellationSignal.ts";
@@ -17,12 +19,20 @@ import { fromCancellation } from "./fromCancellation.ts";
 export const Cancellable = Object.freeze({
   // An inert, cancellation token that is always in
   // a non-cancelled state and cannot be cancelled.
-  None: __none,
+  Never: __never,
   from: (token?: CancellationToken) => fromCancellation(token),
   create: () => createCancellation(),
   cancelled: (reason?: ErrorLike) => cancelledToken(reason),
   timeout: (timeoutInput: TimeoutInput) => {
     return cancellationTimeout(timeoutInput);
+  },
+  deferred: (
+    options?: CancellationToken | ((error: CancellationError) => void) | {
+      token?: CancellationToken;
+      onCancel?: (error: CancellationError) => void;
+    },
+  ) => {
+    return cancellableDeferred(options);
   },
   combine: (...cancellations: CancellationToken[]) => {
     return combineTokens(...cancellations);
@@ -51,7 +61,7 @@ export const Cancellable = Object.freeze({
       ? cancellation
       : cancellation
       ? cancellationTimeout(cancellation)
-      : __none;
+      : __never;
 
     try {
       return Cancellable.race(
@@ -63,7 +73,7 @@ export const Cancellable = Object.freeze({
     }
   },
 }) as {
-  None: CancellationToken;
+  Never: CancellationToken;
   from: (token?: CancellationToken) => CancellationController;
   create: () => CancellationController;
   cancelled: (reason?: ErrorLike) => CancellationToken;

@@ -42,7 +42,7 @@ export function __createToken(
     get isCancelled() {
       return isCancelled();
     },
-    toSignal: () => signal,
+    toAbortSignal: () => signal,
     throwIfCancelled(): void {
       const error = getError();
       if (error) {
@@ -97,13 +97,13 @@ export function __deriveTimeout(timeout: TimeoutInput): number {
 
 const NEVER_SIGNAL = new AbortController().signal;
 
-export const __none = Object.freeze({
+export const __never = Object.freeze({
   [signalSym]: NEVER_SIGNAL,
   isCancelled: false,
   state: "none",
   reason: undefined,
   throwIfCancelled: () => {},
-  toSignal: () => NEVER_SIGNAL,
+  toAbortSignal: () => NEVER_SIGNAL,
   register: () => {
     return () => {};
   },

@@ -1,7 +1,8 @@
-import { type CancellationToken } from "../../cancellation/CancellationToken.ts";
 import { type Observable } from "../_rx.types.ts";
 import { type ErrorLike } from "../../types.ts";
 import { type FlowProcessor } from "./FlowProcessor.ts";
+import { CancellablePromise } from "../../cancellation/CancellablePromise.ts";
+import { type CancellationOptions } from "../../cancellation/cancellableIterable.ts";
 
 export interface FlowPublisher<T> {
   filter(
@@ -35,10 +36,17 @@ export interface FlowPublisher<T> {
   into<R>(connectable: FlowProcessor<T, R>): FlowPublisher<R>;
 
   toObservable(): Observable<T>;
-  toIterable(cancellationToken?: CancellationToken): AsyncIterable<T>;
-  toArray(cancellationToken?: CancellationToken): Promise<T[]>;
+
+  toIterable(
+    options?: CancellationOptions,
+  ): AsyncIterable<T>;
+
+  toArray(
+    options?: CancellationOptions,
+  ): CancellablePromise<T[]>;
+
   forEach(
     cb: (item: T) => void,
-    cancellationToken?: CancellationToken,
-  ): Promise<void>;
+    options?: CancellationOptions,
+  ): CancellablePromise<void>;
 }

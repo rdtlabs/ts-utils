@@ -31,7 +31,7 @@ export function cancellationTimeout(timeoutInput: TimeoutInput): CancellationTok
         abortController.abort("beforeunload event. shutting down cancellation timer");
       }
     } catch (error) {
-      console.error(error);
+      console.warn(error);
     }
   }
 

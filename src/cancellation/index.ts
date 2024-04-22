@@ -7,4 +7,6 @@
 
 export * from "./CancellationToken.ts";
 export { Cancellable } from "./Cancellable.ts";
+export * from "./CancellablePromise.ts";
+export * from "./CancellableDeferred.ts";
 export { CancellationError } from "./CancellationError.ts";

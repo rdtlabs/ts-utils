@@ -1,5 +1,7 @@
-import { type CancellationToken } from "../../cancellation/CancellationToken.ts";
+import { CancellablePromise } from "../../cancellation/CancellablePromise.ts";
+import { type CancellationOptions } from "../../cancellation/cancellableIterable.ts";
 import { type ErrorLike } from "../../types.ts";
+import { Observable } from "../_rx.types.ts";
 import { type IterableLike } from "../fromIterableLike.ts";
 
 export interface FlowProcessor<S, T> {
@@ -31,8 +33,21 @@ export interface FlowProcessor<S, T> {
 
   buffer(size: number): FlowProcessor<S, T[]>;
 
+  toObservable(input: IterableLike<S>): Observable<T>;
+
+  toArray(
+    input: IterableLike<S>,
+    options?: CancellationOptions,
+  ): CancellablePromise<T[]>;
+
   toIterable(
     input: IterableLike<S>,
-    cancellationToken?: CancellationToken,
+    options?: CancellationOptions,
   ): AsyncIterable<T>;
+
+  forEach(
+    input: IterableLike<S>,
+    cb: (item: T) => void,
+    options?: CancellationOptions,
+  ): CancellablePromise<void>;
 }

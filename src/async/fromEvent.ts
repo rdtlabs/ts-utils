@@ -112,13 +112,13 @@ function combineWithSignal<T>(
 ) {
   const signalCancellation = typeof options !== "boolean" && options?.signal
     ? cancellationSignal(options.signal)
-    : Cancellable.None;
+    : Cancellable.Never;
 
   return {
     bufferSize: bufferOptions?.bufferSize ?? 1,
     bufferStrategy: bufferOptions?.bufferStrategy ?? "latest",
     cancellationToken: Cancellable.combine(
-      bufferOptions?.cancellationToken ?? Cancellable.None,
+      bufferOptions?.cancellationToken ?? Cancellable.Never,
       signalCancellation,
     ),
   };

@@ -93,10 +93,12 @@ Deno.test("flowable resume on error with throw", async () => {
     queue.setReadOnly();
   });
 
-  assertRejects(async () => {
+  await assertRejects(async () => {
     await Flowable
       .of(queue)
-      .resumeOnError(c => !(c instanceof CancellationError))
+      .resumeOnError(c => {
+        return !(c instanceof CancellationError)
+      })
       .map(x => {
         if (x === 3) {
           throw new CancellationError();
@@ -106,7 +108,33 @@ Deno.test("flowable resume on error with throw", async () => {
       .forEach(() => {
         // do nothing
       });
+  }, CancellationError);
+});
+
+Deno.test("flowable resume on error with NOT throw on cancellation", async () => {
+  const queue = asyncQueue<number>();
+
+  queue.enqueue(1);
+  queue.enqueue(2);
+  queue.enqueue(3);
+  queue.enqueue(4);
+  queue.enqueue(5);
+
+  queueMicrotask(() => {
+    queue.setReadOnly();
   });
+
+  await Flowable
+    .of(queue)
+    .map(x => {
+      if (x === 3) {
+        throw new CancellationError();
+      }
+      return x * 2;
+    })
+    .forEach(() => {
+      // do nothing
+    }, false)
 });
 
 Deno.test("flowable iterator test", async () => {
@@ -458,4 +486,39 @@ Deno.test("flowable into test", async () => {
   for (let i = 0; i < arr.length; i++) {
     assert(arr[i] === (i + 1) * 2);
   }
+});
+
+Deno.test("flowable with forEach cancel test", async () => {
+  const queue = asyncQueue<number>();
+
+  queue.enqueue(1);
+  queue.enqueue(2);
+  queue.enqueue(3);
+  queue.enqueue(4);
+  queue.enqueue(5);
+
+  queueMicrotask(() => {
+    queue.setReadOnly();
+  });
+
+  const into = Flowable
+    .of<number>()
+    .map(x => x * 2);
+
+  let largest = -1;
+  await assertRejects(() => {
+    const p = Flowable
+      .of(queue)
+      .into(into)
+      .forEach(i => {
+        largest = i;
+        if (i === 6) {
+          p.cancel();
+        }
+      });
+
+    return p;
+  });
+
+  assert(largest === 6);
 });
