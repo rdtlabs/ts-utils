@@ -1,4 +1,3 @@
-import { deriveTimeout } from "../deriveTimeout.ts";
 import { type ErrorLike, TimeoutInput } from "../types.ts";
 import {
   type CancellationController,
@@ -35,7 +34,7 @@ export function createCancellation(): CancellationController {
             resolve();
             unregister();
           }
-        }, Math.max(0, deriveTimeout(timeoutMillis)));
+        }, Math.max(0, TimeoutInput.deriveTimeout(timeoutMillis)));
 
         const unregister = controller.token.register(() => {
           clearTimeout(timerId);

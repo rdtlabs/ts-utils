@@ -2,15 +2,12 @@ import { type Callable } from "../types.ts";
 import { WorkerPool } from "./workerpool/WorkerPool.ts";
 import { deferred } from "./Deferred.ts";
 import { type CancellationToken } from "../cancellation/CancellationToken.ts";
-import { type TimeoutInput } from "../types.ts";
-import { __isToken } from "../cancellation/_utils.ts";
-import { cancellationRace } from "../cancellation/cancellationRace.ts";
+import { Promises } from "./Promises.ts";
 
 export type Job<T> = Callable<PromiseLike<T> | T>;
 
 export interface JobPool {
   submit<T = void>(job: Job<T>, cancellation?: CancellationToken): Promise<T>;
-  submit<T = void>(job: Job<T>, deadline?: TimeoutInput): Promise<T>;
 
   shutdown(): void;
   onShutdown(): Promise<void>;
@@ -29,7 +26,7 @@ export const JobPool = function (options?: {
 }): JobPool {
   return jobPool(options);
 } as unknown as {
-  new (options?: {
+  new(options?: {
     maxConcurrency?: number;
     maxQueueLength?: number;
   }): JobPool;
@@ -57,9 +54,9 @@ export function jobPool(options?: {
     get isFull() {
       return pool.isFull;
     },
-    submit: <T>(job: Job<T>, deadline?: CancellationToken | TimeoutInput) => {
+    submit: <T>(job: Job<T>, cancellation?: CancellationToken) => {
       const controller = deferred<T>();
-      const wrapped = wrap(job, deadline);
+      const wrapped = wrap(job, cancellation);
       pool.submit(
         Object.assign(
           async () => {
@@ -81,9 +78,14 @@ export function jobPool(options?: {
 
 function wrap<T>(
   job: Job<T>,
-  cancellation?: TimeoutInput | CancellationToken,
+  cancellation?: CancellationToken,
 ): Job<T> {
   return !cancellation
     ? job
-    : () => cancellationRace(() => Promise.resolve(job()), cancellation);
+    : () => {
+      return Promises.cancellable(
+        async () => await job(),
+        cancellation
+      )
+    };
 }

@@ -7,6 +7,7 @@ import { Deferred } from "../Deferred.ts";
 import { __getBufferFromOptions, __getQueueResolvers } from "./_utils.ts";
 import { type AsyncQueue, type QueueOptions } from "./types.ts";
 import { MaybeResult } from "../../types.ts";
+import { type CancellationToken } from "../../cancellation/CancellationToken.ts";
 
 type QueueState = "rw" | "r" | "-rw";
 
@@ -79,6 +80,22 @@ export function asyncQueue<T>(
   let _onClose: Deferred<void> | undefined;
   let _state: 0 | 1 | 2 = 0;
 
+  function enqueueUnsafe(item: T): void {
+    while (!dequeueResolvers.isEmpty) {
+      const resolver = dequeueResolvers.dequeue()!;
+      if (!resolver.getIsCancelled()) {
+        return resolver.resolve(item);
+      }
+    }
+
+    try {
+      _buffer.write(item);
+      // deno-lint-ignore no-explicit-any
+    } catch (e: any) {
+      throw e.name === "BufferFullError" ? new QueueFullError() : e;
+    }
+  }
+
   const queue = {
     get isClosed(): boolean {
       return _state === 2;
@@ -88,6 +105,9 @@ export function asyncQueue<T>(
     },
     get isEmpty(): boolean {
       return _buffer.isEmpty;
+    },
+    get isFull(): boolean {
+      return _buffer.isFull;
     },
     get state(): QueueState {
       return _state === 0 ? "rw" : _state === 1 ? "r" : "-rw";
@@ -115,6 +135,21 @@ export function asyncQueue<T>(
         this[Symbol.dispose]();
       }
     },
+    tryEnqueue(item: T): boolean {
+      if (_state !== 0) {
+        return false;
+      }
+
+      try {
+        enqueueUnsafe(item);
+        return true;
+      } catch (e) {
+        if (e instanceof QueueFullError) {
+          return false;
+        }
+        throw e;
+      }
+    },
     enqueue(item: T): void {
       if (_state === 2) {
         throw new QueueClosedError();
@@ -124,21 +159,15 @@ export function asyncQueue<T>(
         throw new QueueReadOnlyError();
       }
 
-      if (!dequeueResolvers.isEmpty) {
-        const resolver = dequeueResolvers.dequeue()!;
-        resolver.resolve(item);
-      } else {
-        try {
-          _buffer.write(item);
-          // deno-lint-ignore no-explicit-any
-        } catch (e: any) {
-          throw e.name === "BufferFullError" ? new QueueFullError() : e;
-        }
-      }
+      enqueueUnsafe(item);
     },
-    dequeue(): Promise<T> {
+    dequeue(cancellationToken?: CancellationToken): Promise<T> {
       if (_state === 2) {
         return Promise.reject(new QueueClosedError());
+      }
+
+      if (cancellationToken?.isCancelled === true) {
+        return Promise.reject(cancellationToken.reason);
       }
 
       if (!queue.isEmpty) {
@@ -146,7 +175,13 @@ export function asyncQueue<T>(
       }
 
       if (_state === 0) {
-        return new Promise<T>(enqueueResolver);
+        if (!cancellationToken || cancellationToken.state === "none") {
+          return new Promise<T>(enqueueResolver);
+        }
+
+        return new Promise<T>((resolve, reject) =>
+          enqueueResolver(resolve, reject, () => cancellationToken.isCancelled)
+        );
       }
 
       this[Symbol.dispose]();
@@ -181,7 +216,9 @@ export function asyncQueue<T>(
       _buffer.clear();
 
       for (const resolver of dequeueResolvers.toBufferLike()) {
-        resolver.reject(new QueueClosedError());
+        if (!resolver.getIsCancelled()) {
+          resolver.reject(new QueueClosedError());
+        }
       }
 
       if (_onClose) {
@@ -195,7 +232,7 @@ export function asyncQueue<T>(
             return { value: await queue.dequeue(), done: false };
           } catch (e) {
             if ((e instanceof QueueClosedError)) {
-              return { value: undefined, done: true };
+              return { done: true };
             }
             throw e;
           }

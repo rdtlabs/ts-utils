@@ -1,6 +1,6 @@
 import { type CancellationToken } from "../cancellation/CancellationToken.ts";
-import { cancellationRace } from "../cancellation/cancellationRace.ts";
-import { ErrorLike } from "../types.ts";
+import { type ErrorLike } from "../types.ts";
+import { Promises } from "./Promises.ts";
 
 export interface Deferred<T = void> {
   promise: Promise<T>;
@@ -24,7 +24,7 @@ export const Deferred = function <T = void>(
   let isDone = false;
   const controller = create<T>();
   return {
-    promise: cancellationRace(controller.promise, cancellationToken),
+    promise: Promises.cancellable(controller.promise, cancellationToken),
     resolve: (value: T) => {
       isDone = true;
       controller.resolve(value);

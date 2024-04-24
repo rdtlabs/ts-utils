@@ -25,15 +25,18 @@ export function __getQueueResolvers<T>(): {
   dequeueResolvers: Queue<{
     resolve: (value: T) => void;
     reject: (reason: unknown) => void;
+    getIsCancelled: () => boolean
   }>;
   enqueueResolver: (
     resolve: (item: T) => void,
     reject: (e: unknown) => void,
+    getIsCancelled?: () => boolean
   ) => void;
 } {
   const dequeueResolvers = createQueue<{
     resolve: (value: T) => void;
     reject: (reason: unknown) => void;
+    getIsCancelled: () => boolean
   }>();
 
   return {
@@ -41,10 +44,12 @@ export function __getQueueResolvers<T>(): {
     enqueueResolver: (
       resolve: (item: T) => void,
       reject: (e: unknown) => void,
+      getIsCancelled?: () => boolean
     ) => {
       dequeueResolvers.enqueue({
         resolve,
         reject,
+        getIsCancelled: getIsCancelled ?? (() => false),
       });
     },
   };

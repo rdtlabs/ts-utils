@@ -16,7 +16,6 @@ export {
   deadline as deadline,
   DeadlineExceededError as DeadlineExceededError,
 } from "./deadline.ts";
-export { deriveTimeout } from "./deriveTimeout.ts";
 export * from "./types.ts";
 export * from "./List.ts";
 
@@ -25,3 +24,4 @@ export * from "./buffer/index.ts";
 export * from "./cancellation/index.ts";
 export * from "./crypto/index.ts";
 export * from "./errors/index.ts";
+export * from "./Maybe.ts";

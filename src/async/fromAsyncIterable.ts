@@ -45,7 +45,7 @@ export function fromAsyncIterable<T>(
       return () => {
         done = true;
         isSubscribed = false;
-        iterator?.return?.();
+        iterator?.return?.(undefined);
       };
     },
   };

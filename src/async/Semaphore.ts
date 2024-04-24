@@ -1,9 +1,8 @@
 import { type CancellationToken } from "../cancellation/CancellationToken.ts";
 import { deferred } from "./Deferred.ts";
-import { cancellationTimeout } from "../cancellation/cancellationTimeout.ts";
-import { isCancellationToken } from "../cancellation/isCancellationToken.ts";
 import { WaitHandle } from "./WaitHandle.ts";
 import { CancellationError } from "../cancellation/CancellationError.ts";
+import { CancellationInput } from "../cancellation/cancellationInput.ts";
 
 export interface Semaphore extends WaitHandle {
   tryAcquire(): boolean;
@@ -14,12 +13,12 @@ export interface Semaphore extends WaitHandle {
 }
 
 export const Semaphore = function (permits: number): {
-  new (permits: number): Semaphore;
+  new(permits: number): Semaphore;
 } {
   // deno-lint-ignore no-explicit-any
   return semaphore(permits) as any;
 } as unknown as {
-  new (permits: number): Semaphore;
+  new(permits: number): Semaphore;
 };
 
 export function semaphore(permits: number): Semaphore {
@@ -101,11 +100,7 @@ export function semaphore(permits: number): Semaphore {
         return Promise.reject(new Error("invalid arguments"));
       }
 
-      const cancellation = isCancellationToken(args[0])
-        ? args[0]
-        : cancellationTimeout(args[0]);
-
-      return this.acquire(cancellation);
+      return this.acquire(CancellationInput.of(args[0]));
     },
   } as Semaphore;
 }

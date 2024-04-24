@@ -4,7 +4,7 @@ export async function* fromIterableLike<T>(
   iterable: IterableLike<T>,
 ): AsyncIterable<T> {
   if (Symbol.asyncIterator in iterable) {
-    yield* iterable;
+    yield* fromAsyncIterable(iterable as AsyncIterable<T>);
   } else if (Symbol.iterator in iterable) {
     yield* iterate(iterable);
   } else if (Array.isArray(iterable)) {
@@ -13,6 +13,14 @@ export async function* fromIterableLike<T>(
     yield* fromIterableLike(await iterable);
   } else {
     throw new Error("Invalid iterable input type");
+  }
+}
+
+export async function* fromAsyncIterable<T>(
+  iterable: AsyncIterable<T>,
+): AsyncGenerator<T> {
+  for await (const value of iterable) {
+    yield value;
   }
 }
 

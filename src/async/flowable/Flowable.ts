@@ -44,10 +44,10 @@ export const Flowable = Object.freeze({
   },
   concat<T>(...sources: FlowPublisher<T>[]): FlowPublisher<T> {
     const copy = sources.slice();
-    return __createFlowable(async function* inner() {
+    return __createFlowable<T>(async function* inner() {
       for (const item of copy) {
         for await (const innerItem of item.toIterable()) {
-          yield innerItem;
+          yield innerItem as T;
         }
       }
     });

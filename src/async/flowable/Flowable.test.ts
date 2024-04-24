@@ -23,13 +23,7 @@ Deno.test("flowable static array test", async () => {
 });
 
 Deno.test("flowable queue test", async () => {
-  const queue = asyncQueue<number>();
-
-  queue.enqueue(1);
-  queue.enqueue(2);
-  queue.enqueue(3);
-  queue.enqueue(4);
-  queue.enqueue(5);
+  const queue = createQueue();
 
   queueMicrotask(() => {
     queue.setReadOnly();
@@ -47,13 +41,7 @@ Deno.test("flowable queue test", async () => {
 });
 
 Deno.test("flowable resume on error", async () => {
-  const queue = asyncQueue<number>();
-
-  queue.enqueue(1);
-  queue.enqueue(2);
-  queue.enqueue(3);
-  queue.enqueue(4);
-  queue.enqueue(5);
+  const queue = createQueue();
 
   queueMicrotask(() => {
     queue.setReadOnly();
@@ -81,13 +69,7 @@ Deno.test("flowable resume on error", async () => {
 });
 
 Deno.test("flowable resume on error with throw", async () => {
-  const queue = asyncQueue<number>();
-
-  queue.enqueue(1);
-  queue.enqueue(2);
-  queue.enqueue(3);
-  queue.enqueue(4);
-  queue.enqueue(5);
+  const queue = createQueue();
 
   queueMicrotask(() => {
     queue.setReadOnly();
@@ -112,13 +94,7 @@ Deno.test("flowable resume on error with throw", async () => {
 });
 
 Deno.test("flowable resume on error with NOT throw on cancellation", async () => {
-  const queue = asyncQueue<number>();
-
-  queue.enqueue(1);
-  queue.enqueue(2);
-  queue.enqueue(3);
-  queue.enqueue(4);
-  queue.enqueue(5);
+  const queue = createQueue();
 
   queueMicrotask(() => {
     queue.setReadOnly();
@@ -138,13 +114,7 @@ Deno.test("flowable resume on error with NOT throw on cancellation", async () =>
 });
 
 Deno.test("flowable iterator test", async () => {
-  const queue = asyncQueue<number>();
-
-  queue.enqueue(1);
-  queue.enqueue(2);
-  queue.enqueue(3);
-  queue.enqueue(4);
-  queue.enqueue(5);
+  const queue = createQueue();
 
   queueMicrotask(() => {
     queue.setReadOnly();
@@ -161,13 +131,7 @@ Deno.test("flowable iterator test", async () => {
 });
 
 Deno.test("flowable to array test", async () => {
-  const queue = asyncQueue<number>();
-
-  queue.enqueue(1);
-  queue.enqueue(2);
-  queue.enqueue(3);
-  queue.enqueue(4);
-  queue.enqueue(5);
+  const queue = createQueue();
 
   queue.setReadOnly();
 
@@ -222,13 +186,7 @@ Deno.test("flowable fromEvent test", async () => {
 });
 
 Deno.test("flowable takeWhile test", async () => {
-  const queue = asyncQueue<number>();
-
-  queue.enqueue(1);
-  queue.enqueue(2);
-  queue.enqueue(3);
-  queue.enqueue(4);
-  queue.enqueue(5);
+  const queue = createQueue();
 
   queue.setReadOnly();
 
@@ -244,13 +202,7 @@ Deno.test("flowable takeWhile test", async () => {
 });
 
 Deno.test("flowable skipUntil test", async () => {
-  const queue = asyncQueue<number>();
-
-  queue.enqueue(1);
-  queue.enqueue(2);
-  queue.enqueue(3);
-  queue.enqueue(4);
-  queue.enqueue(5);
+  const queue = createQueue();
 
   queue.setReadOnly();
 
@@ -266,13 +218,7 @@ Deno.test("flowable skipUntil test", async () => {
 });
 
 Deno.test("flowable filter test", async () => {
-  const queue = asyncQueue<number>();
-
-  queue.enqueue(1);
-  queue.enqueue(2);
-  queue.enqueue(3);
-  queue.enqueue(4);
-  queue.enqueue(5);
+  const queue = createQueue();
 
   queue.setReadOnly();
 
@@ -288,13 +234,7 @@ Deno.test("flowable filter test", async () => {
 });
 
 Deno.test("flowable peek test", async () => {
-  const queue = asyncQueue<number>();
-
-  queue.enqueue(1);
-  queue.enqueue(2);
-  queue.enqueue(3);
-  queue.enqueue(4);
-  queue.enqueue(5);
+  const queue = createQueue();
 
   queue.setReadOnly();
 
@@ -385,14 +325,7 @@ Deno.test("flowable buffer test", async () => {
 });
 
 Deno.test("flowable toObservable test", async () => {
-  const queue = asyncQueue<number>();
-
-  queue.enqueue(1);
-  queue.enqueue(2);
-  queue.enqueue(3);
-  queue.enqueue(4);
-  queue.enqueue(5);
-
+  const queue = createQueue();
   queue.setReadOnly();
 
   const def = deferred();
@@ -421,13 +354,7 @@ Deno.test("flowable toObservable test", async () => {
 });
 
 Deno.test("flowable toObservable unsubscribe test", async () => {
-  const queue = asyncQueue<number>();
-
-  queue.enqueue(1);
-  queue.enqueue(2);
-  queue.enqueue(3);
-  queue.enqueue(4);
-  queue.enqueue(5);
+  const queue = createQueue();
 
   queue.setReadOnly();
 
@@ -461,13 +388,7 @@ Deno.test("flowable toObservable unsubscribe test", async () => {
 });
 
 Deno.test("flowable into test", async () => {
-  const queue = asyncQueue<number>();
-
-  queue.enqueue(1);
-  queue.enqueue(2);
-  queue.enqueue(3);
-  queue.enqueue(4);
-  queue.enqueue(5);
+  const queue = createQueue();
 
   queueMicrotask(() => {
     queue.setReadOnly();
@@ -479,7 +400,7 @@ Deno.test("flowable into test", async () => {
 
   const arr = await Flowable
     .of(queue)
-    .into(into)
+    .pipe(into)
     .toArray();
 
   assert(5 === arr.length);
@@ -488,14 +409,8 @@ Deno.test("flowable into test", async () => {
   }
 });
 
-Deno.test("flowable with forEach cancel test", async () => {
-  const queue = asyncQueue<number>();
-
-  queue.enqueue(1);
-  queue.enqueue(2);
-  queue.enqueue(3);
-  queue.enqueue(4);
-  queue.enqueue(5);
+Deno.test("flowable with forEach cancellation token test", async () => {
+  const queue = createQueue();
 
   queueMicrotask(() => {
     queue.setReadOnly();
@@ -505,20 +420,68 @@ Deno.test("flowable with forEach cancel test", async () => {
     .of<number>()
     .map(x => x * 2);
 
+  const controller = Cancellable.create();
   let largest = -1;
   await assertRejects(() => {
     const p = Flowable
       .of(queue)
-      .into(into)
+      .pipe(into)
       .forEach(i => {
         largest = i;
         if (i === 6) {
-          p.cancel();
+          controller.cancel();
         }
-      });
+      }, controller.token);
 
     return p;
   });
 
   assert(largest === 6);
 });
+
+Deno.test("flowable with forEach ignore cancellation token test", async () => {
+  const queue = createQueue();
+
+  queueMicrotask(() => {
+    queue.setReadOnly();
+  });
+
+  const into = Flowable
+    .of<number>()
+    .map(x => x * 2);
+
+  const controller = Cancellable.create();
+  let largest = -1;
+  await Flowable
+    .of(queue)
+    .pipe(into)
+    .forEach(i => {
+      largest = i;
+      if (i === 6) {
+        controller.cancel();
+      }
+    }, {
+      token: controller.token,
+      throwOnCancellation: false
+    });
+
+  assert(largest === 6);
+});
+
+function createQueue(...args: number[]) {
+  const queue = asyncQueue<number>();
+
+  if (args.length > 0) {
+    for (const arg of args) {
+      queue.enqueue(arg);
+    }
+  } else {
+    queue.enqueue(1);
+    queue.enqueue(2);
+    queue.enqueue(3);
+    queue.enqueue(4);
+    queue.enqueue(5);
+  }
+
+  return queue;
+}

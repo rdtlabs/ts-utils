@@ -1,19 +1,13 @@
 import { type CancellationToken } from "../cancellation/CancellationToken.ts";
-import { cancellationRace } from "../cancellation/cancellationRace.ts";
 import { type Callable, type TimeoutInput } from "../types.ts";
 import { delay } from "./delay.ts";
 import { Executor } from "./executors.ts";
-
-type Raceable<T> =
-  | PromiseLike<T>
-  | PromiseLike<T>[]
-  | (() => PromiseLike<T> | PromiseLike<T>[]);
 
 export const Task = Object.freeze({
   run<T = void>(
     task: Callable<T | PromiseLike<T>>,
     options?: {
-      cancellation?: TimeoutInput | CancellationToken;
+      cancellation?: CancellationToken;
       scheduler?: "micro" | "macro" | "sync" | Executor;
     },
   ): Promise<T> {
@@ -33,14 +27,7 @@ export const Task = Object.freeze({
         timer[Symbol.dispose]();
       },
     }) as Promise<T> & Disposable;
-  },
-
-  race<T>(
-    promises: Raceable<T>,
-    cancellation?: TimeoutInput | CancellationToken,
-  ): Promise<T> {
-    return cancellationRace(promises, cancellation);
-  },
+  }
 });
 
 function getScheduler(

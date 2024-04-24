@@ -1,4 +1,4 @@
-import { type ErrorLike, type TimeoutInput } from "../types.ts";
+import { type ErrorLike } from "../types.ts";
 import { CancellationError } from "./CancellationError.ts";
 import { type CancellationToken } from "./CancellationToken.ts";
 
@@ -79,22 +79,6 @@ export function __isToken(
   return !!cancellation && (cancellation as any)[signalSym] !== undefined;
 }
 
-export function __deriveTimeout(timeout: TimeoutInput): number {
-  if (timeout instanceof Date) {
-    return timeout.getTime() - Date.now();
-  }
-
-  if (typeof timeout === "number") {
-    return timeout;
-  }
-
-  if (typeof timeout?.remainingMillis === "number") {
-    return timeout.remainingMillis;
-  }
-
-  throw new TypeError("Invalid timeout");
-}
-
 const NEVER_SIGNAL = new AbortController().signal;
 
 export const __never = Object.freeze({
@@ -102,9 +86,9 @@ export const __never = Object.freeze({
   isCancelled: false,
   state: "none",
   reason: undefined,
-  throwIfCancelled: () => {},
+  throwIfCancelled: () => { },
   toAbortSignal: () => NEVER_SIGNAL,
   register: () => {
-    return () => {};
+    return () => { };
   },
 }) as CancellationToken;

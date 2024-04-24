@@ -11,7 +11,6 @@ export type EventHandler<T = any> = (event: T) => void;
 export type Nullable<T> = T | null;
 export type Defined<T> = T extends undefined ? never : T;
 export type NotNil<T> = T extends null | undefined ? never : T;
-export type Maybe<T> = T | null | undefined;
 export type Nil<T> = T extends null | undefined ? T : never;
 export type NonNil<T> = T extends null | undefined ? never : T;
 // deno-lint-ignore no-explicit-any
@@ -26,3 +25,21 @@ export type MaybeResult<T> = { value: T; ok: true } | {
   value?: undefined;
   ok: false;
 };
+
+export const TimeoutInput = {
+  deriveTimeout(timeout: TimeoutInput): number {
+    if (timeout instanceof Date) {
+      return timeout.getTime() - Date.now();
+    }
+
+    if (typeof timeout === "number") {
+      return timeout;
+    }
+
+    if (typeof timeout?.remainingMillis === "number") {
+      return timeout.remainingMillis;
+    }
+
+    throw new TypeError("Invalid timeout");
+  }
+}

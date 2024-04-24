@@ -1,8 +1,8 @@
-import { type Callable, type TimeoutInput } from "../types.ts";
+import { type Callable } from "../types.ts";
 import { type ErrorLike } from "../types.ts";
 import { type CancellationToken } from "../cancellation/CancellationToken.ts";
-import { cancellationRace } from "../cancellation/cancellationRace.ts";
 import { JobPool } from "./JobPool.ts";
+import { Promises } from "./Promises.ts";
 
 export const Executor = Object.freeze({
   concurrent: (
@@ -50,18 +50,18 @@ export const Executor = Object.freeze({
       },
     };
   },
-  immediate: <Executor> {
+  immediate: <Executor>{
     execute: <T>(
       callable: Callable<T | PromiseLike<T>>,
-      cancellation?: TimeoutInput | CancellationToken,
+      cancellation?: CancellationToken,
     ): Promise<T> => {
       return Executor.invoke(callable, cancellation);
     },
   },
-  macro: <Executor> {
+  macro: <Executor>{
     execute: <T>(
       callable: Callable<T | PromiseLike<T>>,
-      cancellation?: TimeoutInput | CancellationToken,
+      cancellation?: CancellationToken,
     ): Promise<T> => {
       return new Promise((resolve, reject) => {
         setTimeout(
@@ -72,10 +72,10 @@ export const Executor = Object.freeze({
       });
     },
   },
-  micro: <Executor> {
+  micro: <Executor>{
     execute: <T>(
       callable: Callable<T | PromiseLike<T>>,
-      cancellation?: TimeoutInput | CancellationToken,
+      cancellation?: CancellationToken,
     ): Promise<T> => {
       return new Promise((resolve, reject) => {
         queueMicrotask(() =>
@@ -87,10 +87,10 @@ export const Executor = Object.freeze({
   },
   invoke: <T>(
     callable: Callable<T | PromiseLike<T>>,
-    cancellation?: TimeoutInput | CancellationToken,
+    cancellation?: CancellationToken,
   ) => {
     try {
-      return cancellationRace(
+      return Promises.cancellable(
         Promise.resolve(callable()),
         cancellation,
       );
@@ -101,9 +101,9 @@ export const Executor = Object.freeze({
   invokeOn: <T>(
     callable: Callable<T | PromiseLike<T>>,
     executor?: Executor,
-    deadline?: TimeoutInput | CancellationToken,
+    cancellation?: CancellationToken,
   ) => {
-    return __invokeOn(callable, executor ?? Executor.immediate, deadline);
+    return __invokeOn(callable, executor ?? Executor.immediate, cancellation);
   },
 }) as {
   /**
@@ -147,7 +147,7 @@ export const Executor = Object.freeze({
    */
   invoke: <T>(
     callable: Callable<T | PromiseLike<T>>,
-    cancellation?: TimeoutInput | CancellationToken,
+    cancellation?: CancellationToken,
   ) => Promise<T>;
 
   /**
@@ -156,7 +156,7 @@ export const Executor = Object.freeze({
   invokeOn: <T>(
     callable: Callable<T | PromiseLike<T>>,
     executor?: Executor,
-    deadline?: TimeoutInput | CancellationToken,
+    deadline?: CancellationToken,
   ) => Promise<T>;
 };
 
@@ -171,7 +171,7 @@ export interface Executor {
    */
   execute: <T>(
     callable: Callable<T | PromiseLike<T>>,
-    deadline?: TimeoutInput | CancellationToken,
+    deadline?: CancellationToken,
   ) => Promise<T>;
 }
 
@@ -202,25 +202,16 @@ export interface ConcurrentExecutor extends Executor {
    */
   readonly isShutdown: boolean;
 }
-/**
-    try {
-      return cancellationRace(
-        Promise.resolve(callable()),
-        cancellation,
-      );
-    } catch (error) {
-      return Promise.reject<T>(error);
-    }
- */
+
 const __invoke = <T = void>(
   callable: Callable<T | PromiseLike<T>>,
   resolve: (value: T | PromiseLike<T>) => void,
   reject: (reason: ErrorLike) => void,
-  deadline?: TimeoutInput | CancellationToken,
+  deadline?: CancellationToken,
 ) => {
   try {
     const result = Promise.resolve(callable());
-    resolve(cancellationRace(result, deadline));
+    resolve(Promises.cancellable(result, deadline));
   } catch (error) {
     reject(error);
   }
@@ -229,12 +220,12 @@ const __invoke = <T = void>(
 function __invokeOn<T>(
   callable: Callable<T | PromiseLike<T>>,
   executor: Executor,
-  deadline?: TimeoutInput | CancellationToken,
+  cancellation?: CancellationToken,
 ): Promise<T> {
   return new Promise<T>((resolve, reject) => {
     try {
       executor
-        .execute(() => __invoke(callable, resolve, reject, deadline))
+        .execute(() => __invoke(callable, resolve, reject, cancellation))
         .then((result) => resolve(result as T))
         .catch((error) => reject(error));
     } catch (error) {

@@ -1,7 +1,6 @@
 import { type CancellationToken } from "./CancellationToken.ts";
-import { __deriveTimeout } from "./_utils.ts";
 import { __createToken } from "./_utils.ts";
-import { type TimeoutInput } from "../types.ts";
+import { TimeoutInput } from "../types.ts";
 import { DisposedError } from "../DisposedError.ts";
 
 const timeoutSym: unique symbol = Symbol("Symbol.CancellationTimeout");
@@ -11,7 +10,7 @@ export function cancellationTimeout(timeoutMillis: number): CancellationToken & 
 export function cancellationTimeout(date: Date): CancellationToken & Disposable; // deno-fmt-ignore
 export function cancellationTimeout(timeoutInput: TimeoutInput): CancellationToken & Disposable; // deno-fmt-ignore
 export function cancellationTimeout(timeoutInput: TimeoutInput): CancellationToken & Disposable {
-  const derivedTimeout = __deriveTimeout(timeoutInput);
+  const derivedTimeout = TimeoutInput.deriveTimeout(timeoutInput);
   const abortController = new AbortController();
   const cancellation = __createToken(abortController.signal, {
     [timeoutSym]: derivedTimeout,

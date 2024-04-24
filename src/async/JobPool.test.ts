@@ -206,6 +206,5 @@ Deno.test("JobPool cancellation test", async () => {
   pool.shutdown();
 
   await pool.onShutdown();
-
   assert(counter === 2);
 });

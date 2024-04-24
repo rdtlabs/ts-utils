@@ -18,16 +18,12 @@ function toIterable<T, R = T>(
   ...pipes: Pipeable<any, any>[]
 ): AsyncGenerator<R> {
   if (pipes.length === 0) {
-    return adaptAsyncIterableToGenerator(
-      fromIterableLike(input),
-    ) as AsyncGenerator<R>;
+    return fromIterableLike(input) as AsyncGenerator<R>;
   }
 
   return (async function* () {
     let currentGenerator = pipes[0](
-      adaptAsyncIterableToGenerator(
-        fromIterableLike(input),
-      ),
+      fromIterableLike(input) as AsyncGenerator<R>
     );
 
     for (let i = 1; i < pipes.length; i++) {
@@ -36,12 +32,4 @@ function toIterable<T, R = T>(
 
     yield* currentGenerator;
   })();
-}
-
-async function* adaptAsyncIterableToGenerator<T>(
-  asyncIterable: AsyncIterable<T>,
-): AsyncGenerator<T> {
-  for await (const item of asyncIterable) {
-    yield item;
-  }
 }

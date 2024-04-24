@@ -1,7 +1,8 @@
 import { type BufferStrategyOptions } from "../../buffer/BufferLike.ts";
 import { __getBufferFromOptions, __getQueueResolvers } from "./_utils.ts";
-import { MaybeResult } from "../../types.ts";
+import { type MaybeResult } from "../../types.ts";
 import { asyncQueue } from "./asyncQueue.ts";
+import { type CancellationToken } from "../../cancellation/CancellationToken.ts";
 
 /**
  *  The options to use when creating a new async queue
@@ -40,6 +41,9 @@ export interface AsyncQueue<T> extends Disposable, AsyncIterable<T> {
   /** Returns whether the queue has been closed (true) or is still open (false) */
   readonly isClosed: boolean;
 
+  /** Returns whether the queue is full (true) or not (false) */
+  readonly isFull: boolean
+
   /**
    * Enqueues an item of type T to the queue.
    *
@@ -52,9 +56,16 @@ export interface AsyncQueue<T> extends Disposable, AsyncIterable<T> {
   enqueue(item: T): void;
 
   /**
+ * Attempts to enqueue an item of type T to the queue. Returns true if the item was successfully enqueued, otherwise false.
+ *
+ * @param item The item to add to the queue.
+ */
+  tryEnqueue(item: T): boolean;
+
+  /**
    * Asynchronously dequeues an item from the queue. If the queue is empty, it will return a promise that resolves when an item is added to the queue.
    */
-  dequeue(): Promise<T>;
+  dequeue(cancellationToken?: CancellationToken): Promise<T>;
 
   /**
    * Synchronously dequeues an item from the queue if the queue us not empty, otherwise it will return an object with the value undefined and ok set to false.

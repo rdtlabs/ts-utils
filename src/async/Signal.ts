@@ -1,7 +1,6 @@
-import { isCancellationToken } from "../cancellation/isCancellationToken.ts";
-import { cancellationTimeout } from "../cancellation/cancellationTimeout.ts";
-import { cancellationRace } from "../cancellation/cancellationRace.ts";
 import { WaitHandle } from "./WaitHandle.ts";
+import { Promises } from "./Promises.ts";
+import { CancellationInput } from "../cancellation/cancellationInput.ts";
 
 type Signaled = true;
 type Unsignaled = false;
@@ -18,14 +17,14 @@ export interface Signal extends WaitHandle {
 export const Signal = function (
   initialState: SignalState = false,
 ): {
-  new (
+  new(
     initialState?: SignalState,
   ): Signal;
 } {
   // deno-lint-ignore no-explicit-any
   return signal(initialState ?? false) as any;
 } as unknown as {
-  new (
+  new(
     initialState?: SignalState,
   ): Signal;
 };
@@ -80,11 +79,10 @@ export function signal(initialState: SignalState = false): Signal {
         return Promise.reject(new Error("invalid arguments"));
       }
 
-      const cancellation = isCancellationToken(args[0])
-        ? args[0]
-        : cancellationTimeout(args[0]);
-
-      return cancellationRace(promise.then(() => true), cancellation);
+      return Promises.cancellable(
+        promise.then(() => true),
+        CancellationInput.of(args[0])
+      );
     },
   };
 
@@ -95,4 +93,4 @@ export function signal(initialState: SignalState = false): Signal {
   return Object.freeze(signal) as unknown as Signal;
 }
 
-const SIGNALED = Object.freeze(() => {});
+const SIGNALED = Object.freeze(() => { });

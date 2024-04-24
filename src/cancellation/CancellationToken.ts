@@ -1,4 +1,4 @@
-import { type ErrorLike, TimeoutInput } from "../types.ts";
+import { type ErrorLike, type TimeoutInput } from "../types.ts";
 
 export type Unregister = () => void;
 

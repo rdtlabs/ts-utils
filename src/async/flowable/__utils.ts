@@ -1,8 +1,7 @@
-import { type CancellationToken } from "../../cancellation/CancellationToken.ts";
 import { Pipeable } from "../pipeable/Pipeable.ts";
+import { CancellationOptions, CancellationOptionsExtended } from "../../cancellation/CancellationOptions.ts";
 import {
   cancellableIterable,
-  type CancellationOptions,
 } from "../../cancellation/cancellableIterable.ts";
 import { createObservable } from "../createObservable.ts";
 import { Flowable } from "./Flowable.ts";
@@ -10,11 +9,7 @@ import { type FlowProcessor } from "./FlowProcessor.ts";
 import * as p from "../pipeable/pipeable-funcs.ts";
 import { fromIterableLike, type IterableLike } from "../fromIterableLike.ts";
 import { type FlowPublisher } from "./FlowPublisher.ts";
-import { CancellablePromise } from "../../cancellation/CancellablePromise.ts";
-import { CancellableDeferred } from "../../cancellation/CancellableDeferred.ts";
-import { CancellationError } from "../../cancellation/CancellationError.ts";
-import { Cancellable } from "../../cancellation/Cancellable.ts";
-import { objects } from "../../objects.ts";
+import { Maybe } from "../../Maybe.ts";
 
 export function __createConnectable<T>(): FlowProcessor<T, T> {
   return __createConnectableWithParams();
@@ -60,7 +55,7 @@ export function __createFlowable<T>(
       // deno-lint-ignore no-explicit-any
       return flowable as FlowPublisher<any>;
     },
-    into: (connectable) => {
+    pipe: (connectable) => {
       return Flowable.of(
         connectable.toIterable(
           flowable.toIterable(),
@@ -68,17 +63,39 @@ export function __createFlowable<T>(
       );
     },
     toIterable: (options?) => {
-      return connectable.toIterable(generator(), options);
+      return connectable.toIterable(
+        generator(),
+        options as CancellationOptions
+      );
     },
     toArray: (options) => {
-      return connectable.toArray(generator(), options);
+      return connectable.toArray(
+        generator(),
+        options as CancellationOptions
+      );
     },
     forEach: (cb, options) => {
-      return connectable.forEach(generator(), cb, options);
+      return connectable.forEach(
+        generator(),
+        cb,
+        options as CancellationOptions
+      );
     },
     toObservable: () => {
       return connectable.toObservable(generator());
     },
+    takeFirst: (options) => {
+      return connectable.takeFirst(
+        generator(),
+        options as CancellationOptions
+      );
+    },
+    takeLast: (options) => {
+      return connectable.takeLast(
+        generator(),
+        options as CancellationOptions
+      );
+    }
   };
 
   return flowable;
@@ -140,98 +157,46 @@ function __createConnectableWithParams<T>(
         any
       >;
     },
-    toIterable(
-      input: IterableLike<T>,
-      options?: CancellationOptions,
-    ): AsyncIterable<T> {
-      return cancellableIterable(
-        Pipeable.toIterable(input, ...pipeables),
-        options,
-      );
+    toIterable(input, options) {
+      return __iter(input, pipeables, options);
     },
-    toArray(
+    async toArray(
       input: IterableLike<T>,
-      options?: CancellationOptions,
-    ): CancellablePromise<T[]> {
-      const tpl = getOptions(options);
-      const controller = Cancellable.create();
-      const token = tpl.token
-        ? Cancellable.combine(controller.token, tpl.token)
-        : controller.token;
-
-      const it = this.toIterable(input, {
-        token,
-        onCancel: (r) => {
-          deferred.promise.cancel(r);
-          if (tpl.onCancel) {
-            tpl.onCancel(r);
-          }
-        },
-        throwOnCancellation: tpl.throwOnCancellation,
-      });
-
-      const deferred = new CancellableDeferred<T[]>(controller.cancel);
-
-      (async () => {
-        const items: T[] = [];
-        try {
-          for await (const item of it) {
-            items.push(item);
-          }
-          if (token?.isCancelled === true) {
-            deferred.promise.cancel(token.reason);
-          } else {
-            deferred.resolve(items);
-          }
-        } catch (error) {
-          deferred.reject(error);
-        }
-      })();
-
-      return deferred.promise;
+      options?: CancellationOptionsExtended,
+    ): Promise<T[]> {
+      const items: T[] = [];
+      for await (const item of __iter(input, pipeables, options, {
+        throwOnCancellation: true,
+      })) {
+        items.push(item);
+      }
+      return items;
     },
-    forEach(
-      input: IterableLike<T>,
-      cb: (item: T) => void,
-      options?: CancellationOptions,
-    ): CancellablePromise<void> {
-      const tpl = getOptions(options);
-      const controller = Cancellable.create();
-      const token = tpl.token
-        ? Cancellable.combine(controller.token, tpl.token)
-        : controller.token;
-
-      const it = this.toIterable(input, {
-        token,
-        onCancel: (r) => {
-          deferred.promise.cancel(r);
-          if (tpl.onCancel) {
-            tpl.onCancel(r);
-          }
-        },
-        throwOnCancellation: tpl.throwOnCancellation,
-      });
-
-      const deferred = new CancellableDeferred<void>(controller.cancel);
-
-      (async () => {
-        try {
-          for await (const item of it) {
-            cb(item as T);
-          }
-          if (token?.isCancelled === true) {
-            deferred.promise.cancel(token.reason);
-          } else {
-            deferred.resolve();
-          }
-        } catch (error) {
-          deferred.reject(error);
-        }
-      })();
-
-      return deferred.promise;
+    async forEach(input: IterableLike<T>, cb, options) {
+      for await (const item of __iter(input, pipeables, options, {
+        throwOnCancellation: true,
+      })) {
+        cb(item as T);
+      }
     },
-    toObservable: (input: IterableLike<T>) => {
+    async takeFirst(input, options) {
+      for await (const item of __iter(input, pipeables, options, {
+        throwOnCancellation: true,
+      })) {
+        return Maybe.of(item as T);
+      }
+      return Maybe.of();
+    },
+    async takeLast(input, options) {
+      let lastItem: T | undefined;
+      for await (const item of __iter(input, pipeables, options, {
+        throwOnCancellation: true,
+      })) {
+        lastItem = item as T;
+      }
+      return Maybe.of(lastItem);
+    },
+    toObservable: input => {
       return createObservable<T>((subscriber) => {
         (async () => {
           try {
@@ -252,32 +217,14 @@ function __createConnectableWithParams<T>(
   return connectable;
 }
 
-function getOptions(options?: CancellationOptions): {
-  token?: CancellationToken;
-  onCancel?: (error: CancellationError) => void;
-  throwOnCancellation?: boolean;
-} {
-  if (objects.isNil(options)) {
-    return { throwOnCancellation: true };
-  }
-
-  if (typeof options === "boolean") {
-    return { throwOnCancellation: options === true };
-  }
-
-  if (typeof options === "function") {
-    return { onCancel: options, throwOnCancellation: true };
-  }
-
-  if ("throwIfCancelled" in options) {
-    return { token: options, throwOnCancellation: true };
-  }
-
-  return {
-    token: options.token,
-    onCancel: options.onCancel,
-    throwOnCancellation: objects.isNil(options.throwOnCancellation)
-      ? true
-      : options.throwOnCancellation === true,
-  };
+function __iter<T>(
+  input: IterableLike<T>,
+  pipeables: Array<Pipeable<unknown>>,
+  options?: CancellationOptionsExtended,
+  defaults?: CancellationOptions
+): AsyncGenerator<T> {
+  return cancellableIterable(
+    Pipeable.toIterable(input, ...pipeables),
+    CancellationOptions.from(options, defaults),
+  );
 }

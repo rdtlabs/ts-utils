@@ -1,7 +1,6 @@
+import { fromIterableLike } from "../async/fromIterableLike.ts";
 import { type IterableLike } from "../async/fromIterableLike.ts";
 import { type Callable, type ErrorLike, type TimeoutInput } from "../types.ts";
-import { cancellableDeferred } from "./CancellableDeferred.ts";
-import { CancellationError } from "./CancellationError.ts";
 import {
   type CancellationController,
   type CancellationToken,
@@ -26,14 +25,6 @@ export const Cancellable = Object.freeze({
   timeout: (timeoutInput: TimeoutInput) => {
     return cancellationTimeout(timeoutInput);
   },
-  deferred: (
-    options?: CancellationToken | ((error: CancellationError) => void) | {
-      token?: CancellationToken;
-      onCancel?: (error: CancellationError) => void;
-    },
-  ) => {
-    return cancellableDeferred(options);
-  },
   combine: (...cancellations: CancellationToken[]) => {
     return combineTokens(...cancellations);
   },
@@ -48,7 +39,7 @@ export const Cancellable = Object.freeze({
     iterable: IterableLike<T>,
     token?: CancellationToken,
   ) => {
-    return cancellableIterable(iterable, token);
+    return cancellableIterable(fromIterableLike(iterable), token);
   },
   isToken: (cancellation: unknown): cancellation is CancellationToken => {
     return __isToken(cancellation);
@@ -60,8 +51,8 @@ export const Cancellable = Object.freeze({
     const token = __isToken(cancellation)
       ? cancellation
       : cancellation
-      ? cancellationTimeout(cancellation)
-      : __never;
+        ? cancellationTimeout(cancellation)
+        : __never;
 
     try {
       return Cancellable.race(

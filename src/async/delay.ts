@@ -1,13 +1,12 @@
 import { DisposedError } from "../DisposedError.ts";
 import { type CancellationToken } from "../cancellation/CancellationToken.ts";
-import { deriveTimeout } from "../deriveTimeout.ts";
 import { TimeoutInput } from "../types.ts";
 
 export function delay(
   ms: TimeoutInput,
   cancellationToken?: CancellationToken,
 ): Promise<void> & Disposable {
-  const millis = deriveTimeout(ms);
+  const millis = TimeoutInput.deriveTimeout(ms);
   let rej!: (reason: unknown) => void;
   let id!: number;
   let unregister: (() => void) | undefined;

@@ -1,9 +1,8 @@
 import { deferred } from "../async/Deferred.ts";
-import { type TimeoutInput } from "../types.ts";
 import { CancellationError } from "./CancellationError.ts";
 import { type CancellationToken } from "./CancellationToken.ts";
 import { __isToken, __never } from "./_utils.ts";
-import { cancellationTimeout } from "./cancellationTimeout.ts";
+import { CancellationInput } from "./cancellationInput.ts";
 
 type Raceable<T> =
   | PromiseLike<T>
@@ -12,15 +11,10 @@ type Raceable<T> =
 
 export function cancellationRace<T>(
   promises: Raceable<T>,
-  cancellation?: TimeoutInput | CancellationToken,
+  cancellation?: CancellationInput,
   onCancel?: (error: CancellationError) => void,
 ): Promise<T> {
-  const token = __isToken(cancellation)
-    ? cancellation
-    : cancellation
-    ? cancellationTimeout(cancellation)
-    : __never;
-
+  const token = CancellationInput.of(cancellation);
   if (token.isCancelled) {
     if (onCancel) {
       queueMicrotask(() => onCancel(token.reason));

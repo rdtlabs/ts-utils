@@ -139,3 +139,51 @@ Deno.test("AsyncQueue await dequeue", async () => {
 
   assert(queue.isClosed);
 });
+
+Deno.test("AsyncQueue tryEnqueue", async () => {
+  const queue = asyncQueue<number>();
+
+  assert(queue.tryEnqueue(1));
+  queue.setReadOnly();
+  assert(!queue.tryEnqueue(2));
+});
+
+Deno.test("AsyncQueue isEmpty test", async () => {
+  const queue = asyncQueue<number>(
+    { bufferSize: 2, bufferStrategy: "fixed" },
+  );
+
+  queue.enqueue(1);
+  queue.enqueue(2);
+  assert(queue.isEmpty === false);
+  queue.dequeue();
+  queue.dequeue();
+  // getting strange typescript warning regarding the isEmpty being true
+  // (as if it thinks the previous check implies the isEmpty property does not change)
+  assert((queue as any).isEmpty === true);
+
+  queue.close();
+
+  await queue.onClose();
+});
+
+Deno.test("AsyncQueue isFull test", async () => {
+  const queue = asyncQueue<number>(
+    { bufferSize: 2, bufferStrategy: "fixed" },
+  );
+
+  queue.enqueue(1);
+  assert(queue.isFull === false);
+  queue.enqueue(2);
+
+  // getting strange typescript warning regarding the isFull being true
+  // (as if it thinks the previous check implies the isFull property does not change)
+  assert((queue as any).isFull === true);
+
+  queue.dequeue();
+  assert(queue.isFull === false);
+
+  queue.close();
+
+  await queue.onClose();
+});
