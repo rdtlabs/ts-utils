@@ -26,7 +26,7 @@ export const JobPool = function (options?: {
 }): JobPool {
   return jobPool(options);
 } as unknown as {
-  new(options?: {
+  new (options?: {
     maxConcurrency?: number;
     maxQueueLength?: number;
   }): JobPool;
@@ -80,12 +80,10 @@ function wrap<T>(
   job: Job<T>,
   cancellation?: CancellationToken,
 ): Job<T> {
-  return !cancellation
-    ? job
-    : () => {
-      return Promises.cancellable(
-        async () => await job(),
-        cancellation
-      )
-    };
+  return !cancellation ? job : () => {
+    return Promises.cancellable(
+      async () => await job(),
+      cancellation,
+    );
+  };
 }

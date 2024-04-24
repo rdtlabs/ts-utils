@@ -2,7 +2,10 @@ import { CancellationError } from "./CancellationError.ts";
 import { type CancellationToken } from "./CancellationToken.ts";
 import { Promises } from "../async/Promises.ts";
 import { ErrorLike } from "../types.ts";
-import { CancellationOptions, CancellationOptionsExtended } from "./CancellationOptions.ts";
+import {
+  CancellationOptions,
+  CancellationOptionsExtended,
+} from "./CancellationOptions.ts";
 
 type AsyncIterableInput<T> = AsyncGenerator<T> | AsyncIterable<T>;
 

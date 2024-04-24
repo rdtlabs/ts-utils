@@ -17,14 +17,14 @@ export interface Signal extends WaitHandle {
 export const Signal = function (
   initialState: SignalState = false,
 ): {
-  new(
+  new (
     initialState?: SignalState,
   ): Signal;
 } {
   // deno-lint-ignore no-explicit-any
   return signal(initialState ?? false) as any;
 } as unknown as {
-  new(
+  new (
     initialState?: SignalState,
   ): Signal;
 };
@@ -81,7 +81,7 @@ export function signal(initialState: SignalState = false): Signal {
 
       return Promises.cancellable(
         promise.then(() => true),
-        CancellationInput.of(args[0])
+        CancellationInput.of(args[0]),
       );
     },
   };
@@ -93,4 +93,4 @@ export function signal(initialState: SignalState = false): Signal {
   return Object.freeze(signal) as unknown as Signal;
 }
 
-const SIGNALED = Object.freeze(() => { });
+const SIGNALED = Object.freeze(() => {});

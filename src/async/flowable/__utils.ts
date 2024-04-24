@@ -1,8 +1,9 @@
 import { Pipeable } from "../pipeable/Pipeable.ts";
-import { CancellationOptions, CancellationOptionsExtended } from "../../cancellation/CancellationOptions.ts";
 import {
-  cancellableIterable,
-} from "../../cancellation/cancellableIterable.ts";
+  CancellationOptions,
+  CancellationOptionsExtended,
+} from "../../cancellation/CancellationOptions.ts";
+import { cancellableIterable } from "../../cancellation/cancellableIterable.ts";
 import { createObservable } from "../createObservable.ts";
 import { Flowable } from "./Flowable.ts";
 import { type FlowProcessor } from "./FlowProcessor.ts";
@@ -65,20 +66,20 @@ export function __createFlowable<T>(
     toIterable: (options?) => {
       return connectable.toIterable(
         generator(),
-        options as CancellationOptions
+        options as CancellationOptions,
       );
     },
     toArray: (options) => {
       return connectable.toArray(
         generator(),
-        options as CancellationOptions
+        options as CancellationOptions,
       );
     },
     forEach: (cb, options) => {
       return connectable.forEach(
         generator(),
         cb,
-        options as CancellationOptions
+        options as CancellationOptions,
       );
     },
     toObservable: () => {
@@ -87,15 +88,15 @@ export function __createFlowable<T>(
     takeFirst: (options) => {
       return connectable.takeFirst(
         generator(),
-        options as CancellationOptions
+        options as CancellationOptions,
       );
     },
     takeLast: (options) => {
       return connectable.takeLast(
         generator(),
-        options as CancellationOptions
+        options as CancellationOptions,
       );
-    }
+    },
   };
 
   return flowable;
@@ -165,38 +166,46 @@ function __createConnectableWithParams<T>(
       options?: CancellationOptionsExtended,
     ): Promise<T[]> {
       const items: T[] = [];
-      for await (const item of __iter(input, pipeables, options, {
-        throwOnCancellation: true,
-      })) {
+      for await (
+        const item of __iter(input, pipeables, options, {
+          throwOnCancellation: true,
+        })
+      ) {
         items.push(item);
       }
       return items;
     },
     async forEach(input: IterableLike<T>, cb, options) {
-      for await (const item of __iter(input, pipeables, options, {
-        throwOnCancellation: true,
-      })) {
+      for await (
+        const item of __iter(input, pipeables, options, {
+          throwOnCancellation: true,
+        })
+      ) {
         cb(item as T);
       }
     },
     async takeFirst(input, options) {
-      for await (const item of __iter(input, pipeables, options, {
-        throwOnCancellation: true,
-      })) {
+      for await (
+        const item of __iter(input, pipeables, options, {
+          throwOnCancellation: true,
+        })
+      ) {
         return Maybe.of(item as T);
       }
       return Maybe.of();
     },
     async takeLast(input, options) {
       let lastItem: T | undefined;
-      for await (const item of __iter(input, pipeables, options, {
-        throwOnCancellation: true,
-      })) {
+      for await (
+        const item of __iter(input, pipeables, options, {
+          throwOnCancellation: true,
+        })
+      ) {
         lastItem = item as T;
       }
       return Maybe.of(lastItem);
     },
-    toObservable: input => {
+    toObservable: (input) => {
       return createObservable<T>((subscriber) => {
         (async () => {
           try {
@@ -221,7 +230,7 @@ function __iter<T>(
   input: IterableLike<T>,
   pipeables: Array<Pipeable<unknown>>,
   options?: CancellationOptionsExtended,
-  defaults?: CancellationOptions
+  defaults?: CancellationOptions,
 ): AsyncGenerator<T> {
   return cancellableIterable(
     Pipeable.toIterable(input, ...pipeables),

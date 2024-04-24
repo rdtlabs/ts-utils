@@ -5,7 +5,7 @@ export type Maybe<T> = {
   else: (alt: T) => T;
   elseGet: (altFn: () => T) => T;
   map: <R>(mapper: (t: T) => R) => Maybe<R>;
-  get: () => MaybeResult<T>
+  get: () => MaybeResult<T>;
 };
 
 export const Maybe = Object.freeze({
@@ -17,7 +17,7 @@ export const Maybe = Object.freeze({
       return value.then(maybe);
     }
     return Promise.resolve(maybe(value));
-  }
+  },
 });
 
 function maybe<T>(value?: T): Maybe<T> {
@@ -41,15 +41,15 @@ function maybe<T>(value?: T): Maybe<T> {
     get: () => {
       if (value === undefined) {
         return {
-          ok: false
-        }
+          ok: false,
+        };
       }
 
       return {
         value,
-        ok: true
-      }
-    }
+        ok: true,
+      };
+    },
   };
 }
 

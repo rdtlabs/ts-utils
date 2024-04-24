@@ -27,7 +27,7 @@ export const Task = Object.freeze({
         timer[Symbol.dispose]();
       },
     }) as Promise<T> & Disposable;
-  }
+  },
 });
 
 function getScheduler(

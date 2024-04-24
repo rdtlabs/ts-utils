@@ -1,4 +1,3 @@
-
 import { type CancellationToken } from "../cancellation/CancellationToken.ts";
 import { type ErrorLike } from "../index.ts";
 
@@ -20,7 +19,7 @@ export const Promises = Object.freeze({
     try {
       return Promise.race([
         tpl.cancellable,
-        typeof p === "function" ? p() : p
+        typeof p === "function" ? p() : p,
       ]);
     } catch (error) {
       tpl.unregister();
@@ -30,9 +29,9 @@ export const Promises = Object.freeze({
 
   race: (p, c) => {
     if (p.length === 0) {
-      return c?.isCancelled === true ?
-        Promise.reject(c.reason) :
-        Promise.race(p); // defer to default logic
+      return c?.isCancelled === true
+        ? Promise.reject(c.reason)
+        : Promise.race(p); // defer to default logic
     }
 
     const tpl = createCancellablePromise(c);
@@ -46,9 +45,9 @@ export const Promises = Object.freeze({
 
     return Promise.race([
       tpl.cancellable,
-      ...p.map(p => p.finally(tpl.unregister))
+      ...p.map((p) => p.finally(tpl.unregister)),
     ]);
-  }
+  },
 }) as Promises;
 
 async function* cancellableIterable<T>(
@@ -68,7 +67,8 @@ async function* cancellableIterable<T>(
     const it = iterable[Symbol.asyncIterator]();
     do {
       const { done, value } = await Promise.race([
-        tpl.cancellable, it.next()
+        tpl.cancellable,
+        it.next(),
       ]);
 
       if (done) {
@@ -95,7 +95,7 @@ function createCancellablePromise<T>(
 
   let cancel!: () => void;
   const cancellable = new Promise<never>((_, reject) => {
-    cancel = () => reject(cancellation.reason)
+    cancel = () => reject(cancellation.reason);
   });
 
   const unregister = cancellation.register(cancel);
@@ -106,12 +106,12 @@ function createCancellablePromise<T>(
 }
 
 type Maybe<T> = {
-  cancellable: Promise<never>,
-  unregister: () => void
+  cancellable: Promise<never>;
+  unregister: () => void;
 } | {
-  cancellable?: undefined,
-  error: ErrorLike
-}
+  cancellable?: undefined;
+  error: ErrorLike;
+};
 
 type Promises = {
   cancellable<T>(
@@ -127,10 +127,10 @@ type Promises = {
   cancellable<T>(
     promise: Promise<T> | (() => Promise<T>),
     cancellation?: CancellationToken,
-  ): Promise<T>
+  ): Promise<T>;
 
   race<T = unknown>(
     promises: Promise<T>[],
     cancellation?: CancellationToken,
-  ): Promise<T>
+  ): Promise<T>;
 };

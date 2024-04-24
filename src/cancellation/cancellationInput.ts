@@ -12,7 +12,7 @@ export const CancellationInput = {
     return __isToken(input)
       ? input
       : input
-        ? cancellationTimeout(input)
-        : __never;
-  }
+      ? cancellationTimeout(input)
+      : __never;
+  },
 };

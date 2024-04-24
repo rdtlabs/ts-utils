@@ -4,7 +4,7 @@ export async function* fromIterableLike<T>(
   iterable: IterableLike<T>,
 ): AsyncGenerator<T> {
   if (Symbol.asyncIterator in iterable) {
-    if ('throw' in iterable) {
+    if ("throw" in iterable) {
       yield* iterable as AsyncGenerator<T>;
     }
     yield* fromAsyncIterable(iterable);

@@ -42,7 +42,7 @@ export interface AsyncQueue<T> extends Disposable, AsyncIterable<T> {
   readonly isClosed: boolean;
 
   /** Returns whether the queue is full (true) or not (false) */
-  readonly isFull: boolean
+  readonly isFull: boolean;
 
   /**
    * Enqueues an item of type T to the queue.
@@ -56,10 +56,10 @@ export interface AsyncQueue<T> extends Disposable, AsyncIterable<T> {
   enqueue(item: T): void;
 
   /**
- * Attempts to enqueue an item of type T to the queue. Returns true if the item was successfully enqueued, otherwise false.
- *
- * @param item The item to add to the queue.
- */
+   * Attempts to enqueue an item of type T to the queue. Returns true if the item was successfully enqueued, otherwise false.
+   *
+   * @param item The item to add to the queue.
+   */
   tryEnqueue(item: T): boolean;
 
   /**

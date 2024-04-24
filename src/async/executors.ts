@@ -50,7 +50,7 @@ export const Executor = Object.freeze({
       },
     };
   },
-  immediate: <Executor>{
+  immediate: <Executor> {
     execute: <T>(
       callable: Callable<T | PromiseLike<T>>,
       cancellation?: CancellationToken,
@@ -58,7 +58,7 @@ export const Executor = Object.freeze({
       return Executor.invoke(callable, cancellation);
     },
   },
-  macro: <Executor>{
+  macro: <Executor> {
     execute: <T>(
       callable: Callable<T | PromiseLike<T>>,
       cancellation?: CancellationToken,
@@ -72,7 +72,7 @@ export const Executor = Object.freeze({
       });
     },
   },
-  micro: <Executor>{
+  micro: <Executor> {
     execute: <T>(
       callable: Callable<T | PromiseLike<T>>,
       cancellation?: CancellationToken,

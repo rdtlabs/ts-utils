@@ -7,10 +7,11 @@ export type CancellationOptions = {
   throwOnCancellation?: boolean;
 };
 
-export type CancellationOptionsExtended = CancellationOptions |
-  ((error: CancellationError) => void) |
-  boolean |
-  CancellationToken;
+export type CancellationOptionsExtended =
+  | CancellationOptions
+  | ((error: CancellationError) => void)
+  | boolean
+  | CancellationToken;
 
 export const CancellationOptions = Object.freeze({
   from: (
@@ -23,7 +24,7 @@ export const CancellationOptions = Object.freeze({
       return {
         token: defaults.token,
         onCancel: defaults.onCancel,
-        throwOnCancellation: defaults?.throwOnCancellation === true
+        throwOnCancellation: defaults?.throwOnCancellation === true,
       };
     }
 
@@ -31,7 +32,7 @@ export const CancellationOptions = Object.freeze({
       return {
         token: defaults.token,
         onCancel: defaults.onCancel,
-        throwOnCancellation: options === true
+        throwOnCancellation: options === true,
       };
     }
 
@@ -39,7 +40,7 @@ export const CancellationOptions = Object.freeze({
       return {
         token: defaults.token,
         throwOnCancellation: defaults.throwOnCancellation === true,
-        onCancel: options
+        onCancel: options,
       };
     }
 
@@ -47,16 +48,16 @@ export const CancellationOptions = Object.freeze({
       return {
         onCancel: defaults.onCancel,
         throwOnCancellation: defaults.throwOnCancellation === true,
-        token: options
+        token: options,
       };
     }
 
     return {
       token: options.token ?? defaults.token,
       onCancel: options.onCancel ?? defaults.onCancel,
-      throwOnCancellation: options.throwOnCancellation !== undefined ?
-        options.throwOnCancellation === true :
-        defaults.throwOnCancellation === true,
+      throwOnCancellation: options.throwOnCancellation !== undefined
+        ? options.throwOnCancellation === true
+        : defaults.throwOnCancellation === true,
     };
-  }
+  },
 });

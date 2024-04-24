@@ -13,12 +13,12 @@ export interface Semaphore extends WaitHandle {
 }
 
 export const Semaphore = function (permits: number): {
-  new(permits: number): Semaphore;
+  new (permits: number): Semaphore;
 } {
   // deno-lint-ignore no-explicit-any
   return semaphore(permits) as any;
 } as unknown as {
-  new(permits: number): Semaphore;
+  new (permits: number): Semaphore;
 };
 
 export function semaphore(permits: number): Semaphore {

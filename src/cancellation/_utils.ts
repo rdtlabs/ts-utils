@@ -86,9 +86,9 @@ export const __never = Object.freeze({
   isCancelled: false,
   state: "none",
   reason: undefined,
-  throwIfCancelled: () => { },
+  throwIfCancelled: () => {},
   toAbortSignal: () => NEVER_SIGNAL,
   register: () => {
-    return () => { };
+    return () => {};
   },
 }) as CancellationToken;

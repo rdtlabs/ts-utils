@@ -41,5 +41,5 @@ export const TimeoutInput = {
     }
 
     throw new TypeError("Invalid timeout");
-  }
-}
+  },
+};
