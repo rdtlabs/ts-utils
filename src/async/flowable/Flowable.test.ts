@@ -54,11 +54,12 @@ Deno.test("flowable resume on error", async () => {
     .takeWhile(x => {
       return x < 5;
     })
-    .peek(x => {
+    .compose(async function* (x) {
       if (x === 3) {
         errorThrown = true;
         throw new Error("test");
       }
+      yield x;
     })
     .map(x => x * 2)
     .toArray();
@@ -485,3 +486,35 @@ function createQueue(...args: number[]) {
 
   return queue;
 }
+
+Deno.test("flowable takeFirst test", async () => {
+  const queue = createQueue();
+
+  queue.setReadOnly();
+
+  const result = await Flowable
+    .of(queue)
+    .takeFirst();
+
+  assert(result.else(-1) === 1);
+});
+
+Deno.test("flowable takeLast test", async () => {
+  const queue = createQueue();
+
+  queue.setReadOnly();
+
+  const result = await Flowable
+    .of(queue)
+    .takeLast();
+
+  assert(result.else(-1) === 5);
+});
+
+Deno.test("flowable takeLast single test", async () => {
+  const result = await Flowable
+    .single(1)
+    .takeLast();
+
+  assert(result.else(-1) === 1);
+});

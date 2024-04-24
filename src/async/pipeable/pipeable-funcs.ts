@@ -29,7 +29,7 @@ export function filter<T = unknown>(
 }
 
 export function compose<T = unknown, R = T>(
-  mapper: (t: T, index: number) => AsyncIterable<R>,
+  mapper: (t: T, index: number) => AsyncGenerator<R>,
 ): Pipeable<T, R> {
   return Pipeable.fromMulti<T, R>(() => {
     let index = 0;
@@ -87,25 +87,23 @@ export function takeWhile<T>(
 export function resumeOnError<T>(
   onError?: (error: ErrorLike) => Promise<boolean> | boolean,
 ): Pipeable<T> {
-  return (it) => {
-    return (async function* () {
-      for await (const item of it) {
-        try {
-          yield item;
-        } catch (error) {
-          if (onError && !(await onError(error))) {
-            await it.throw(error);
-          }
-        }
-      }
+  return async function* (it) {
+    for await (const item of it) {
       try {
-        if (it.return) {
-          await it.return(undefined);
-        }
+        yield item;
       } catch (error) {
-        console.warn("Generator return threw an error", error);
+        if (onError && !(await onError(error))) {
+          await it.throw(error);
+        }
       }
-    })();
+    }
+    try {
+      if (it.return) {
+        await it.return(undefined);
+      }
+    } catch (error) {
+      console.warn("Generator return threw an error", error);
+    }
   };
 }
 
@@ -114,38 +112,36 @@ export function buffer<T>(size: number): Pipeable<T[]> {
     throw new TypeError(`Invalid buffer size ${size}`);
   }
 
-  return (it) => {
-    return (async function* () {
-      let buffer: T[] = [];
-      for await (let item of it) {
-        do {
-          try {
-            buffer.push(item as T);
-            if (buffer.length >= size) {
-              const toYield = buffer;
-              buffer = [];
-              yield toYield;
-            }
-            break;
-          } catch (error) {
-            const result = await it.throw(error);
-            if (result.done) {
-              return;
-            }
-            item = result.value;
+  return async function* (it) {
+    let buffer: T[] = [];
+    for await (let item of it) {
+      do {
+        try {
+          buffer.push(item as T);
+          if (buffer.length >= size) {
+            const toYield = buffer;
+            buffer = [];
+            yield toYield;
           }
-        } while (true);
-      }
-      if (buffer.length > 0) {
-        yield buffer;
-      }
-      try {
-        if (it.return) {
-          await it.return(undefined);
+          break;
+        } catch (error) {
+          const result = await it.throw(error);
+          if (result.done) {
+            return;
+          }
+          item = result.value;
         }
-      } catch (error) {
-        console.warn("Generator return threw an error", error);
+      } while (true);
+    }
+    if (buffer.length > 0) {
+      yield buffer;
+    }
+    try {
+      if (it.return) {
+        await it.return(undefined);
       }
-    })();
+    } catch (error) {
+      console.warn("Generator return threw an error", error);
+    }
   };
 }

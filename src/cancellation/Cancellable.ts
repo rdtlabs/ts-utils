@@ -1,5 +1,6 @@
 import { fromIterableLike } from "../async/fromIterableLike.ts";
 import { type IterableLike } from "../async/fromIterableLike.ts";
+import { Promises } from "../async/Promises.ts";
 import { type Callable, type ErrorLike, type TimeoutInput } from "../types.ts";
 import {
   type CancellationController,
@@ -7,13 +8,13 @@ import {
 } from "./CancellationToken.ts";
 import { __isToken, __never } from "./_utils.ts";
 import { cancellableIterable } from "./cancellableIterable.ts";
-import { cancellationRace } from "./cancellationRace.ts";
 import { cancellationSignal } from "./cancellationSignal.ts";
 import { cancellationTimeout } from "./cancellationTimeout.ts";
 import { cancelledToken } from "./cancelledToken.ts";
 import { combineTokens } from "./combineTokens.ts";
 import { createCancellation } from "./createCancellation.ts";
 import { fromCancellation } from "./fromCancellation.ts";
+import { CancellationInput } from "./cancellationInput.ts";
 
 export const Cancellable = Object.freeze({
   // An inert, cancellation token that is always in
@@ -29,12 +30,7 @@ export const Cancellable = Object.freeze({
     return combineTokens(...cancellations);
   },
   signal: (signal: AbortSignal) => cancellationSignal(signal),
-  race: <T>(
-    promises: Promise<T> | Promise<T>[],
-    cancellation?: TimeoutInput | CancellationToken,
-  ) => {
-    return cancellationRace(promises, cancellation);
-  },
+
   iterable: <T>(
     iterable: IterableLike<T>,
     token?: CancellationToken,
@@ -46,18 +42,12 @@ export const Cancellable = Object.freeze({
   },
   invoke: <T>(
     callable: Callable<T | PromiseLike<T>>,
-    cancellation?: TimeoutInput | CancellationToken,
+    cancellation?: CancellationInput,
   ) => {
-    const token = __isToken(cancellation)
-      ? cancellation
-      : cancellation
-        ? cancellationTimeout(cancellation)
-        : __never;
-
     try {
-      return Cancellable.race(
+      return Promises.cancellable(
         Promise.resolve(callable()),
-        token,
+        CancellationInput.of(cancellation),
       );
     } catch (error) {
       return Promise.reject(error);
@@ -71,10 +61,6 @@ export const Cancellable = Object.freeze({
   timeout: (timeoutInput: TimeoutInput) => CancellationToken & Disposable;
   combine: (...cancellations: CancellationToken[]) => CancellationToken;
   signal: (signal: AbortSignal) => CancellationToken;
-  race: <T>(
-    promises: Promise<T> | Promise<T>[],
-    cancellation?: TimeoutInput | CancellationToken,
-  ) => Promise<T>;
   iterable: <T>(
     iterable: IterableLike<T>,
     token?: CancellationToken,
@@ -82,6 +68,6 @@ export const Cancellable = Object.freeze({
   isToken: (cancellation: unknown) => cancellation is CancellationToken;
   invoke: <T>(
     callable: Callable<T | PromiseLike<T>>,
-    cancellation?: TimeoutInput | CancellationToken,
+    cancellation?: CancellationInput,
   ) => Promise<T>;
 };

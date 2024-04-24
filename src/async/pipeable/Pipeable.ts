@@ -12,24 +12,20 @@ export const Pipeable = Object.freeze({
   of: __ofFunc,
 });
 
-function toIterable<T, R = T>(
+async function* toIterable<T, R = T>(
   input: IterableLike<T>,
   // deno-lint-ignore no-explicit-any
   ...pipes: Pipeable<any, any>[]
 ): AsyncGenerator<R> {
   if (pipes.length === 0) {
-    return fromIterableLike(input) as AsyncGenerator<R>;
+    return yield* fromIterableLike<R>(input as IterableLike<R>);
   }
 
-  return (async function* () {
-    let currentGenerator = pipes[0](
-      fromIterableLike(input) as AsyncGenerator<R>
-    );
+  let currentGenerator = pipes[0](fromIterableLike(input));
 
-    for (let i = 1; i < pipes.length; i++) {
-      currentGenerator = pipes[i](currentGenerator);
-    }
+  for (let i = 1; i < pipes.length; i++) {
+    currentGenerator = pipes[i](currentGenerator);
+  }
 
-    yield* currentGenerator;
-  })();
+  return yield* currentGenerator;
 }

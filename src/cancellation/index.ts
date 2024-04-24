@@ -8,3 +8,4 @@
 export * from "./CancellationToken.ts";
 export { Cancellable } from "./Cancellable.ts";
 export { CancellationError } from "./CancellationError.ts";
+export { CancellationOptions, type CancellationOptionsExtended } from "./CancellationOptions.ts";

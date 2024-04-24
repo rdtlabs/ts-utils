@@ -2,9 +2,12 @@ import { isThenable } from "../utils.ts";
 
 export async function* fromIterableLike<T>(
   iterable: IterableLike<T>,
-): AsyncIterable<T> {
+): AsyncGenerator<T> {
   if (Symbol.asyncIterator in iterable) {
-    yield* fromAsyncIterable(iterable as AsyncIterable<T>);
+    if ('throw' in iterable) {
+      yield* iterable as AsyncGenerator<T>;
+    }
+    yield* fromAsyncIterable(iterable);
   } else if (Symbol.iterator in iterable) {
     yield* iterate(iterable);
   } else if (Array.isArray(iterable)) {

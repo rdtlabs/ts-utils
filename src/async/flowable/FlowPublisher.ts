@@ -16,7 +16,7 @@ export interface FlowPublisher<T> {
   ): FlowPublisher<R>;
 
   compose<R>(
-    mapper: (t: T, index: number) => AsyncIterable<R>,
+    mapper: (t: T, index: number) => AsyncGenerator<R>,
   ): FlowPublisher<R>;
 
   peek(cb: (item: T) => void): FlowPublisher<T>;

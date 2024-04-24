@@ -9,6 +9,11 @@ import { type FlowPublisher } from "./FlowPublisher.ts";
 import { __createConnectable, __createFlowable } from "./__utils.ts";
 
 export const Flowable = Object.freeze({
+  single<T>(it: T | PromiseLike<T>) {
+    return __createFlowable<T>(async function* inner() {
+      yield it;
+    });
+  },
   of<T>(
     // deno-lint-ignore no-explicit-any
     ...args: any[]
@@ -26,11 +31,7 @@ export const Flowable = Object.freeze({
       throw new Error("Invalid iterable like input type");
     }
 
-    return __createFlowable<T>(async function* () {
-      for await (const item of fromIterableLike<T>(it)) {
-        yield item;
-      }
-    });
+    return __createFlowable<T>(() => fromIterableLike<T>(it));
   },
   fromEvent<T extends Event>(
     // deno-lint-ignore no-explicit-any
@@ -46,13 +47,12 @@ export const Flowable = Object.freeze({
     const copy = sources.slice();
     return __createFlowable<T>(async function* inner() {
       for (const item of copy) {
-        for await (const innerItem of item.toIterable()) {
-          yield innerItem as T;
-        }
+        yield* item.toIterable();
       }
     });
   },
 }) as {
+  single<T>(it: T | PromiseLike<T>): FlowPublisher<T>;
   of<T>(): FlowProcessor<T, T>;
   of<T>(it: IterableLike<T>): FlowPublisher<T>;
   fromEvent<T extends Event>(

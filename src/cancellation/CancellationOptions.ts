@@ -7,14 +7,10 @@ export type CancellationOptions = {
   throwOnCancellation?: boolean;
 };
 
-export type CancellationOptionsExtended = ((error: CancellationError) => void)
-  | boolean
-  | CancellationToken
-  | {
-    token?: CancellationToken;
-    onCancel?: (error: CancellationError) => void;
-    throwOnCancellation?: boolean;
-  };
+export type CancellationOptionsExtended = CancellationOptions |
+  ((error: CancellationError) => void) |
+  boolean |
+  CancellationToken;
 
 export const CancellationOptions = Object.freeze({
   from: (

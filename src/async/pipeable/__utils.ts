@@ -43,36 +43,30 @@ export function __fromHandlerMulti<T, R = T, A = undefined>(
   handler: (arg?: A) => HandlerMulti<T, R>,
   arg?: A,
 ): Pipeable<T, R> {
-  return (it) => {
-    return (async function* (
-      it: AsyncGenerator<T>,
-      handler: HandlerMulti<T, R>,
-    ) {
-      const flow = createFlow<T, R>(it);
-      for await (let sourceValue of it) {
-        do {
-          try {
-            for await (const value of handler(sourceValue, flow)) {
-              yield value;
-            }
-            break;
-          } catch (error) {
-            const result = await it.throw(error);
-            if (result.done) {
-              return;
-            }
-            sourceValue = result.value as Awaited<T>;
+  return async function* (it) {
+    const h = handler(arg);
+    const flow = createFlow<T, R>(it);
+    for await (let sourceValue of it) {
+      do {
+        try {
+          yield* h(sourceValue, flow);
+          break;
+        } catch (error) {
+          const result = await it.throw(error);
+          if (result.done) {
+            return;
           }
-        } while (true);
-      }
-      try {
-        if (it.return) {
-          await it.return(undefined);
+          sourceValue = result.value as Awaited<T>;
         }
-      } catch (error) {
-        console.warn("Generator return threw an error", error);
+      } while (true);
+    }
+    try {
+      if (it.return) {
+        await it.return(undefined);
       }
-    })(it, handler(arg));
+    } catch (error) {
+      console.warn("Generator return threw an error", error);
+    }
   };
 }
 
@@ -125,4 +119,4 @@ type Handler<T, R> = (
   flow: Controller<T, R>,
 ) => IteratorResult<R> | Promise<IteratorResult<R>>;
 
-type HandlerMulti<T, R> = (value: T, it: Controller<T, R>) => AsyncIterable<R>;
+type HandlerMulti<T, R> = (value: T, it: Controller<T, R>) => AsyncGenerator<R>;

@@ -16,7 +16,7 @@ export interface FlowProcessor<S, T> {
   ): FlowProcessor<S, R>;
 
   compose<R>(
-    mapper: (t: T, index: number) => AsyncIterable<R>,
+    mapper: (t: T, index: number) => AsyncGenerator<R>,
   ): FlowProcessor<S, R>;
 
   peek(cb: (item: T) => void): FlowProcessor<S, T>;
