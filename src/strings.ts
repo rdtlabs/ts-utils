@@ -1,4 +1,4 @@
-import { type Supplier } from "./types.ts";
+import type { Supplier } from "./types.ts";
 
 import { base64 } from "./encoding/base64.ts";
 import { objects } from "./objects.ts";

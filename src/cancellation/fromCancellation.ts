@@ -1,7 +1,7 @@
-import { type ErrorLike } from "../types.ts";
-import {
-  type CancellationController,
-  type CancellationToken,
+import type { ErrorLike } from "../types.ts";
+import type {
+  CancellationController,
+  CancellationToken,
 } from "./CancellationToken.ts";
 
 import { createCancellation } from "./createCancellation.ts";

@@ -4,8 +4,8 @@
 /// <reference lib="dom.asynciterable" />
 /// <reference lib="deno.ns" />
 
-import { assert } from "@std/assert/assert.ts";
-import { assertEquals } from '@std/assert/mod.ts';
+import { assert } from "https://deno.land/std@0.213.0/assert/assert.ts";
+import { assertEquals } from 'https://deno.land/std@0.213.0/assert/mod.ts';
 import { waitGroup, WaitGroup } from './WaitGroup.ts';
 import { CancellationError } from "../cancellation/CancellationError.ts";
 import { cancellationTimeout } from "../cancellation/cancellationTimeout.ts";

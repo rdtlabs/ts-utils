@@ -1,6 +1,6 @@
-import { type ErrorLike } from "../types.ts";
+import type { ErrorLike } from "../types.ts";
 import { CancellationError } from "./CancellationError.ts";
-import { type CancellationToken } from "./CancellationToken.ts";
+import type { CancellationToken } from "./CancellationToken.ts";
 
 const signalSym: unique symbol = Symbol("Symbol.CancellationToken");
 

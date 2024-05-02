@@ -1,5 +1,4 @@
 import { NonRetryableError } from "./NonRetryableError.ts";
-import { __getErrorMessage } from "./_utils.ts";
 
 export class DataTooLargeError extends NonRetryableError {
   constructor(reason?: unknown) {

@@ -1,5 +1,5 @@
 import { DisposedError } from "../DisposedError.ts";
-import { type CancellationToken } from "../cancellation/CancellationToken.ts";
+import type { CancellationToken } from "../cancellation/CancellationToken.ts";
 import { TimeoutInput } from "../types.ts";
 
 export function delay(

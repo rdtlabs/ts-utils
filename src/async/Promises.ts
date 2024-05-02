@@ -1,5 +1,5 @@
-import { type CancellationToken } from "../cancellation/CancellationToken.ts";
-import { type ErrorLike } from "../index.ts";
+import type { CancellationToken } from "../cancellation/CancellationToken.ts";
+import type { ErrorLike } from "../index.ts";
 
 export const Promises = Object.freeze({
   cancellable: (p, c) => {

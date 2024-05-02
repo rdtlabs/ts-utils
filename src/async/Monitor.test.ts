@@ -7,7 +7,7 @@
 import { monitor } from "./Monitor.ts";
 import { WaitGroup } from "./WaitGroup.ts";
 import { delay } from "./delay.ts";
-import { assertEquals } from "@std/assert/assert_equals.ts";
+import { assertEquals } from "https://deno.land/std@0.213.0/assert/assert_equals.ts";
 
 Deno.test("Monitor test", async () => {
   const wg = new WaitGroup(5);

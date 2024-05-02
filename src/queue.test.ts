@@ -4,10 +4,10 @@
 /// <reference lib="dom.asynciterable" />
 /// <reference lib="deno.ns" />
 
-import { assert } from "@std/assert/assert.ts";
+import { assert } from "https://deno.land/std@0.213.0/assert/assert.ts";
 import { createQueue } from "./Queue.ts";
-import { assertEquals } from "@std/assert/assert_equals.ts";
-import { assertFalse } from "@std/assert/assert_false.ts";
+import { assertEquals } from "https://deno.land/std@0.213.0/assert/assert_equals.ts";
+import { assertFalse } from "https://deno.land/std@0.213.0/assert/assert_false.ts";
 
 Deno.test("Queue test", () => {
   const queue = createQueue();

@@ -4,9 +4,9 @@
 /// <reference lib="dom.asynciterable" />
 /// <reference lib="deno.ns" />
 
-import { assert } from "@std/assert/assert.ts";
+import { assert } from "https://deno.land/std@0.213.0/assert/assert.ts";
 import { QueueClosedError, QueueFullError, QueueReadOnlyError } from "./errors.ts";
-import { assertRejects } from "@std/assert/assert_rejects.ts";
+import { assertRejects } from "https://deno.land/std@0.213.0/assert/assert_rejects.ts";
 import { asyncQueue } from './asyncQueue.ts';
 
 Deno.test("AsyncQueue enqueue full error", async () => {

@@ -1,10 +1,10 @@
-import { type Observable } from "../_rx.types.ts";
-import { type ErrorLike } from "../../types.ts";
-import { type FlowProcessor } from "./FlowProcessor.ts";
-import { type CancellationOptions } from "../../cancellation/CancellationOptions.ts";
-import { CancellationError } from "../../cancellation/CancellationError.ts";
-import { type CancellationToken } from "../../cancellation/CancellationToken.ts";
-import { type Maybe } from "../../Maybe.ts";
+import type { Observable } from "../_rx.types.ts";
+import type { ErrorLike } from "../../types.ts";
+import type { FlowProcessor } from "./FlowProcessor.ts";
+import type { CancellationOptions } from "../../cancellation/CancellationOptions.ts";
+import type { CancellationError } from "../../cancellation/CancellationError.ts";
+import type { CancellationToken } from "../../cancellation/CancellationToken.ts";
+import type { Maybe } from "../../Maybe.ts";
 
 export interface FlowPublisher<T> {
   filter(
@@ -33,7 +33,7 @@ export interface FlowPublisher<T> {
     onError?: (error: ErrorLike) => Promise<boolean> | boolean,
   ): FlowPublisher<T>;
 
-  buffer(size: number): FlowPublisher<T[]>;
+  chunk(size: number): FlowPublisher<T[]>;
 
   pipe<R>(connectable: FlowProcessor<T, R>): FlowPublisher<R>;
 

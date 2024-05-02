@@ -5,9 +5,9 @@ import {
 } from "./errors.ts";
 import { Deferred } from "../Deferred.ts";
 import { __getBufferFromOptions, __getQueueResolvers } from "./_utils.ts";
-import { type AsyncQueue, type QueueOptions } from "./types.ts";
-import { MaybeResult } from "../../types.ts";
-import { type CancellationToken } from "../../cancellation/CancellationToken.ts";
+import type { AsyncQueue, QueueOptions } from "./types.ts";
+import type { MaybeResult } from "../../types.ts";
+import type { CancellationToken } from "../../cancellation/CancellationToken.ts";
 
 type QueueState = "rw" | "r" | "-rw";
 

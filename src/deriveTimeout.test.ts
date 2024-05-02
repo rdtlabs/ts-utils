@@ -4,11 +4,11 @@
 /// <reference lib="dom.asynciterable" />
 /// <reference lib="deno.ns" />
 
-import { assert } from "@std/assert/assert.ts";
+import { assert } from "https://deno.land/std@0.213.0/assert/assert.ts";
 import { TimeoutInput } from "./types.ts";
-import { assertEquals } from "@std/assert/assert_equals.ts";
+import { assertEquals } from "https://deno.land/std@0.213.0/assert/assert_equals.ts";
 import { deadline } from "./deadline.ts";
-import { assertRejects } from "@std/assert/assert_rejects.ts";
+import { assertRejects } from "https://deno.land/std@0.213.0/assert/assert_rejects.ts";
 
 Deno.test("deriveTimeout Date test", () => {
   const d = new Date(Date.now() + 1000);

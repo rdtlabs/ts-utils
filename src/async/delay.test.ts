@@ -5,7 +5,7 @@
 /// <reference lib="deno.ns" />
 
 import { delay } from "./delay.ts";
-import { assertRejects } from "@std/assert/assert_rejects.ts";
+import { assertRejects } from "https://deno.land/std@0.213.0/assert/assert_rejects.ts";
 import { CancellationError } from "../cancellation/CancellationError.ts";
 import { Cancellable } from "../cancellation/Cancellable.ts";
 import { DisposedError } from "../DisposedError.ts";

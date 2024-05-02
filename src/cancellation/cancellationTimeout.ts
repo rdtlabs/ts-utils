@@ -1,4 +1,4 @@
-import { type CancellationToken } from "./CancellationToken.ts";
+import type { CancellationToken } from "./CancellationToken.ts";
 import { __createToken } from "./_utils.ts";
 import { TimeoutInput } from "../types.ts";
 import { DisposedError } from "../DisposedError.ts";

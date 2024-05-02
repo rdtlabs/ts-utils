@@ -1,4 +1,4 @@
-import { EncryptedData } from "./types.ts";
+import type { EncryptedData } from "./types.ts";
 
 import { __decryptAsString, __stringToCryptoKey } from "./_utils.ts";
 

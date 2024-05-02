@@ -1,10 +1,10 @@
-import { type CancellationOptions } from "../../cancellation/CancellationOptions.ts";
-import { type ErrorLike } from "../../types.ts";
-import { Observable } from "../_rx.types.ts";
-import { type IterableLike } from "../fromIterableLike.ts";
-import { CancellationError } from "../../cancellation/CancellationError.ts";
-import { type CancellationToken } from "../../cancellation/CancellationToken.ts";
-import { type Maybe } from "../../Maybe.ts";
+import type { CancellationOptions } from "../../cancellation/CancellationOptions.ts";
+import type { ErrorLike } from "../../types.ts";
+import type { Observable } from "../_rx.types.ts";
+import type { IterableLike } from "../fromIterableLike.ts";
+import type { CancellationError } from "../../cancellation/CancellationError.ts";
+import type { CancellationToken } from "../../cancellation/CancellationToken.ts";
+import type { Maybe } from "../../Maybe.ts";
 
 export interface FlowProcessor<S, T> {
   filter(
@@ -33,7 +33,7 @@ export interface FlowProcessor<S, T> {
     onError?: (error: ErrorLike) => Promise<boolean> | boolean,
   ): FlowProcessor<S, T>;
 
-  buffer(size: number): FlowProcessor<S, T[]>;
+  chunk(size: number): FlowProcessor<S, T[]>;
 
   toObservable(input: IterableLike<S>): Observable<T>;
 

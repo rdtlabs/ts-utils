@@ -4,8 +4,8 @@
 /// <reference lib="dom.asynciterable" />
 /// <reference lib="deno.ns" />
 
-import { assert } from "@std/assert/assert.ts";
-import { assertFalse } from "@std/assert/assert_false.ts";
+import { assert } from "https://deno.land/std@0.213.0/assert/assert.ts";
+import { assertFalse } from "https://deno.land/std@0.213.0/assert/assert_false.ts";
 import { NonRetryableError } from "./NonRetryableError.ts";
 import { RetryableError } from "./RetryableError.ts";
 import { getErrorForHttpCode } from "./getErrorForHttpCode.ts";

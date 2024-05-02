@@ -4,10 +4,10 @@
 /// <reference lib="dom.asynciterable" />
 /// <reference lib="deno.ns" />
 
-import { assert } from "@std/assert/assert.ts";
-import { assertRejects } from "@std/assert/assert_rejects.ts";
+import { assert } from "https://deno.land/std@0.213.0/assert/assert.ts";
+import { assertRejects } from "https://deno.land/std@0.213.0/assert/assert_rejects.ts";
 import { List } from "./List.ts";
-import { assertEquals } from "@std/assert/assert_equals.ts";
+import { assertEquals } from "https://deno.land/std@0.213.0/assert/assert_equals.ts";
 import { Deferred, deferred } from "./async/Deferred.ts";
 
 Deno.test("List groupBy function test", () => {

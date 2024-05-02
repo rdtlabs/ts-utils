@@ -1,11 +1,18 @@
-import { ErrorLike } from "./types.ts";
+import { objects } from "./objects.ts";
+import type { ErrorLike } from "./types.ts";
 
 export type Maybe<T> = {
   elseThrow: (errFn: () => ErrorLike) => T;
   else: (alt: T) => T;
   elseGet: (altFn: () => T) => T;
+  or(orFn: () => Maybe<T>): Maybe<T>;
+  filter: (predicate: (t: T) => boolean) => Maybe<T>;
   map: <R>(mapper: (t: T) => R) => Maybe<R>;
+  flatMap: <R>(mapper: (t: T) => Maybe<R>) => Maybe<R>;
   get: () => MaybeResult<T>;
+  [Symbol.iterator](): Iterator<T>;
+  readonly value: T | undefined;
+  readonly isNil: boolean;
 };
 
 export const Maybe = Object.freeze({
@@ -21,36 +28,68 @@ export const Maybe = Object.freeze({
 });
 
 function maybe<T>(value?: T): Maybe<T> {
-  return {
-    elseThrow(errFn: () => ErrorLike) {
-      if (value === undefined) {
-        throw errFn();
-      }
+  if (value === null) {
+    return nullMaybe as unknown as Maybe<T>;
+  }
 
-      return value;
-    },
-    else(alt: T) {
-      return value ?? alt;
-    },
-    elseGet(altFn: () => T) {
-      return value ?? altFn();
-    },
-    map<R>(mapper: (t: T) => R) {
-      return maybe(value ? mapper(value) : undefined);
-    },
-    get: () => {
-      if (value === undefined) {
+  if (value === undefined) {
+    return undefMaybe as unknown as Maybe<T>;
+  }
+
+  let self: Maybe<T>;
+  return Object.freeze(
+    self = {
+      get value() {
+        return value;
+      },
+      get isNil() {
+        return false;
+      },
+      elseThrow() {
+        return value;
+      },
+      else() {
+        return value;
+      },
+      elseGet() {
+        return value;
+      },
+      map<R>(mapper: (t: T) => R) {
+        return maybe(mapper(value));
+      },
+      flatMap<R>(mapper: (t: T) => Maybe<R>) {
+        return mapper(value);
+      },
+      filter(predicate: (t: T) => boolean) {
+        if (objects.isNil(value) || predicate(value)) {
+          return self;
+        }
+        return maybe();
+      },
+      or() {
+        return self;
+      },
+      get: () => {
         return {
-          ok: false,
+          value,
+          ok: true,
         };
-      }
+      },
+      [Symbol.iterator](): Iterator<T> {
+        let done = false;
+        return {
+          next() {
+            if (done) {
+              return { done: true, value: undefined };
+            }
 
-      return {
-        value,
-        ok: true,
-      };
+            done = true;
+            return { value };
+          },
+        };
+      },
     },
-  };
+  );
 }
 
 type MaybeResult<T> = TrueResult<T> | FalseResult;
@@ -64,3 +103,56 @@ type FalseResult = {
   value?: undefined;
   ok: false;
 };
+
+const { nullMaybe, undefMaybe } = (() => {
+  function create(value: undefined | null) {
+    let self: Maybe<undefined | null>;
+    return Object.freeze(
+      self = {
+        value,
+        isNil: true,
+        elseThrow(errFn: () => ErrorLike) {
+          throw errFn();
+        },
+        // deno-lint-ignore no-explicit-any
+        else(alt: any) {
+          return alt;
+        },
+        // deno-lint-ignore no-explicit-any
+        elseGet(altFn: () => any) {
+          return altFn();
+        },
+        map<R>() {
+          return self as unknown as Maybe<R>;
+        },
+        flatMap<R>() {
+          return self as unknown as Maybe<R>;
+        },
+        filter() {
+          return self;
+        },
+        // deno-lint-ignore no-explicit-any
+        or(orFn: () => Maybe<any>) {
+          return orFn();
+        },
+        get: () => {
+          return {
+            ok: false,
+          };
+        },
+        // deno-lint-ignore no-explicit-any
+        [Symbol.iterator](): Iterator<any> {
+          return {
+            next() {
+              return { done: true, value: undefined };
+            },
+          };
+        },
+      },
+    );
+  }
+  return {
+    nullMaybe: create(null) as Maybe<null>,
+    undefMaybe: create(undefined) as Maybe<undefined>,
+  };
+})();

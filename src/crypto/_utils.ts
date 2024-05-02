@@ -1,4 +1,4 @@
-import { EncryptedData, EncryptionSource } from "./types.ts";
+import type { EncryptedData, EncryptionSource } from "./types.ts";
 
 export const __keyLength = 32;
 

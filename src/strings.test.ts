@@ -4,7 +4,7 @@
 /// <reference lib="dom.asynciterable" />
 /// <reference lib="deno.ns" />
 
-import { assert } from "@std/assert/assert.ts";
+import { assert } from "https://deno.land/std@0.213.0/assert/assert.ts";
 import { strings } from "./strings.ts";
 
 Deno.test("strings areEqual test", () => {

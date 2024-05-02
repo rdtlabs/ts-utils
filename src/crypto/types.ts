@@ -1,4 +1,4 @@
-import { Func } from "../types.ts";
+import type { Func } from "../types.ts";
 
 export type EncryptedData = {
   iv: ArrayBuffer;

@@ -1,4 +1,4 @@
-import { type CancellationToken } from "./CancellationToken.ts";
+import type { CancellationToken } from "./CancellationToken.ts";
 import { __unwrap } from "./_utils.ts";
 
 export function unwrapAbortSignal(

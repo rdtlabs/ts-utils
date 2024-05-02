@@ -1,7 +1,7 @@
-import { type Callable } from "../types.ts";
+import type { Callable } from "../types.ts";
 import { WorkerPool } from "./workerpool/WorkerPool.ts";
 import { deferred } from "./Deferred.ts";
-import { type CancellationToken } from "../cancellation/CancellationToken.ts";
+import type { CancellationToken } from "../cancellation/CancellationToken.ts";
 import { Promises } from "./Promises.ts";
 
 export type Job<T> = Callable<PromiseLike<T> | T>;

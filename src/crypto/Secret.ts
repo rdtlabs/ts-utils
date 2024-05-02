@@ -1,9 +1,9 @@
 import { Md5 } from "../md5.ts";
 import {
   DecryptionError,
-  EncryptedData,
+  type EncryptedData,
   EncryptionError,
-  EncryptionSource,
+  type EncryptionSource,
 } from "./types.ts";
 import {
   __decrypt,

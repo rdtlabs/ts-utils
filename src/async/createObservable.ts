@@ -1,5 +1,5 @@
-import { ErrorLike } from "../types.ts";
-import { Observable, Subscriber, Unsubscribe } from "./_rx.types.ts";
+import type { ErrorLike } from "../types.ts";
+import type { Observable, Subscriber, Unsubscribe } from "./_rx.types.ts";
 
 export function createObservable<T>(
   onSubscribed: (

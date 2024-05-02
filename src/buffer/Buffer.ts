@@ -1,6 +1,9 @@
-import type { BufferLike, BufferStrategy } from "./BufferLike.ts";
+import type {
+  BufferLike,
+  BufferStrategy,
+  BufferStrategySelector,
+} from "./BufferLike.ts";
 import { DisposedError } from "../DisposedError.ts";
-import { BufferStrategySelector } from "./BufferLike.ts";
 import { BufferFullError } from "./BufferFullError.ts";
 
 export class Buffer<T> implements BufferLike<T> {

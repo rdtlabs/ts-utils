@@ -1,4 +1,4 @@
-import { type CancellationToken } from "./CancellationToken.ts";
+import type { CancellationToken } from "./CancellationToken.ts";
 import { __never } from "./_utils.ts";
 import { cancellationSignal } from "./cancellationSignal.ts";
 import { getTimeout } from "./cancellationTimeout.ts";

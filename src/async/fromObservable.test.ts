@@ -10,11 +10,11 @@ import { cancellableIterable } from "../cancellation/cancellableIterable.ts";
 import { cancellationTimeout } from "../cancellation/cancellationTimeout.ts";
 import { fromObservable } from "./fromObservable.ts";
 import { createObservable } from "./createObservable.ts";
-import { assertEquals } from "@std/assert/assert_equals.ts";
-import { assert } from "@std/assert/assert.ts";
+import { assertEquals } from "https://deno.land/std@0.213.0/assert/assert_equals.ts";
+import { assert } from "https://deno.land/std@0.213.0/assert/assert.ts";
 import { delay } from "./delay.ts";
 import { WaitGroup } from "./WaitGroup.ts";
-import { assertRejects } from "@std/assert/assert_rejects.ts";
+import { assertRejects } from "https://deno.land/std@0.213.0/assert/assert_rejects.ts";
 
 Deno.test("fromObservable test", async () => {
   const queue = new AsyncQueue<number>();

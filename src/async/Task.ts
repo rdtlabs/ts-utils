@@ -1,5 +1,5 @@
-import { type CancellationToken } from "../cancellation/CancellationToken.ts";
-import { type Callable, type TimeoutInput } from "../types.ts";
+import type { CancellationToken } from "../cancellation/CancellationToken.ts";
+import type { Callable, TimeoutInput } from "../types.ts";
 import { delay } from "./delay.ts";
 import { Executor } from "./executors.ts";
 

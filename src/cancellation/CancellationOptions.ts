@@ -1,5 +1,5 @@
-import { CancellationError } from "./CancellationError.ts";
-import { type CancellationToken } from "./CancellationToken.ts";
+import type { CancellationError } from "./CancellationError.ts";
+import type { CancellationToken } from "./CancellationToken.ts";
 
 export type CancellationOptions = {
   token?: CancellationToken;

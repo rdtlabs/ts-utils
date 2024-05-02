@@ -1,5 +1,5 @@
 import { signal } from "./Signal.ts";
-import { WaitHandle } from "./WaitHandle.ts";
+import type { WaitHandle } from "./WaitHandle.ts";
 
 export interface WaitGroup extends WaitHandle {
   add(delta: number): void;

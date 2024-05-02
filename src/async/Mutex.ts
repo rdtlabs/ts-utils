@@ -1,6 +1,6 @@
-import { type CancellationToken } from "../cancellation/CancellationToken.ts";
+import type { CancellationToken } from "../cancellation/CancellationToken.ts";
 import { semaphore } from "./Semaphore.ts";
-import { WaitHandle } from "./WaitHandle.ts";
+import type { WaitHandle } from "./WaitHandle.ts";
 
 export interface Mutex extends WaitHandle {
   tryLock(): boolean;

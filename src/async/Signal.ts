@@ -1,4 +1,4 @@
-import { WaitHandle } from "./WaitHandle.ts";
+import type { WaitHandle } from "./WaitHandle.ts";
 import { Promises } from "./Promises.ts";
 import { CancellationInput } from "../cancellation/cancellationInput.ts";
 

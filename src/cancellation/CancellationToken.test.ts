@@ -4,11 +4,11 @@
 /// <reference lib="dom.asynciterable" />
 /// <reference lib="deno.ns" />
 
-import { assert } from "@std/assert/assert.ts";
+import { assert } from "https://deno.land/std@0.213.0/assert/assert.ts";
 import { Cancellable } from "./Cancellable.ts";
 import { CancellationError } from "./CancellationError.ts";
 import { deferred } from "../async/Deferred.ts";
-import { assertRejects } from "@std/assert/assert_rejects.ts";
+import { assertRejects } from "https://deno.land/std@0.213.0/assert/assert_rejects.ts";
 import { DisposedError } from "../DisposedError.ts";
 
 Deno.test("CancellationToken combine and timeout test", async () => {

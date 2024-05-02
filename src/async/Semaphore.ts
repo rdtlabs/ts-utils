@@ -1,6 +1,6 @@
-import { type CancellationToken } from "../cancellation/CancellationToken.ts";
+import type { CancellationToken } from "../cancellation/CancellationToken.ts";
 import { deferred } from "./Deferred.ts";
-import { WaitHandle } from "./WaitHandle.ts";
+import type { WaitHandle } from "./WaitHandle.ts";
 import { CancellationError } from "../cancellation/CancellationError.ts";
 import { CancellationInput } from "../cancellation/cancellationInput.ts";
 

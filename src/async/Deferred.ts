@@ -1,5 +1,5 @@
-import { type CancellationToken } from "../cancellation/CancellationToken.ts";
-import { type ErrorLike } from "../types.ts";
+import type { CancellationToken } from "../cancellation/CancellationToken.ts";
+import type { ErrorLike } from "../types.ts";
 import { Promises } from "./Promises.ts";
 
 export interface Deferred<T = void> {

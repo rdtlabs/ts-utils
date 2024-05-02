@@ -1,8 +1,7 @@
-import { type BufferStrategyOptions } from "../../buffer/BufferLike.ts";
-import { __getBufferFromOptions, __getQueueResolvers } from "./_utils.ts";
-import { type MaybeResult } from "../../types.ts";
+import type { BufferStrategyOptions } from "../../buffer/BufferLike.ts";
+import type { MaybeResult } from "../../types.ts";
 import { asyncQueue } from "./asyncQueue.ts";
-import { type CancellationToken } from "../../cancellation/CancellationToken.ts";
+import type { CancellationToken } from "../../cancellation/CancellationToken.ts";
 
 /**
  *  The options to use when creating a new async queue

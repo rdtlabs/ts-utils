@@ -1,6 +1,6 @@
 {
   "name": "rdt-utils",
-  "version": "0.2.31",
+  "version": "0.2.32",
   "description": "Library of typescript utilities",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
@@ -47,7 +47,7 @@
     "rel:patch": "npm version patch && npm run build && npm pack && npm publish --access public",
     "rel:minor": "npm version minor && npm run build && npm pack && npm publish --access public",
     "rel:major": "npm version major && npm run build && npm pack && npm publish --access public",
-    "github release": "gh release create v0.2.30 .\rdt-utils-0.2.30.tgz --notes \"Flowable and Connectable (e.g. a flowable with a deferred input)\"",
+    "github release": "gh release create v0.2.32 .\rdt-utils-0.2.32.tgz --notes removed completion handlers",
     "help": "tsup --help"
   }
 }

@@ -1,5 +1,5 @@
-import { type ErrorLike } from "../types.ts";
-import { type CancellationToken } from "./CancellationToken.ts";
+import type { ErrorLike } from "../types.ts";
+import type { CancellationToken } from "./CancellationToken.ts";
 
 export class CancellationError extends Error {
   readonly #token?: CancellationToken;

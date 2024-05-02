@@ -1,7 +1,7 @@
 import { type ErrorLike, TimeoutInput } from "../types.ts";
-import {
-  type CancellationController,
-  type CancellationToken,
+import type {
+  CancellationController,
+  CancellationToken,
 } from "./CancellationToken.ts";
 import { cancellationSignal } from "./cancellationSignal.ts";
 

@@ -4,11 +4,11 @@
 /// <reference lib="dom.asynciterable" />
 /// <reference lib="deno.ns" />
 
-import { assert } from "@std/assert/assert.ts";
+import { assert } from "https://deno.land/std@0.213.0/assert/assert.ts";
 import { signal } from './Signal.ts';
 import { CancellationError } from "../cancellation/CancellationError.ts";
 import { cancellationTimeout } from "../cancellation/cancellationTimeout.ts";
-import { assertFalse } from "@std/assert/assert_false.ts";
+import { assertFalse } from "https://deno.land/std@0.213.0/assert/assert_false.ts";
 
 Deno.test("Signal notify test", async () => {
   const sig = signal();

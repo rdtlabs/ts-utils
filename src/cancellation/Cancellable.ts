@@ -1,10 +1,10 @@
 import { fromIterableLike } from "../async/fromIterableLike.ts";
-import { type IterableLike } from "../async/fromIterableLike.ts";
+import type { IterableLike } from "../async/fromIterableLike.ts";
 import { Promises } from "../async/Promises.ts";
-import { type Callable, type ErrorLike, type TimeoutInput } from "../types.ts";
-import {
-  type CancellationController,
-  type CancellationToken,
+import type { Callable, ErrorLike, TimeoutInput } from "../types.ts";
+import type {
+  CancellationController,
+  CancellationToken,
 } from "./CancellationToken.ts";
 import { __isToken, __never } from "./_utils.ts";
 import { cancellableIterable } from "./cancellableIterable.ts";

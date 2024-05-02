@@ -1,4 +1,4 @@
-import { type ErrorLike } from "../../types.ts";
+import type { ErrorLike } from "../../types.ts";
 import { Pipeable } from "./Pipeable.ts";
 
 export function map<T = unknown, R = T>(
@@ -107,7 +107,7 @@ export function resumeOnError<T>(
   };
 }
 
-export function buffer<T>(size: number): Pipeable<T[]> {
+export function chunk<T>(size: number): Pipeable<T[]> {
   if (size < 1 || size === Infinity) {
     throw new TypeError(`Invalid buffer size ${size}`);
   }

@@ -4,10 +4,10 @@
 /// <reference lib="dom.asynciterable" />
 /// <reference lib="deno.ns" />
 
-import { assert } from "@std/assert/assert.ts";
+import { assert } from "https://deno.land/std@0.213.0/assert/assert.ts";
 import { Executor } from "./executors.ts";
 import { monitor } from "./Monitor.ts";
-import { assertEquals } from "@std/assert/assert_equals.ts";
+import { assertEquals } from "https://deno.land/std@0.213.0/assert/assert_equals.ts";
 import { signal } from "./Signal.ts";
 import { delay } from "./delay.ts";
 

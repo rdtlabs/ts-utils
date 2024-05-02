@@ -1,5 +1,5 @@
 import { Buffer } from "./Buffer.ts";
-import {
+import type {
   BufferLike,
   BufferStrategy,
   BufferStrategySelector,

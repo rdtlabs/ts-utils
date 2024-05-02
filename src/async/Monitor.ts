@@ -1,5 +1,5 @@
 import { Deferred } from "./Deferred.ts";
-import { WaitHandle } from "./WaitHandle.ts";
+import type { WaitHandle } from "./WaitHandle.ts";
 
 export interface Monitor extends WaitHandle {
   pulseOne(): void;

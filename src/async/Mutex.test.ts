@@ -4,9 +4,9 @@
 /// <reference lib="dom.asynciterable" />
 /// <reference lib="deno.ns" />
 
-import { assert } from "@std/assert/assert.ts";
+import { assert } from "https://deno.land/std@0.213.0/assert/assert.ts";
 import { mutex } from "./Mutex.ts";
-import { assertFalse } from "@std/assert/assert_false.ts";
+import { assertFalse } from "https://deno.land/std@0.213.0/assert/assert_false.ts";
 import { WaitGroup } from "./WaitGroup.ts";
 import { delay } from "./delay.ts";
 import { Signal } from "./index.ts";

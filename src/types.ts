@@ -1,4 +1,4 @@
-import { type Deadline } from "./deadline.ts";
+import type { Deadline } from "./deadline.ts";
 
 // deno-lint-ignore no-explicit-any
 export type Func = (...args: any[]) => any;
@@ -19,13 +19,13 @@ export type Supplier<T> = () => T;
 
 // deno-lint-ignore no-explicit-any
 export type ErrorLike = Error | string | any;
-export type TimeoutInput = number | Date | Deadline;
 
 export type MaybeResult<T> = { value: T; ok: true } | {
   value?: undefined;
   ok: false;
 };
 
+export type TimeoutInput = number | Date | Deadline;
 export const TimeoutInput = {
   deriveTimeout(timeout: TimeoutInput): number {
     if (timeout instanceof Date) {
