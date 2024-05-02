@@ -273,7 +273,7 @@ Deno.test("flowable concat test", async () => {
 });
 
 Deno.test("flowable observable test", async () => {
-  let timerId: any;
+  let timerId: ReturnType<typeof setTimeout> | undefined;
   const observable = createObservable<number>((sub) => {
     queueMicrotask(() => {
       sub.next(1);
