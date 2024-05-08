@@ -1,6 +1,9 @@
 import type { ErrorLike } from "../types.ts";
 import type { CancellationToken } from "./CancellationToken.ts";
 
+// deno-lint-ignore no-explicit-any
+let captureStackTrace = (Error as any).captureStackTrace ?? (() => { });
+
 export class CancellationError extends Error {
   readonly #token?: CancellationToken;
   readonly #cause?: ErrorLike;
@@ -12,8 +15,11 @@ export class CancellationError extends Error {
     this.#cause = tpl.cause;
     this.#token = tpl.token;
 
-    if (Error.captureStackTrace && cause !== tpl.cause) {
-      Error.captureStackTrace(this, CancellationError);
+    try {
+      captureStackTrace(this, CancellationError);
+    } catch {
+      // something is wrong. so ignore future errors
+      captureStackTrace = () => { };
     }
   }
 
