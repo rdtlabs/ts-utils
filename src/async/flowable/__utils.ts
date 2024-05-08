@@ -85,14 +85,14 @@ export function __createFlowable<T>(
     toObservable: () => {
       return connectable.toObservable(generator());
     },
-    takeFirst: (options) => {
-      return connectable.takeFirst(
+    selectFirst: (options) => {
+      return connectable.selectFirst(
         generator(),
         options as CancellationOptions,
       );
     },
-    takeLast: (options) => {
-      return connectable.takeLast(
+    selectLast: (options) => {
+      return connectable.selectLast(
         generator(),
         options as CancellationOptions,
       );
@@ -184,7 +184,7 @@ function __createConnectableWithParams<T>(
         cb(item as T);
       }
     },
-    async takeFirst(input, options) {
+    async selectFirst(input, options) {
       for await (
         const item of __iter(input, pipeables, options, {
           throwOnCancellation: true,
@@ -194,7 +194,7 @@ function __createConnectableWithParams<T>(
       }
       return Maybe.of();
     },
-    async takeLast(input, options) {
+    async selectLast(input, options) {
       let lastItem: T | undefined;
       for await (
         const item of __iter(input, pipeables, options, {

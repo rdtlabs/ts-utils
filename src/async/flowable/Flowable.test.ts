@@ -487,34 +487,35 @@ function createQueue(...args: number[]) {
   return queue;
 }
 
-Deno.test("flowable takeFirst test", async () => {
+Deno.test("flowable selectFirst test", async () => {
   const queue = createQueue();
 
   queue.setReadOnly();
 
   const result = await Flowable
     .of(queue)
-    .takeFirst();
+    .selectFirst();
 
   assert(result.else(-1) === 1);
 });
 
-Deno.test("flowable takeLast test", async () => {
+Deno.test("flowable selectLast test", async () => {
   const queue = createQueue();
 
   queue.setReadOnly();
 
   const result = await Flowable
     .of(queue)
-    .takeLast();
+    .selectLast();
 
   assert(result.else(-1) === 5);
 });
 
-Deno.test("flowable takeLast single test", async () => {
+Deno.test("flowable selectLast single test", async () => {
   const result = await Flowable
     .single(1)
-    .takeLast();
+    .selectLast();
 
   assert(result.else(-1) === 1);
 });
+

@@ -101,36 +101,36 @@ export interface FlowProcessor<S, T> {
     options?: CancellationOptions,
   ): Promise<void>;
 
-  takeFirst(
+  selectFirst(
     input: IterableLike<S>,
     cancellationToken?: CancellationToken,
   ): Promise<Maybe<T>>;
-  takeFirst(
+  selectFirst(
     input: IterableLike<S>,
     onCancel: (error: CancellationError) => void,
   ): Promise<Maybe<T>>;
-  takeFirst(
+  selectFirst(
     input: IterableLike<S>,
     throwOnCancellation: boolean,
   ): Promise<Maybe<T>>;
-  takeFirst(
+  selectFirst(
     input: IterableLike<S>,
     options?: CancellationOptions,
   ): Promise<Maybe<T>>;
 
-  takeLast(
+  selectLast(
     input: IterableLike<S>,
     cancellationToken?: CancellationToken,
   ): Promise<Maybe<T>>;
-  takeLast(
+  selectLast(
     input: IterableLike<S>,
     onCancel: (error: CancellationError) => void,
   ): Promise<Maybe<T>>;
-  takeLast(
+  selectLast(
     input: IterableLike<S>,
     throwOnCancellation: boolean,
   ): Promise<Maybe<T>>;
-  takeLast(
+  selectLast(
     input: IterableLike<S>,
     options?: CancellationOptions,
   ): Promise<Maybe<T>>;

@@ -69,13 +69,13 @@ export interface FlowPublisher<T> {
     options?: CancellationOptions,
   ): Promise<void>;
 
-  takeFirst(cancellationToken?: CancellationToken): Promise<Maybe<T>>;
-  takeFirst(onCancel: (error: CancellationError) => void): Promise<Maybe<T>>;
-  takeFirst(throwOnCancellation: boolean): Promise<Maybe<T>>;
-  takeFirst(options?: CancellationOptions): Promise<Maybe<T>>;
+  selectFirst(cancellationToken?: CancellationToken): Promise<Maybe<T>>;
+  selectFirst(onCancel: (error: CancellationError) => void): Promise<Maybe<T>>;
+  selectFirst(throwOnCancellation: boolean): Promise<Maybe<T>>;
+  selectFirst(options?: CancellationOptions): Promise<Maybe<T>>;
 
-  takeLast(cancellationToken?: CancellationToken): Promise<Maybe<T>>;
-  takeLast(onCancel: (error: CancellationError) => void): Promise<Maybe<T>>;
-  takeLast(throwOnCancellation: boolean): Promise<Maybe<T>>;
-  takeLast(options?: CancellationOptions): Promise<Maybe<T>>;
+  selectLast(cancellationToken?: CancellationToken): Promise<Maybe<T>>;
+  selectLast(onCancel: (error: CancellationError) => void): Promise<Maybe<T>>;
+  selectLast(throwOnCancellation: boolean): Promise<Maybe<T>>;
+  selectLast(options?: CancellationOptions): Promise<Maybe<T>>;
 }
