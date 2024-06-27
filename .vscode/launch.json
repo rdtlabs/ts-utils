@@ -24,6 +24,21 @@
                 "src/main.local.ts",
             ],
             "attachSimplePort": 9229
+        },
+        {
+          "request": "launch",
+          "name": "Debug Test",
+          "type": "node",
+          "cwd": "${workspaceFolder}",
+          "runtimeExecutable": "deno",
+          "runtimeArgs": [
+            "test",
+            "${file}",
+            "--inspect-brk",
+            "--allow-all",
+            "--unstable"
+          ],
+          "attachSimplePort": 9229
         }
     ]
 }
