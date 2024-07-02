@@ -8,23 +8,21 @@ export function fromOptions(options?: {
   const maxQueueLength = options?.maxQueueLength ?? 1024;
   const maxConcurrency = options?.maxConcurrency ?? 4;
 
-  if (
-    maxConcurrency === undefined ||
-    maxConcurrency < 1 ||
-    maxConcurrency > 32
-  ) {
+  if (!maxConcurrency || maxConcurrency < 1) {
     throw new Error(
-      "Invalid maxConcurrency. Value must be <= 1 and <= 32.",
+      "Invalid maxConcurrency. Value must be > 0.",
     );
   }
 
-  if (
-    maxQueueLength === undefined ||
-    maxQueueLength < 1 ||
-    maxQueueLength > 1024
-  ) {
+  if (!maxQueueLength || maxQueueLength < 1) {
     throw new Error(
-      "Invalid maxQueueLength. Value must be <= 1 and <= 1024.",
+      "Invalid maxQueueLength. Value must be > 0.",
+    );
+  }
+
+  if (maxQueueLength < maxConcurrency) {
+    throw new Error(
+      "Invalid maxQueueLength. maxQueueLength must be >= maxConcurrency.",
     );
   }
 

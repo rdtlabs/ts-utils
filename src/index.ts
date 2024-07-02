@@ -19,6 +19,7 @@ export {
 export * from "./types.ts";
 export * from "./List.ts";
 
+export * from "./assert/index.ts";
 export * from "./async/index.ts";
 export * from "./buffer/index.ts";
 export * from "./cancellation/index.ts";
