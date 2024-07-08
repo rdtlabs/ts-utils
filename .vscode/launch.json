@@ -7,7 +7,7 @@
         {
             "request": "launch",
             /* modified: descriptive name */
-            "name": "Debug tests",
+            "name": "Run main local",
             /* modified: was generated as "pwa-node", but VS Code shows me
       a diagnostic warning for that value: "Please use type node instead(2)" */
             "type": "node",

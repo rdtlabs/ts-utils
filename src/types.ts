@@ -6,6 +6,7 @@ export type Func0<T> = () => T;
 export type Func1<T, R> = (t: T) => R;
 export type Func2<T, U, R> = (t: T, u: U) => R;
 export type Func3<T, U, V, R> = (t: T, u: U, v: V) => R;
+
 // deno-lint-ignore no-explicit-any
 export type EventHandler<T = any> = (event: T) => void;
 export type Nullable<T> = T | null;

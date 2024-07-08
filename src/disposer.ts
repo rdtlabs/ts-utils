@@ -1,7 +1,12 @@
 export type Disposer = (() => ReadonlyArray<Error>) & Disposable;
-export type DisposerAsync = (() => Promise<ReadonlyArray<Error>>) & AsyncDisposable;
+export type DisposerAsync =
+  & (() => Promise<ReadonlyArray<Error>>)
+  & AsyncDisposable;
 export const Disposer = {
-  fromAsync(...disposables: (AsyncDisposable | Disposable | (() => void | Promise<void>))[]): DisposerAsync {
+  fromAsync(
+    ...disposables:
+      (AsyncDisposable | Disposable | (() => void | Promise<void>))[]
+  ): DisposerAsync {
     const fn = async () => {
       let errors: Error[] | undefined = undefined;
       for (const disposable of disposables) {
@@ -10,7 +15,7 @@ export const Disposer = {
             await disposable[Symbol.asyncDispose]();
           } else if (Symbol.dispose in disposable) {
             disposable[Symbol.dispose]();
-          } else if (typeof disposable === 'function') {
+          } else if (typeof disposable === "function") {
             await disposable();
           }
         } catch (e) {
@@ -26,7 +31,7 @@ export const Disposer = {
       },
       writable: false,
       enumerable: false,
-      configurable: false
+      configurable: false,
     }) as DisposerAsync;
   },
   from(...disposables: (Disposable | (() => void))[]): Disposer {
@@ -36,7 +41,7 @@ export const Disposer = {
         try {
           if (Symbol.dispose in disposable) {
             disposable[Symbol.dispose]();
-          } else if (typeof disposable === 'function') {
+          } else if (typeof disposable === "function") {
             disposable();
           }
         } catch (e) {
@@ -53,7 +58,7 @@ export const Disposer = {
       },
       writable: false,
       enumerable: false,
-      configurable: false
+      configurable: false,
     }) as Disposer;
   },
   concat(...disposers: Disposer[]): Disposer {
@@ -79,7 +84,7 @@ export const Disposer = {
       },
       writable: false,
       enumerable: false,
-      configurable: false
+      configurable: false,
     }) as Disposer;
   },
   concatAsync(...disposers: (Disposer | DisposerAsync)[]): DisposerAsync {
@@ -105,9 +110,9 @@ export const Disposer = {
       },
       writable: false,
       enumerable: false,
-      configurable: false
+      configurable: false,
     }) as DisposerAsync;
-  }
-}
+  },
+};
 
 const emptyErrorArray: ReadonlyArray<Error> = Object.freeze<Array<Error>>([]);

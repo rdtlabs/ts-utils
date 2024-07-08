@@ -10,6 +10,7 @@ export { strings } from "./strings.ts";
 export { base64 } from "./encoding/base64.ts";
 export { Md5 } from "./md5.ts";
 export { Once, once } from "./once.ts";
+export { Lazy, lazyFn, lazyObject } from "./lazy.ts";
 export * from "./Queue.ts";
 export {
   Deadline as Deadline,

@@ -32,8 +32,9 @@ export function assertIsError<E extends Error = Error>(
     );
   }
   if (ErrorClass && !(error instanceof ErrorClass)) {
-    msg = `Expected error to be instance of "${ErrorClass.name}", but was "${typeof error === "object" ? error?.constructor?.name : "[not an object]"
-      }"${msgSuffix}`;
+    msg = `Expected error to be instance of "${ErrorClass.name}", but was "${
+      typeof error === "object" ? error?.constructor?.name : "[not an object]"
+    }"${msgSuffix}`;
     throw new AssertionError(msg);
   }
   let msgCheck;
@@ -47,13 +48,15 @@ export function assertIsError<E extends Error = Error>(
   }
 
   if (msgMatches && !msgCheck) {
-    msg = `Expected error message to include ${msgMatches instanceof RegExp
-      ? msgMatches.toString()
-      : JSON.stringify(msgMatches)
-      }, but got ${error instanceof Error
+    msg = `Expected error message to include ${
+      msgMatches instanceof RegExp
+        ? msgMatches.toString()
+        : JSON.stringify(msgMatches)
+    }, but got ${
+      error instanceof Error
         ? JSON.stringify(error.message)
         : '"[not an Error]"' // TODO(kt3k): show more useful information
-      }${msgSuffix}`;
+    }${msgSuffix}`;
     throw new AssertionError(msg);
   }
 }
