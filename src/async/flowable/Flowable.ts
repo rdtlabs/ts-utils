@@ -15,7 +15,7 @@ type FromOptions<T> = {
 };
 
 /**
- * Represents a flowable object that can emit values over time.
+ * Utility object for creating flow publishers/processors.
  */
 export type Flowable = {
   /**
@@ -89,7 +89,7 @@ export type Flowable = {
 };
 
 /**
- * Represents a flowable object that can emit values over time.
+ * Utility object for creating flow publishers/processors.
  */
 export const Flowable = Object.freeze({
   single<T>(it: T | PromiseLike<T>) {

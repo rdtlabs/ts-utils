@@ -4,6 +4,16 @@ import { cancellationSignal } from "./cancellationSignal.ts";
 import { getTimeout } from "./cancellationTimeout.ts";
 import { unwrapAbortSignal } from "./unwrapAbortSignal.ts";
 
+/**
+ * Combines multiple cancellation tokens into a single cancellation token.
+ * If no cancellation tokens are provided, the function returns a never-ending cancellation token.
+ * If only one cancellation token is provided, that token is returned.
+ * If multiple cancellation tokens are provided, a new cancellation token is created that is cancelled
+ * when any of the provided cancellation tokens are cancelled.
+ *
+ * @param cancellations - The cancellation tokens to combine.
+ * @returns The combined cancellation token.
+ */
 export function combineTokens(
   ...cancellations: CancellationToken[]
 ): CancellationToken {

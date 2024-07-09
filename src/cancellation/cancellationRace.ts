@@ -8,6 +8,18 @@ type Raceable<T> =
   | PromiseLike<T>[]
   | (() => PromiseLike<T> | PromiseLike<T>[]);
 
+/**
+ * Races multiple promises against a cancellation token and returns a promise that resolves or rejects
+ * with the result of the first promise that settles or the cancellation reason.
+ *
+ * @template T - The type of the resolved value of the promises.
+ * @param {Raceable<T>} promises - The promises to race against.
+ * @param {CancellationInput} [cancellation] - The cancellation input.
+ * @param {(error: CancellationError) => void} [onCancel] - The callback function to be called when the
+ *   cancellation is triggered.
+ * @returns {Promise<T>} - A promise that resolves or rejects with the result of the first promise that
+ *   settles or the cancellation reason.
+ */
 export function cancellationRace<T>(
   promises: Raceable<T>,
   cancellation?: CancellationInput,

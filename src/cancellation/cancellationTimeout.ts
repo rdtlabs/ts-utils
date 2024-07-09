@@ -5,10 +5,31 @@ import { DisposedError } from "../DisposedError.ts";
 
 const timeoutSym: unique symbol = Symbol("Symbol.CancellationTimeout");
 
+/**
+ * Creates a cancellation token with a timeout.
+ *
+ * @param timeoutMillis - The timeout duration in milliseconds.
+ * @returns A cancellation token that can be cancelled or disposed.
+ */
 // deno-fmt-ignore
 export function cancellationTimeout(timeoutMillis: number): CancellationToken & Disposable; // deno-fmt-ignore
+
+/**
+ * Creates a cancellation token with a timeout.
+ *
+ * @param date - The date and time when the timeout will occur.
+ * @returns A cancellation token that can be cancelled or disposed.
+ */
 export function cancellationTimeout(date: Date): CancellationToken & Disposable; // deno-fmt-ignore
+
+/**
+ * Creates a cancellation token with a timeout.
+ *
+ * @param timeoutInput - The timeout duration or options.
+ * @returns A cancellation token that can be cancelled or disposed.
+ */
 export function cancellationTimeout(timeoutInput: TimeoutInput): CancellationToken & Disposable; // deno-fmt-ignore
+
 export function cancellationTimeout(timeoutInput: TimeoutInput): CancellationToken & Disposable {
   const derivedTimeout = TimeoutInput.deriveTimeout(timeoutInput);
   const abortController = new AbortController();
@@ -48,6 +69,11 @@ export function cancellationTimeout(timeoutInput: TimeoutInput): CancellationTok
   return cancellation as CancellationToken & Disposable;
 }
 
+/**
+ * Retrieves the timeout value from the given cancellation token if available.
+ * @param cancellation The cancellation token.
+ * @returns The timeout value, or undefined if not available.
+ */
 export function getTimeout(
   cancellation: CancellationToken,
 ): number | undefined {

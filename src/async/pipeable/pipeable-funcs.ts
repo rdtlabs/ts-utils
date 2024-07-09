@@ -1,6 +1,18 @@
 import type { ErrorLike } from "../../types.ts";
 import { Pipeable } from "./Pipeable.ts";
 
+/**
+ * @fileoverview This file contains pipeable functions for asynchronous operations.
+ * @module async/pipeable/pipeable-funcs
+ */
+
+/**
+ * Creates a new pipeable function that applies a mapper function to each value in the pipeline.
+ * @template T The type of the input values.
+ * @template R The type of the output values.
+ * @param {(t: T, index: number) => Promise<R> | R} mapper The mapper function to apply to each value.
+ * @returns {Pipeable<T, R>} The pipeable function.
+ */
 export function map<T = unknown, R = T>(
   mapper: (t: T, index: number) => Promise<R> | R,
 ): Pipeable<T, R> {
@@ -10,6 +22,12 @@ export function map<T = unknown, R = T>(
   });
 }
 
+/**
+ * Creates a new pipeable function that filters values in the pipeline based on a predicate function.
+ * @template T The type of the input values.
+ * @param {(t: T) => Promise<boolean> | boolean} predicate The predicate function to filter values.
+ * @returns {Pipeable<T>} The pipeable function.
+ */
 export function filter<T = unknown>(
   predicate: (t: T) => Promise<boolean> | boolean,
 ): Pipeable<T> {
@@ -28,6 +46,13 @@ export function filter<T = unknown>(
   });
 }
 
+/**
+ * Creates a new pipeable function that composes multiple async generators into a single pipeline.
+ * @template T The type of the input values.
+ * @template R The type of the output values.
+ * @param {(t: T, index: number) => AsyncGenerator<R>} mapper The async generator function to compose.
+ * @returns {Pipeable<T, R>} The pipeable function.
+ */
 export function compose<T = unknown, R = T>(
   mapper: (t: T, index: number) => AsyncGenerator<R>,
 ): Pipeable<T, R> {
@@ -39,6 +64,12 @@ export function compose<T = unknown, R = T>(
   });
 }
 
+/**
+ * Creates a new pipeable function that allows peeking at each value in the pipeline without modifying it.
+ * @template T The type of the input values.
+ * @param {(t: T) => void | Promise<void>} fn The function to call for each value.
+ * @returns {Pipeable<T>} The pipeable function.
+ */
 export function peek<T = unknown>(
   fn: (t: T) => void | Promise<void>,
 ): Pipeable<T> {
@@ -50,6 +81,12 @@ export function peek<T = unknown>(
   });
 }
 
+/**
+ * Creates a new pipeable function that skips values in the pipeline until a predicate is satisfied.
+ * @template T The type of the input values.
+ * @param {(value: T) => boolean | Promise<boolean>} predicate The predicate function to skip values.
+ * @returns {Pipeable<T>} The pipeable function.
+ */
 export function skipUntil<T>(
   predicate: (value: T) => boolean | Promise<boolean>,
 ): Pipeable<T> {
@@ -69,6 +106,12 @@ export function skipUntil<T>(
   });
 }
 
+/**
+ * Creates a new pipeable function that takes values in the pipeline until a predicate is not satisfied.
+ * @template T The type of the input values.
+ * @param {(value: T) => boolean | Promise<boolean>} predicate The predicate function to take values.
+ * @returns {Pipeable<T>} The pipeable function.
+ */
 export function takeWhile<T>(
   predicate: (value: T) => boolean | Promise<boolean>,
 ): Pipeable<T> {
@@ -84,6 +127,12 @@ export function takeWhile<T>(
   });
 }
 
+/**
+ * Creates a new pipeable function that resumes the pipeline after encountering an error, optionally handling the error.
+ * @template T The type of the input values.
+ * @param {(error: ErrorLike) => Promise<boolean> | boolean} [onError] The error handler function.
+ * @returns {Pipeable<T>} The pipeable function.
+ */
 export function resumeOnError<T>(
   onError?: (error: ErrorLike) => Promise<boolean> | boolean,
 ): Pipeable<T> {
@@ -107,6 +156,13 @@ export function resumeOnError<T>(
   };
 }
 
+/**
+ * Creates a new pipeable function that chunks values in the pipeline into arrays of a specified size.
+ * @template T The type of the input values.
+ * @param {number} size The size of each chunk.
+ * @returns {Pipeable<T[]>} The pipeable function.
+ * @throws {TypeError} If the size is invalid.
+ */
 export function chunk<T>(size: number): Pipeable<T[]> {
   if (size < 1 || size === Infinity) {
     throw new TypeError(`Invalid buffer size ${size}`);

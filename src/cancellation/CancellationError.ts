@@ -4,6 +4,9 @@ import type { CancellationToken } from "./CancellationToken.ts";
 // deno-lint-ignore no-explicit-any
 let captureStackTrace = (Error as any).captureStackTrace ?? (() => {});
 
+/**
+ * Represents an error that is thrown when an operation has been cancelled.
+ */
 export class CancellationError extends Error {
   readonly #token?: CancellationToken;
   readonly #cause?: ErrorLike;
@@ -23,10 +26,17 @@ export class CancellationError extends Error {
     }
   }
 
+  /**
+   * Gets the cancellation token associated with the error, if any.
+   */
   public get token(): CancellationToken | undefined {
     return this.#token;
   }
 
+  /**
+   * Gets the cause of the cancellation error.
+   * If a cause is not explicitly provided, it returns the reason from the cancellation token, if available.
+   */
   public get cause(): ErrorLike {
     return this.#cause ?? this.#token?.reason;
   }

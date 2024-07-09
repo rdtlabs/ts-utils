@@ -17,6 +17,9 @@ const secretKeyLength = __keyLength;
 const runtimeHashSalt = Date.now().toString();
 const keys = new Map<string, Secret>();
 
+/**
+ * Represents a secret key used for encryption and decryption.
+ */
 export class Secret {
   static #idCounter = 1;
   #id: number = Secret.#idCounter++;
@@ -36,6 +39,11 @@ export class Secret {
     return `Secret[${this.#id}]`;
   }
 
+  /**
+   * Utility method to generate a random key.
+   *
+   * @returns A randomly generated string value.
+   */
   static generateKey(): string {
     const charset =
       "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
@@ -52,6 +60,13 @@ export class Secret {
     return result;
   }
 
+  /**
+   * Creates a new Secret instance from the given key.
+   * If a Secret instance with the same key already exists, it increments the reference count and returns the existing instance.
+   * If a Secret instance with the same key does not exist, it creates a new instance and adds it to the internal keys map.
+   * @param key - The key used to create the Secret instance.
+   * @returns A Secret instance.
+   */
   static of(key: string): Secret {
     const hashId = new Md5()
       .update(key)
@@ -76,6 +91,13 @@ export class Secret {
     return secret;
   }
 
+  /**
+   * Encrypts the given data using the secret key.
+   *
+   * @param data - The data to be encrypted.
+   * @returns A promise that resolves to the encrypted data.
+   * @throws {EncryptionError} If an error occurs during encryption.
+   */
   public encrypt(data: EncryptionSource): Promise<EncryptedData> {
     try {
       return __encrypt(this.#key, data);
@@ -84,6 +106,13 @@ export class Secret {
     }
   }
 
+  /**
+   * Decrypts the given cipher data using the secret key.
+   *
+   * @param cipherData The encrypted data to be decrypted.
+   * @returns A promise that resolves to the decrypted data as an `ArrayBuffer`.
+   * @throws {DecryptionError} If an error occurs during decryption.
+   */
   public decrypt(cipherData: EncryptedData): Promise<ArrayBuffer> {
     try {
       return __decrypt(this.#key, cipherData);
@@ -92,6 +121,14 @@ export class Secret {
     }
   }
 
+  /**
+   * Decrypts the given cipher data and returns the decrypted value as the specified type.
+   *
+   * @template T - The type of the decrypted value.
+   * @param {EncryptedData} cipherData - The cipher data to decrypt.
+   * @returns {Promise<T>} - A promise that resolves to the decrypted value of type T.
+   * @throws {DecryptionError} - If an error occurs during decryption.
+   */
   public async decryptAs<T>(cipherData: EncryptedData): Promise<T> {
     try {
       const json = await __decryptAsString(this.#key, cipherData);
@@ -101,6 +138,13 @@ export class Secret {
     }
   }
 
+  /**
+   * Decrypts the given cipher data and returns it as a string.
+   *
+   * @param cipherData - The encrypted data to decrypt.
+   * @returns A promise that resolves to the decrypted string.
+   * @throws {DecryptionError} If an error occurs during decryption.
+   */
   public decryptAsString(cipherData: EncryptedData): Promise<string> {
     try {
       return __decryptAsString(this.#key, cipherData);
@@ -109,10 +153,16 @@ export class Secret {
     }
   }
 
+  /**
+   * Invokes dispose()
+   */
   [Symbol.dispose](): void {
     this.dispose();
   }
 
+  /**
+   * Disposes the secret and clears any sensitive data.
+   */
   dispose(): void {
     this.#dispose();
   }

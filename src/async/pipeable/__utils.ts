@@ -1,5 +1,15 @@
 import { Pipeable } from "./Pipeable.ts";
 
+/**
+ * Creates a pipeable function that applies a handler to each value in an async generator.
+ *
+ * @template T The type of values in the async generator.
+ * @template R The type of values returned by the handler.
+ * @template A The type of the optional argument passed to the handler.
+ * @param {function(arg?: A): Handler<T, R>} handler The handler function to apply to each value.
+ * @param {A} [arg] An optional argument to pass to the handler.
+ * @returns {Pipeable<T, R>} A pipeable function that applies the handler to each value in the async generator.
+ */
 export function __fromHandler<T, R = T, A = undefined>(
   handler: (arg?: A) => Handler<T, R>,
   arg?: A,
@@ -39,6 +49,17 @@ export function __fromHandler<T, R = T, A = undefined>(
   };
 }
 
+/**
+ * Creates a pipeable function that applies a handler function to each value in the input iterator.
+ * The handler function can be asynchronous and can yield multiple values.
+ *
+ * @template T The type of values in the input iterator.
+ * @template R The type of values yielded by the handler function.
+ * @template A The type of the optional argument passed to the handler function.
+ * @param {function(arg?: A): HandlerMulti<T, R>} handler The handler function to apply to each value.
+ * @param {A} [arg] An optional argument to pass to the handler function.
+ * @returns {Pipeable<T, R>} A pipeable function that applies the handler function to each value in the input iterator.
+ */
 export function __fromHandlerMulti<T, R = T, A = undefined>(
   handler: (arg?: A) => HandlerMulti<T, R>,
   arg?: A,
@@ -70,6 +91,14 @@ export function __fromHandlerMulti<T, R = T, A = undefined>(
   };
 }
 
+/**
+ * Creates a `Pipeable` function from a pipeable factory function.
+ *
+ * @template T - The input type of the pipeable function.
+ * @template R - The output type of the pipeable function.
+ * @param pipeable - A function that returns a pipeable function.
+ * @returns A `Pipeable` function that applies the pipeable function to the input value.
+ */
 export function __ofFunc<T, R = T>(
   pipeable: () => Func<T, R>,
 ): Pipeable<T, R> {

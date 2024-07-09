@@ -1,5 +1,13 @@
+/**
+ * Represents a function that can dispose of resources and return any errors encountered during disposal.
+ * @returns An array of errors encountered during disposal.
+ */
 export type Disposer = (() => ReadonlyArray<Error>) & Disposable;
 
+/**
+ * Represents a type that is both a function returning a promise of an array of errors,
+ * and an async disposable object.
+ */
 export type DisposerAsync =
   & (() => Promise<ReadonlyArray<Error>>)
   & AsyncDisposable;

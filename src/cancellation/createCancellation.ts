@@ -5,6 +5,10 @@ import type {
 } from "./CancellationToken.ts";
 import { cancellationSignal } from "./cancellationSignal.ts";
 
+/**
+ * Creates a cancellation controller that allows you to manage cancellation tokens.
+ * @returns The cancellation controller.
+ */
 export function createCancellation(): CancellationController {
   const abortController = new AbortController();
   const cancellation = cancellationSignal(abortController.signal);

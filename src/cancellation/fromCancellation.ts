@@ -7,6 +7,14 @@ import type {
 import { createCancellation } from "./createCancellation.ts";
 import { combineTokens } from "./combineTokens.ts";
 
+/**
+ * Creates a `CancellationController` from a `CancellationToken`.
+ * If the provided token is not defined or in the "none" state, a new cancellation controller is created.
+ * If the provided token is already cancelled, a completed/cancelled cancellation controller is returned with the same token.
+ * Otherwise, a new cancellation controller is created and combined with the provided token.
+ * @param token The optional `CancellationToken` to create the cancellation controller from.
+ * @returns A `CancellationController` object.
+ */
 export function fromCancellation(
   token?: CancellationToken,
 ): CancellationController {

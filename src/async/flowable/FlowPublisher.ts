@@ -6,6 +6,11 @@ import type { CancellationError } from "../../cancellation/CancellationError.ts"
 import type { CancellationToken } from "../../cancellation/CancellationToken.ts";
 import type { Maybe } from "../../Maybe.ts";
 
+/**
+ * Represents a flow publisher that applies various operations on a stream of values.
+ *
+ * @template T The values emitted by the publisher
+ */
 export interface FlowPublisher<T> {
   /**
    * Filters the items emitted by the publisher based on a predicate.

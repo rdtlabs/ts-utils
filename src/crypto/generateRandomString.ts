@@ -1,3 +1,9 @@
+/**
+ * Generates a random string of the specified length.
+ *
+ * @param length - The length of the random string to generate.
+ * @returns The randomly generated string.
+ */
 export function generateRandomString(length: number): string {
   const charset =
     "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
