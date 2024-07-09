@@ -1,3 +1,11 @@
+/**
+ * Delays the execution of a function by a specified amount of time.
+ *
+ * @param ms - The number of milliseconds to delay the execution.
+ * @param cancellationToken - An optional CancellationToken that can be used to cancel the delay.
+ * @returns A disposable Promise that resolves after the specified delay.
+ * @throws {DisposedError} If the delay is disposed before it completes.
+ */
 import { DisposedError } from "../DisposedError.ts";
 import type { CancellationToken } from "../cancellation/CancellationToken.ts";
 import { TimeoutInput } from "../types.ts";

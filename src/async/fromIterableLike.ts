@@ -1,5 +1,13 @@
 import { isThenable } from "../utils.ts";
 
+/**
+ * Converts an iterable-like object into an asynchronous generator.
+ *
+ * @template T - The type of elements in the iterable.
+ * @param {IterableLike<T>} iterable - The iterable-like object to convert.
+ * @returns {AsyncGenerator<T>} - An asynchronous generator that yields elements from the iterable.
+ * @throws {Error} - If the input iterable is of an invalid type.
+ */
 export async function* fromIterableLike<T>(
   iterable: IterableLike<T>,
 ): AsyncGenerator<T> {
@@ -19,6 +27,12 @@ export async function* fromIterableLike<T>(
   }
 }
 
+/**
+ * Converts an async iterable into an async generator.
+ *
+ * @param iterable - The async iterable to convert.
+ * @returns An async generator that yields values from the async iterable.
+ */
 export async function* fromAsyncIterable<T>(
   iterable: AsyncIterable<T>,
 ): AsyncGenerator<T> {

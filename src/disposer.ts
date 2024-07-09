@@ -1,8 +1,19 @@
 export type Disposer = (() => ReadonlyArray<Error>) & Disposable;
+
 export type DisposerAsync =
   & (() => Promise<ReadonlyArray<Error>>)
   & AsyncDisposable;
+
+/**
+ * The `Disposer` object provides utility functions for managing disposables.
+ */
 export const Disposer = {
+  /**
+   * Creates an asynchronous disposer that can dispose multiple disposables.
+   *
+   * @param disposables - An array of disposables to be disposed.
+   * @returns A `DisposerAsync` function that can be used to dispose the provided disposables asynchronously.
+   */
   fromAsync(
     ...disposables:
       (AsyncDisposable | Disposable | (() => void | Promise<void>))[]
@@ -34,6 +45,11 @@ export const Disposer = {
       configurable: false,
     }) as DisposerAsync;
   },
+  /**
+   * Creates a `Disposer` function that disposes a list of disposables.
+   * @param disposables - An array of disposables or functions to be disposed.
+   * @returns A `Disposer` function that disposes all the provided disposables.
+   */
   from(...disposables: (Disposable | (() => void))[]): Disposer {
     const fn = () => {
       let errors: Error[] | undefined = undefined;
@@ -61,6 +77,12 @@ export const Disposer = {
       configurable: false,
     }) as Disposer;
   },
+  /**
+   * Concatenates multiple disposers into a single disposer.
+   * When the returned disposer is called, it will invoke all the provided disposers and return any errors encountered.
+   * @param disposers The disposers to concatenate.
+   * @returns A disposer that invokes all the provided disposers and returns any errors encountered.
+   */
   concat(...disposers: Disposer[]): Disposer {
     const fn = () => {
       let errors: Error[] | undefined = undefined;
@@ -87,6 +109,11 @@ export const Disposer = {
       configurable: false,
     }) as Disposer;
   },
+  /**
+   * Concatenates multiple disposers into a single asynchronous disposer.
+   * @param disposers - An array of disposers or asynchronous disposers.
+   * @returns An asynchronous disposer that will dispose all the provided disposers.
+   */
   concatAsync(...disposers: (Disposer | DisposerAsync)[]): DisposerAsync {
     const fn = async () => {
       let errors: Error[] | undefined = undefined;

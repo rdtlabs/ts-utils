@@ -6,6 +6,17 @@ import { Done } from "../done.ts";
 import { cancellableIterable } from "../cancellation/cancellableIterable.ts";
 import { asyncQueue } from "./queue/asyncQueue.ts";
 
+/**
+ * Converts an Observable into an AsyncIterable.
+ *
+ * @template T - The type of values emitted by the Observable.
+ * @param {Observable<T>} observable - The Observable to convert.
+ * @param {Object} [options] - Optional configuration options.
+ * @param {BufferStrategyOptions<T>} [options.bufferStrategy] - The buffer strategy options.
+ * @param {number} [options.bufferSize] - The buffer size.
+ * @param {CancellationToken} [options.cancellationToken] - The cancellation token.
+ * @returns {AsyncIterable<T> & Disposable} - The converted AsyncIterable.
+ */
 export function fromObservable<T>(
   observable: Observable<T>,
   options?: {

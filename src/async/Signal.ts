@@ -1,19 +1,65 @@
+/**
+ * Represents a signal that can be used for synchronization between asynchronous operations.
+ * Implements the `WaitHandle` interface.
+ */
+export interface Signal extends WaitHandle {
+  /**
+   * Gets the current state of the signal.
+   * Returns `true` if the signal is in the signaled state, `false` otherwise.
+   */
+  readonly state: SignalState;
+
+  /**
+   * Notifies the signal, transitioning it to the signaled state.
+   * Any pending or future `wait` operations will be resolved.
+   */
+  notify(): void;
+
+  /**
+   * Notifies the signal and resets it to the unsignaled state.
+   * Any pending or future `wait` operations will be resolved.
+   */
+  notifyAndReset(): void;
+
+  /**
+   * Resets the signal to the unsignaled state.
+   * Any pending or future `wait` operations will be blocked until the signal is signaled again.
+   */
+  reset(): void;
+}
+
+/**
+ * Represents the state of a signal.
+ * Can be either `true` (signaled) or `false` (unsignaled).
+ */
+export type SignalState = Signaled | Unsignaled;
+
+/**
+ * Represents the signaled state of a signal.
+ */
+type Signaled = true;
+
+/**
+ * Represents the unsignaled state of a signal.
+ */
+type Unsignaled = false;
+
+/**
+ * Creates a new `Signal` instance with the specified initial state.
+ * @param initialState - The initial state of the signal.
+ * Defaults to `false` (unsignaled) if not provided.
+ * @returns A new `Signal` instance.
+ */
 import type { WaitHandle } from "./WaitHandle.ts";
 import { Promises } from "./Promises.ts";
 import { CancellationInput } from "../cancellation/cancellationInput.ts";
 
-type Signaled = true;
-type Unsignaled = false;
-
-export type SignalState = Signaled | Unsignaled;
-
-export interface Signal extends WaitHandle {
-  readonly state: SignalState;
-  notify(): void;
-  notifyAndReset(): void;
-  reset(): void;
-}
-
+/**
+ * Creates a new `Signal` instance with the specified initial state.
+ * @param initialState - The initial state of the signal.
+ * Defaults to `false` (unsignaled) if not provided.
+ * @returns A new `Signal` instance.
+ */
 export const Signal = function (
   initialState: SignalState = false,
 ): {
@@ -29,6 +75,12 @@ export const Signal = function (
   ): Signal;
 };
 
+/**
+ * Creates a signal object that can be used for synchronization between asynchronous operations.
+ *
+ * @param initialState - The initial state of the signal. Defaults to `false`.
+ * @returns A signal object with various methods for signaling and waiting.
+ */
 export function signal(initialState: SignalState = false): Signal {
   let resolve!: () => void;
   let promise!: Promise<void>;

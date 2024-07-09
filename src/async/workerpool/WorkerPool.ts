@@ -14,16 +14,62 @@ export type WorkerPoolOptions = {
   maxQueueLength?: number;
 };
 
+/**
+ * Represents a worker pool that can execute tasks asynchronously.
+ */
 export interface WorkerPool {
+  /**
+   * Submits a task to be executed by the worker pool.
+   * @param runnable The task to be executed.
+   */
   submit(runnable: Task): void;
+
+  /**
+   * Tries to submit a task to the worker pool.
+   * @param runnable The task to be submitted.
+   * @returns A boolean indicating whether the task was successfully submitted.
+   */
   trySubmit(runnable: Task): boolean;
+
+  /**
+   * Initiates the shutdown of the worker pool.
+   */
   shutdown(): void;
+
+  /**
+   * Returns a promise that resolves when the worker pool has completed its shutdown process.
+   * @returns A promise that resolves when the shutdown process is complete.
+   */
   onShutdown(): Promise<void>;
+
+  /**
+   * Shuts down the worker pool immediately and returns any pending tasks.
+   * @returns An array of pending tasks that were not executed.
+   */
   shutdownNow(): Task[];
+
+  /**
+   * Indicates whether the shutdown process has been initiated for the worker pool.
+   */
   readonly isShutdownInitiated: boolean;
+
+  /**
+   * Indicates whether the worker pool has been shut down.
+   */
   readonly isShutdown: boolean;
+
+  /**
+   * Indicates whether the worker pool is currently full and cannot accept new tasks.
+   */
   readonly isFull: boolean;
 }
+
+/**
+ * Creates a worker pool with the specified options.
+ *
+ * @param options - The options for the worker pool.
+ * @returns The worker pool object.
+ */
 
 export const WorkerPool = function (options?: WorkerPoolOptions): {
   new (options?: WorkerPoolOptions): WorkerPool;
@@ -34,6 +80,12 @@ export const WorkerPool = function (options?: WorkerPoolOptions): {
   new (options?: WorkerPoolOptions): WorkerPool;
 };
 
+/**
+ * Creates a worker pool with the specified options.
+ *
+ * @param options - The options for the worker pool.
+ * @returns The worker pool object.
+ */
 export function workerPool(options?: WorkerPoolOptions): WorkerPool {
   const { maxConcurrency, maxQueueLength } = fromOptions(options);
   const max_concurrency = maxConcurrency;

@@ -8,7 +8,11 @@
 export * from "./CancellationToken.ts";
 export { Cancellable } from "./Cancellable.ts";
 export { CancellationError } from "./CancellationError.ts";
+export { cancellablePromise } from "./cancellablePromise.ts";
+export { cancellableIterable } from "./cancellableIterable.ts";
 export {
-  CancellationOptions,
-  type CancellationOptionsExtended,
-} from "./CancellationOptions.ts";
+  CancellationIterableOptions,
+  type CancellationIterableOptionsExtended,
+} from "./CancellationIterableOptions.ts";
+
+export { CancellationOptions } from "./CancellationOptions.ts";

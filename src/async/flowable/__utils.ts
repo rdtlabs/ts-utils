@@ -1,8 +1,8 @@
 import { Pipeable } from "../pipeable/Pipeable.ts";
 import {
-  CancellationOptions,
-  type CancellationOptionsExtended,
-} from "../../cancellation/CancellationOptions.ts";
+  CancellationIterableOptions,
+  type CancellationIterableOptionsExtended,
+} from "../../cancellation/CancellationIterableOptions.ts";
 import { cancellableIterable } from "../../cancellation/cancellableIterable.ts";
 import { createObservable } from "../createObservable.ts";
 import { Flowable } from "./Flowable.ts";
@@ -66,20 +66,20 @@ export function __createFlowable<T>(
     toIterable: (options?) => {
       return connectable.toIterable(
         generator(),
-        options as CancellationOptions,
+        options as CancellationIterableOptions,
       );
     },
     toArray: (options) => {
       return connectable.toArray(
         generator(),
-        options as CancellationOptions,
+        options as CancellationIterableOptions,
       );
     },
     forEach: (cb, options) => {
       return connectable.forEach(
         generator(),
         cb,
-        options as CancellationOptions,
+        options as CancellationIterableOptions,
       );
     },
     toObservable: () => {
@@ -88,13 +88,13 @@ export function __createFlowable<T>(
     selectFirst: (options) => {
       return connectable.selectFirst(
         generator(),
-        options as CancellationOptions,
+        options as CancellationIterableOptions,
       );
     },
     selectLast: (options) => {
       return connectable.selectLast(
         generator(),
-        options as CancellationOptions,
+        options as CancellationIterableOptions,
       );
     },
   };
@@ -163,7 +163,7 @@ function __createConnectableWithParams<T>(
     },
     async toArray(
       input: IterableLike<T>,
-      options?: CancellationOptionsExtended,
+      options?: CancellationIterableOptionsExtended,
     ): Promise<T[]> {
       const items: T[] = [];
       for await (
@@ -229,11 +229,11 @@ function __createConnectableWithParams<T>(
 function __iter<T>(
   input: IterableLike<T>,
   pipeables: Array<Pipeable<unknown>>,
-  options?: CancellationOptionsExtended,
-  defaults?: CancellationOptions,
+  options?: CancellationIterableOptionsExtended,
+  defaults?: CancellationIterableOptions,
 ): AsyncGenerator<T> {
   return cancellableIterable(
     Pipeable.toIterable(input, ...pipeables),
-    CancellationOptions.from(options, defaults),
+    CancellationIterableOptions.from(options, defaults),
   );
 }

@@ -14,33 +14,83 @@ type FromOptions<T> = {
   cancellationToken?: CancellationToken;
 };
 
+/**
+ * Represents a flowable object that can emit values over time.
+ */
 export type Flowable = {
+  /**
+   * Creates a flow publisher that emits a single value.
+   * @param it The value to emit.
+   * @returns A flow publisher that emits the provided value.
+   */
   single<T>(it: T | PromiseLike<T>): FlowPublisher<T>;
 
+  /**
+   * Creates a flow processor that emits values from an iterable.
+   * @returns A flow processor that emits values from an iterable.
+   */
   of<T>(): FlowProcessor<T, T>;
+
+  /**
+   * Creates a flow publisher that emits values from an iterable.
+   * @param it The iterable to emit values from.
+   * @returns A flow publisher that emits values from the iterable.
+   */
   of<T>(it: IterableLike<T>): FlowPublisher<T>;
 
+  /**
+   * Concatenates multiple flow publishers into a single flow publisher.
+   * @param sources The flow publishers to concatenate.
+   * @returns A flow publisher that emits values from all the provided flow publishers.
+   */
   concat<T>(...sources: FlowPublisher<T>[]): FlowPublisher<T>;
 
+  /**
+   * Creates a flow publisher that emits values from an async generator.
+   * @param generator The async generator function.
+   * @returns A flow publisher that emits values from the async generator.
+   */
   fromGenerator<T>(
     generator: () => AsyncGenerator<T>,
   ): FlowPublisher<T>;
 
+  /**
+   * Creates a flow publisher that emits values from an observable.
+   * @param observable The observable to emit values from.
+   * @param options Additional options for creating the flow publisher.
+   * @returns A flow publisher that emits values from the observable.
+   */
   fromObservable<T>(
     observable: Observable<T>,
     options?: FromOptions<T>,
   ): FlowPublisher<T>;
 
+  /**
+   * Creates a flow publisher that emits values from a DOM event.
+   * @param type The type of the DOM event.
+   * @param options Additional options for creating the flow publisher.
+   * @returns A flow publisher that emits values from the DOM event.
+   */
   fromEvent<T extends Event>(
     type: string,
     options?: EventOptions<T>,
   ): FlowPublisher<T>;
+
+  /**
+   * Creates a flow publisher that emits values from a window event.
+   * @param type The type of the window event.
+   * @param options Additional options for creating the flow publisher.
+   * @returns A flow publisher that emits values from the window event.
+   */
   fromEvent<K extends keyof WindowEventMap>(
     type: K,
     options?: EventOptions<WindowEventMap[K]>,
   ): FlowPublisher<WindowEventMap[K]>;
 };
 
+/**
+ * Represents a flowable object that can emit values over time.
+ */
 export const Flowable = Object.freeze({
   single<T>(it: T | PromiseLike<T>) {
     return __createFlowable<T>(async function* inner() {

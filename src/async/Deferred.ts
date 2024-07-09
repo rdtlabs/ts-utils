@@ -2,13 +2,38 @@ import type { CancellationToken } from "../cancellation/CancellationToken.ts";
 import type { ErrorLike } from "../types.ts";
 import { Promises } from "./Promises.ts";
 
+/**
+ * Represents a deferred computation that may produce a value of type `T`.
+ */
 export interface Deferred<T = void> {
+  /**
+   * A promise that resolves to the value produced by the deferred computation.
+   */
   promise: Promise<T>;
+
+  /**
+   * Resolves the deferred computation with the given value.
+   * @param value - The value to resolve the deferred computation with.
+   */
   resolve: Resolve<T>;
+
+  /**
+   * Rejects the deferred computation with the given reason.
+   * @param reason - The reason for rejecting the deferred computation.
+   */
   reject: (reason?: unknown) => void;
+
+  /**
+   * Indicates whether the deferred computation has been resolved or rejected.
+   */
   readonly isDone: boolean;
 }
 
+/**
+ * Creates a new instance of `Deferred` with an optional cancellation token.
+ * @param cancellationToken - An optional cancellation token.
+ * @returns A new instance of `Deferred`.
+ */
 export const Deferred = function <T = void>(
   cancellationToken?: CancellationToken,
 ): {
@@ -44,14 +69,22 @@ export const Deferred = function <T = void>(
   ): Deferred<T>;
 };
 
+/**
+ * Creates a new instance of `Deferred` with an optional cancellation token.
+ * @param cancellationToken - An optional cancellation token.
+ * @returns A new instance of `Deferred`.
+ */
 export function deferred<T = void>(
   cancellationToken?: CancellationToken,
 ): Deferred<T> {
   return new Deferred<T>(cancellationToken);
 }
 
-// deno-lint-ignore explicit-function-return-type
-function create<T>() {
+function create<T>(): {
+  promise: Promise<T>;
+  resolve: Resolve<T>;
+  reject: (reason?: unknown) => void;
+} {
   let resolve!: Resolve<T>;
   let reject!: (reason?: unknown) => void;
 
@@ -60,7 +93,7 @@ function create<T>() {
     reject = rej;
   });
 
-  return Object.freeze({
+  return Object.seal({
     promise,
     resolve,
     reject,

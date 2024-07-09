@@ -28,6 +28,13 @@ export const Task = Object.freeze({
       },
     }) as Promise<T> & Disposable;
   },
+
+  delay(
+    timeoutInput: TimeoutInput,
+    cancellation?: CancellationToken,
+  ): Promise<void> & Disposable {
+    return delay(timeoutInput, cancellation);
+  },
 });
 
 function getScheduler(

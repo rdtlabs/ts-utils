@@ -1,63 +1,48 @@
 import type { CancellationError } from "./CancellationError.ts";
 import type { CancellationToken } from "./CancellationToken.ts";
 
-export type CancellationOptions = {
+export type CancellationOptions<T = void> = {
   token?: CancellationToken;
   onCancel?: (error: CancellationError) => void;
-  throwOnCancellation?: boolean;
+  defaultValueOnCancel?: () => T;
 };
 
-export type CancellationOptionsExtended =
-  | CancellationOptions
-  | ((error: CancellationError) => void)
-  | boolean
+export type CancellationOptionsExtended<T = void> =
+  | CancellationOptions<T>
+  | (() => T)
   | CancellationToken;
 
 export const CancellationOptions = Object.freeze({
-  from: (
-    options?: CancellationOptionsExtended,
-    defaults?: CancellationOptions,
-  ): CancellationOptions => {
+  from: <T = void>(
+    options?: CancellationOptionsExtended<T>,
+    defaults?: CancellationOptions<T>,
+  ): CancellationOptions<T> => {
+    if (!options) {
+      return defaults ?? {};
+    }
+
     defaults ??= {};
-
-    if (options === undefined) {
-      return {
-        token: defaults.token,
-        onCancel: defaults.onCancel,
-        throwOnCancellation: defaults?.throwOnCancellation === true,
-      };
-    }
-
-    if (typeof options === "boolean") {
-      return {
-        token: defaults.token,
-        onCancel: defaults.onCancel,
-        throwOnCancellation: options === true,
-      };
-    }
 
     if (typeof options === "function") {
       return {
         token: defaults.token,
-        throwOnCancellation: defaults.throwOnCancellation === true,
-        onCancel: options,
+        onCancel: defaults.onCancel,
+        defaultValueOnCancel: options,
       };
     }
 
     if ("throwIfCancelled" in options) {
       return {
-        onCancel: defaults.onCancel,
-        throwOnCancellation: defaults.throwOnCancellation === true,
         token: options,
+        onCancel: defaults.onCancel,
+        defaultValueOnCancel: defaults.defaultValueOnCancel,
       };
     }
 
     return {
-      token: options.token ?? defaults.token,
       onCancel: options.onCancel ?? defaults.onCancel,
-      throwOnCancellation: options.throwOnCancellation !== undefined
-        ? options.throwOnCancellation === true
-        : defaults.throwOnCancellation === true,
+      defaultValueOnCancel: options.defaultValueOnCancel,
+      token: options.token ?? defaults.token,
     };
   },
 });

@@ -1,6 +1,19 @@
 import type { ErrorLike } from "../types.ts";
 import type { Observable, Subscriber, Unsubscribe } from "./_rx.types.ts";
 
+/**
+ * Creates an observable that can be subscribed to.
+ *
+ * @template T - The type of values emitted by the observable.
+ * @param {(
+ *   subscriber: Required<Subscriber<T>> & { isCancelled: boolean }
+ * ) => void} onSubscribed - A function that will be called when a subscriber subscribes to the observable.
+ * @param {("micro" | "macro" | "sync" | {
+ *   scheduler: "micro" | "macro" | "sync";
+ *   completionScheduler: "micro" | "macro" | "sync";
+ * })} [options] - Optional options for the observable.
+ * @returns {Observable<T>} - The created observable.
+ */
 export function createObservable<T>(
   onSubscribed: (
     subscriber: Required<Subscriber<T>> & { isCancelled: boolean },

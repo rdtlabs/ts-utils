@@ -2,6 +2,14 @@ import type { CancellationToken } from "../cancellation/CancellationToken.ts";
 import type { Observable, Subscriber, Unsubscribe } from "./_rx.types.ts";
 import { cancellableIterable } from "../cancellation/cancellableIterable.ts";
 
+/**
+ * Converts an async iterable into an Observable.
+ *
+ * @template T - The type of elements emitted by the Observable.
+ * @param {AsyncIterable<T>} iterable - The async iterable to convert.
+ * @param {CancellationToken} [cancellationToken] - Optional cancellation token.
+ * @returns {Observable<T>} - The converted Observable.
+ */
 export function fromAsyncIterable<T>(
   iterable: AsyncIterable<T>,
   cancellationToken?: CancellationToken,

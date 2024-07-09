@@ -3,9 +3,9 @@ import type { CancellationToken } from "./CancellationToken.ts";
 import { Promises } from "../async/Promises.ts";
 import type { ErrorLike } from "../types.ts";
 import {
-  CancellationOptions,
-  type CancellationOptionsExtended,
-} from "./CancellationOptions.ts";
+  CancellationIterableOptions,
+  type CancellationIterableOptionsExtended,
+} from "./CancellationIterableOptions.ts";
 
 type AsyncIterableInput<T> = AsyncGenerator<T> | AsyncIterable<T>;
 
@@ -14,14 +14,14 @@ type AsyncIterableInput<T> = AsyncGenerator<T> | AsyncIterable<T>;
 export function cancellableIterable<T>(iterable: AsyncIterableInput<T>, cancellationToken?: CancellationToken): AsyncGenerator<T>; // deno-fmt-ignore
 export function cancellableIterable<T>(iterable: AsyncIterableInput<T>, onCancel: (error: CancellationError) => void): AsyncGenerator<T>; // deno-fmt-ignore
 export function cancellableIterable<T>(iterable: AsyncIterableInput<T>, throwOnCancellation: boolean): AsyncGenerator<T>; // deno-fmt-ignore
-export function cancellableIterable<T>(iterable: AsyncIterableInput<T>, options?: CancellationOptions): AsyncGenerator<T>; // deno-fmt-ignore
+export function cancellableIterable<T>(iterable: AsyncIterableInput<T>, options?: CancellationIterableOptions): AsyncGenerator<T>; // deno-fmt-ignore
 
 export async function* cancellableIterable<T>(
   iterator: AsyncIterableInput<T>,
-  options?: CancellationOptionsExtended,
+  options?: CancellationIterableOptionsExtended,
 ): AsyncGenerator<T> {
 
-  const { token, onCancel, throwOnCancellation } = CancellationOptions.from(options);
+  const { token, onCancel, throwOnCancellation } = CancellationIterableOptions.from(options);
   const reportCancellation = (e: ErrorLike) => {
     if (
       throwOnCancellation ||
@@ -33,7 +33,7 @@ export async function* cancellableIterable<T>(
 
   const unregister = onCancel && token ? token.register(t => onCancel(t.reason)) : () => { };
   try {
-    const it = Promises.cancellable(iterator, token);
+    const it = Promises.cancellableIterable(iterator, token);
     yield* it[Symbol.asyncIterator]();
   } catch (e) {
     reportCancellation(e);

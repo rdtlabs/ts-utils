@@ -2,14 +2,11 @@ import type { CancellationToken } from "../cancellation/CancellationToken.ts";
 import type { ErrorLike } from "../index.ts";
 
 export const Promises = Object.freeze({
+  cancellableIterable,
   cancellable: (p, c) => {
-    if (Symbol.asyncIterator in p) {
-      return cancellableIterable(p, c);
-    }
-
     const tpl = createCancellablePromise(c);
     if (tpl === undefined) {
-      return p;
+      return p instanceof Promise ? p : p();
     }
 
     if (!tpl.cancellable) {
@@ -19,7 +16,7 @@ export const Promises = Object.freeze({
     try {
       return Promise.race([
         tpl.cancellable,
-        typeof p === "function" ? p() : p,
+        p instanceof Promise ? p : p(),
       ]);
     } catch (error) {
       tpl.unregister();
@@ -86,7 +83,7 @@ function createCancellablePromise<T>(
   cancellation?: CancellationToken,
 ): undefined | Maybe<T> {
   if (!cancellation || cancellation.state === "none") {
-    return;
+    return undefined;
   }
 
   if (cancellation.isCancelled === true) {
@@ -114,12 +111,12 @@ type Maybe<T> = {
 };
 
 type Promises = {
-  cancellable<T>(
+  cancellableIterable<T>(
     iterable: AsyncIterable<T>,
     cancellation?: CancellationToken,
   ): AsyncGenerator<T>;
 
-  cancellable<T>(
+  cancellableIterable<T>(
     iterable: AsyncGenerator<T>,
     cancellation?: CancellationToken,
   ): AsyncGenerator<T>;

@@ -1,11 +1,28 @@
-import { Deferred } from "./Deferred.ts";
 import type { WaitHandle } from "./WaitHandle.ts";
+import { Deferred } from "./index.ts";
 
+/**
+ * Represents a monitor that allows synchronization of asynchronous operations.
+ * @interface
+ * @extends WaitHandle
+ */
 export interface Monitor extends WaitHandle {
+  /**
+   * Signals one waiting operation to continue.
+   */
   pulseOne(): void;
+
+  /**
+   * Signals all waiting operations to continue.
+   */
   pulseAll(): void;
 }
 
+/**
+ * Creates a new instance of the Monitor class.
+ * @constructor
+ * @returns A new instance of the Monitor class.
+ */
 export const Monitor = function (): {
   new (): Monitor;
 } {
@@ -15,10 +32,18 @@ export const Monitor = function (): {
   new (): Monitor;
 };
 
+/**
+ * Creates a new Monitor object.
+ * @returns A new Monitor object.
+ */
 export function monitor(): Monitor {
   let waiters = new Array<Deferred<boolean>>();
   let running = 0;
+
   const monitor = {
+    /**
+     * Signals one waiting operation to continue.
+     */
     pulseOne: () => {
       running++;
 
@@ -30,6 +55,10 @@ export function monitor(): Monitor {
 
       running--;
     },
+
+    /**
+     * Signals all waiting operations to continue.
+     */
     pulseAll: () => {
       for (const def of waiters) {
         // deno-lint-ignore no-explicit-any
@@ -38,6 +67,12 @@ export function monitor(): Monitor {
 
       waiters = [];
     },
+
+    /**
+     * Waits for the monitor to be pulsed.
+     * @param args - Optional arguments to pass to the monitor.
+     * @returns A promise that resolves when the monitor is pulsed.
+     */
     // deno-lint-ignore no-explicit-any
     wait: (...args: any[]): any => {
       running++;
