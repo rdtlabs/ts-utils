@@ -1,6 +1,12 @@
 import { fromIterableLike, type IterableLike } from "../fromIterableLike.ts";
 import { __fromHandler, __fromHandlerMulti, __ofFunc } from "./__utils.ts";
 
+/**
+ * Represents a pipeable function that transforms an async generator of type `T` into an async generator of type `R`.
+ *
+ * @template T The type of values in the input async generator.
+ * @template R The type of values in the output async generator.
+ */
 export type Pipeable<T = unknown, R = T> = (
   iterable: AsyncGenerator<T>,
 ) => AsyncGenerator<R>;
