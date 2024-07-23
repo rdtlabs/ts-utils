@@ -1,6 +1,6 @@
 {
   "name": "@rdtlabs/ts-utils",
-  "version": "0.2.35",
+  "version": "0.2.34",
   "exports": {
     ".": "./src/mod.ts",
     "./async": "./src/async/index.ts",
@@ -12,10 +12,7 @@
   },
   "publish": {
     "include": [
-      "LICENSE",
-      "README.md",
-      "src/**/*.ts",
-      "deno.json"
+      "src"
     ],
     "exclude": [
       ".github/",
