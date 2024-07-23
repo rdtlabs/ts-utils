@@ -2,7 +2,13 @@
   "name": "@rdtlabs/ts-utils",
   "version": "0.2.33",
   "exports": {
-    ".": "./src/index.ts"
+    ".": "./src/index.ts",
+    "./async": "./src/async/index.ts",
+    "./buffer": "./src/buffer/index.ts",
+    "./cancellation": "./src/cancellation/index.ts",
+    "./crypto": "./src/crypto/index.ts",
+    "./encoding": "./src/encoding/index.ts",
+    "./errors": "./src/errors/index.ts"
   },
   "publish": {
     "include": [
