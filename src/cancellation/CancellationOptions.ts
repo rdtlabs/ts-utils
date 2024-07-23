@@ -12,7 +12,12 @@ export type CancellationOptionsExtended<T = void> =
   | (() => T)
   | CancellationToken;
 
-export const CancellationOptions = Object.freeze({
+export const CancellationOptions: {
+  from: <T = void>(
+    options?: CancellationOptionsExtended<T>,
+    defaults?: CancellationOptions<T>,
+  ) => CancellationOptions<T>
+} = Object.freeze({
   from: <T = void>(
     options?: CancellationOptionsExtended<T>,
     defaults?: CancellationOptions<T>,

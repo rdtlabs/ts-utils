@@ -14,12 +14,14 @@ export type CancellationInput = TimeoutInput | CancellationToken;
  * @param input The CancellationInput to convert.
  * @returns The corresponding CancellationToken.
  */
-export const CancellationInput = {
+export const CancellationInput: {
+  of(input?: CancellationInput): CancellationToken;
+} = {
   of(input?: CancellationInput): CancellationToken {
     return __isToken(input)
       ? input
       : input
-      ? cancellationTimeout(input)
-      : __never;
+        ? cancellationTimeout(input)
+        : __never;
   },
 };

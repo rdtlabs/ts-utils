@@ -13,7 +13,12 @@ export type CancellationIterableOptionsExtended =
   | boolean
   | CancellationToken;
 
-export const CancellationIterableOptions = Object.freeze({
+export const CancellationIterableOptions: {
+  from: (
+    options?: CancellationIterableOptionsExtended,
+    defaults?: CancellationIterableOptions,
+  ) => CancellationIterableOptions
+} = Object.freeze({
   from: (
     options?: CancellationIterableOptionsExtended,
     defaults?: CancellationIterableOptions,

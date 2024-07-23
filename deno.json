@@ -2,7 +2,7 @@
   "name": "@rdtlabs/ts-utils",
   "version": "0.2.33",
   "exports": {
-    "./": "./src/index.ts"
+    ".": "./src/index.ts"
   },
   "publish": {
     "include": [

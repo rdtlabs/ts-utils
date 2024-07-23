@@ -27,7 +27,9 @@ export type MaybeResult<T> = { value: T; ok: true } | {
 };
 
 export type TimeoutInput = number | Date | Deadline;
-export const TimeoutInput = {
+export const TimeoutInput: {
+  deriveTimeout(timeout: TimeoutInput): number
+} = {
   deriveTimeout(timeout: TimeoutInput): number {
     if (timeout instanceof Date) {
       return timeout.getTime() - Date.now();

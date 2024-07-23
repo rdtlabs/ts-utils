@@ -66,7 +66,10 @@ export const once = <T extends Func>(fn: T): Once<T> => {
   return wrapped as Once<T>;
 };
 
-export const Once = Object.seal({
+export const Once: {
+  of: <T extends Func>(fn: T) => Once<T>;
+  is: (fn: unknown) => fn is Once<Func>;
+} = Object.seal({
   of: once,
   // deno-lint-ignore no-explicit-any
   is: (fn: any): fn is Once<Func> => {

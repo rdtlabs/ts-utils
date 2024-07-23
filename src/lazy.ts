@@ -82,7 +82,10 @@ export function lazyObject<T extends object>(fn: () => T): T {
   }) as T;
 }
 
-export const Lazy = Object.seal({
+export const Lazy: {
+  fn: <T extends Func>(fn: () => T, firstResultOnly?: false,) => T,
+  of: <T extends object>(fn: () => T) => T,
+} = Object.seal({
   fn: lazyFn,
   of: lazyObject,
 });

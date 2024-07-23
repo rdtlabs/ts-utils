@@ -15,7 +15,12 @@ export type Maybe<T> = {
   readonly isNil: boolean;
 };
 
-export const Maybe = Object.freeze({
+type __MaybeStatic = {
+  of: <T>(value?: T) => Maybe<T>
+  ofAsync: <T>(value?: T | Promise<T>) => Promise<Maybe<T>>
+};
+
+export const Maybe: __MaybeStatic = Object.freeze({
   of<T>(value?: T): Maybe<T> {
     return maybe(value);
   },

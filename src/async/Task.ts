@@ -6,7 +6,7 @@ import { Executor } from "./executors.ts";
 /**
  * Utility object for working with asynchronous tasks.
  */
-export const Task = Object.freeze({
+export const Task: __TaskStatic = Object.freeze({
   /**
    * Runs a task asynchronously and returns a promise that resolves to the result of the task.
    *
@@ -84,3 +84,23 @@ function getScheduler(
 
   throw new TypeError("Invalid argument");
 }
+
+/* https://jsr.io/docs/about-slow-types#explicit-types */
+type __TaskStatic = {
+  run: <T>(
+    task: Callable<T | PromiseLike<T>>,
+    options?: {
+      cancellation?: CancellationToken;
+      scheduler?: "micro" | "macro" | "sync" | Executor;
+    },
+  ) => Promise<T>;
+  runAfter: <T>(
+    task: Callable<T | PromiseLike<T>>,
+    timeoutInput: TimeoutInput,
+    cancellation?: CancellationToken,
+  ) => Promise<T> & Disposable;
+  delay: (
+    timeoutInput: TimeoutInput,
+    cancellation?: CancellationToken,
+  ) => Promise<void> & Disposable;
+};
