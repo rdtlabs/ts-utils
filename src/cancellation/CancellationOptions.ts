@@ -16,7 +16,7 @@ export const CancellationOptions: {
   from: <T = void>(
     options?: CancellationOptionsExtended<T>,
     defaults?: CancellationOptions<T>,
-  ) => CancellationOptions<T>
+  ) => CancellationOptions<T>;
 } = Object.freeze({
   from: <T = void>(
     options?: CancellationOptionsExtended<T>,

@@ -83,8 +83,8 @@ export function lazyObject<T extends object>(fn: () => T): T {
 }
 
 export const Lazy: {
-  fn: <T extends Func>(fn: () => T, firstResultOnly?: false,) => T,
-  of: <T extends object>(fn: () => T) => T,
+  fn: <T extends Func>(fn: () => T, firstResultOnly?: boolean) => T;
+  of: <T extends object>(fn: () => T) => T;
 } = Object.seal({
   fn: lazyFn,
   of: lazyObject,

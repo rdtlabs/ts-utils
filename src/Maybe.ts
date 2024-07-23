@@ -16,8 +16,8 @@ export type Maybe<T> = {
 };
 
 type __MaybeStatic = {
-  of: <T>(value?: T) => Maybe<T>
-  ofAsync: <T>(value?: T | Promise<T>) => Promise<Maybe<T>>
+  of: <T>(value?: T) => Maybe<T>;
+  ofAsync: <T>(value?: T | Promise<T>) => Promise<Maybe<T>>;
 };
 
 export const Maybe: __MaybeStatic = Object.freeze({

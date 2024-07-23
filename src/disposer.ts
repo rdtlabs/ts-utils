@@ -15,7 +15,15 @@ export type DisposerAsync =
 /**
  * The `Disposer` object provides utility functions for managing disposables.
  */
-export const Disposer = {
+export const Disposer: {
+  fromAsync: (
+    ...disposables:
+      (AsyncDisposable | Disposable | (() => void | Promise<void>))[]
+  ) => DisposerAsync;
+  from: (...disposables: (Disposable | (() => void))[]) => Disposer;
+  concat: (...disposers: Disposer[]) => Disposer;
+  concatAsync: (...disposers: (Disposer | DisposerAsync)[]) => DisposerAsync;
+} = {
   /**
    * Creates an asynchronous disposer that can dispose multiple disposables.
    *

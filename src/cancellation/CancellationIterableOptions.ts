@@ -17,7 +17,7 @@ export const CancellationIterableOptions: {
   from: (
     options?: CancellationIterableOptionsExtended,
     defaults?: CancellationIterableOptions,
-  ) => CancellationIterableOptions
+  ) => CancellationIterableOptions;
 } = Object.freeze({
   from: (
     options?: CancellationIterableOptionsExtended,
