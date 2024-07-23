@@ -29,7 +29,7 @@ export interface List<T> extends Array<T> {
 
 /**
  * A ReadonlyList type that extends ReadonlyArray providing additional
- * functionl methods (e.g., `groupBy`)
+ * functionl methods (e.g.,  `groupBy`)
  */
 export interface ReadonlyList<T> extends ReadonlyArray<T> {
   /**
