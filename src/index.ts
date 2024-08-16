@@ -10,6 +10,8 @@ export { strings } from "./strings.ts";
 export * from "./encoding/index.ts";
 export { Once, once } from "./once.ts";
 export { Lazy, lazyFn, lazyObject } from "./lazy.ts";
+export * from "./disposer.ts";
+export * from "./DisposedError.ts";
 export * from "./Queue.ts";
 export {
   Deadline as Deadline,

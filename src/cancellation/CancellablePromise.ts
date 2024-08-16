@@ -49,7 +49,7 @@ export async function cancellablePromise<T>(
   } catch (e) {
     if (e instanceof CancellationError) {
       if (onCancel) {
-        queueMicrotask(() => onCancel(e));
+        queueMicrotask(() => onCancel(e as CancellationError));
       }
 
       if (defaultValueOnCancel) {

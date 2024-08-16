@@ -1,5 +1,5 @@
 import type { BufferStrategyOptions } from "../../buffer/BufferLike.ts";
-import type { MaybeResult } from "../../types.ts";
+import type { ErrorLike, MaybeResult } from "../../types.ts";
 import { asyncQueue } from "./asyncQueue.ts";
 import type { CancellationToken } from "../../cancellation/CancellationToken.ts";
 
@@ -29,19 +29,19 @@ export interface AsyncQueue<T> extends Disposable, AsyncIterable<T> {
    * "r": The queue is in a read-only state, items can only be dequeued.
    * "-rw": The queue is in a state neither enqueuing/dequeuing is allowed.
    */
-  readonly state: "rw" | "r" | "-rw";
+  get state(): "rw" | "r" | "-rw";
 
   /** The current number of items in the queue */
-  readonly size: number;
+  get size(): number;
 
   /** Returns whether the queue is empty (true) or not (false) */
-  readonly isEmpty: boolean;
+  get isEmpty(): boolean;
 
   /** Returns whether the queue has been closed (true) or is still open (false) */
-  readonly isClosed: boolean;
+  get isClosed(): boolean;
 
   /** Returns whether the queue is full (true) or not (false) */
-  readonly isFull: boolean;
+  get isFull(): boolean;
 
   /**
    * Enqueues an item of type T to the queue.
@@ -67,7 +67,26 @@ export interface AsyncQueue<T> extends Disposable, AsyncIterable<T> {
   dequeue(cancellationToken?: CancellationToken): Promise<T>;
 
   /**
-   * Synchronously dequeues an item from the queue if the queue us not empty, otherwise it will return an object with the value undefined and ok set to false.
+   * Event handler for when an item is enqueued/dequeued from the queue.
+   * @param event The event to listen for.
+   * @param listener The listener to remove.
+   * @param once If true, the listener will only be called once.
+   */
+  on(
+    event: "dequeue" | "enqueue",
+    listener: (item: T) => void,
+    once?: boolean,
+  ): void;
+
+  /**
+   * Event handler for when an item is enqueued/dequeued from the queue.
+   * @param event The event to listen for.
+   * @param listener The listener to remove.
+   */
+  off(event: "dequeue" | "enqueue", listener: (item: T) => void): void;
+
+  /**
+   * Synchronously dequeues an item from the queue if the queue is not empty, otherwise it will return an object with the value undefined and ok set to false.
    */
   tryDequeue(): MaybeResult<T>;
 
@@ -78,7 +97,7 @@ export interface AsyncQueue<T> extends Disposable, AsyncIterable<T> {
   setReadOnly(): void;
 
   /** Closes the queue. */
-  close(): void;
+  close(err?: ErrorLike): void;
 
   /** Returns a promise that resolves when the queue is closed. */
   onClose(): Promise<void>;

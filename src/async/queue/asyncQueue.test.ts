@@ -8,6 +8,58 @@ import { assert } from "https://deno.land/std@0.213.0/assert/assert.ts";
 import { QueueClosedError, QueueFullError, QueueReadOnlyError } from "./errors.ts";
 import { assertRejects } from "https://deno.land/std@0.213.0/assert/assert_rejects.ts";
 import { asyncQueue } from './asyncQueue.ts';
+import { waitGroup } from "../WaitGroup.ts";
+
+Deno.test("AsyncQueue on dequeue test", async () => {
+  let dequeued = 0;
+  let queued = 0;
+  let dequeuedOnce = 0;
+  let queuedOnce = 0;
+
+  const wg = waitGroup(8);
+
+  const queue = asyncQueue<number>();
+
+  queue.on("dequeue", () => {
+    dequeued++;
+    wg.done();
+  });
+
+  queue.on("enqueue", () => {
+    queued++;
+    wg.done();
+  });
+
+  queue.on("dequeue", () => {
+    dequeuedOnce++;
+    wg.done();
+  }, true);
+
+  queue.on("enqueue", () => {
+    queuedOnce++;
+    wg.done();
+  }, true);
+
+  queue.enqueue(1);
+  queue.enqueue(2);
+  queue.enqueue(3);
+
+  queueMicrotask(() => {
+    queue.dequeue();
+    queue.dequeue();
+    queue.dequeue();
+  });
+
+  await wg.wait();
+
+  assert(queued === 3);
+  assert(dequeued === 3);
+  assert(queuedOnce === 1);
+  assert(dequeuedOnce === 1);
+
+  queue.close()
+  await queue.onClose();
+});
 
 Deno.test("AsyncQueue enqueue full error", async () => {
   const queue = asyncQueue<number>({
