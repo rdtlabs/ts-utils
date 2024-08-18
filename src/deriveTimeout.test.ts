@@ -8,7 +8,7 @@ import { assert } from "https://deno.land/std@0.213.0/assert/assert.ts";
 import { TimeoutInput } from "./types.ts";
 import { assertEquals } from "https://deno.land/std@0.213.0/assert/assert_equals.ts";
 import { deadline } from "./deadline.ts";
-import { assertRejects } from "https://deno.land/std@0.213.0/assert/assert_rejects.ts";
+import { assertThrows } from "./index.ts";
 
 Deno.test("deriveTimeout Date test", () => {
   const d = new Date(Date.now() + 1000);
@@ -26,9 +26,8 @@ Deno.test("deriveTimeout deadline test", () => {
   assert(tm > 995 && tm <= 1000);
 });
 
-Deno.test("deriveTimeout error test", async () => {
-  // deno-lint-ignore require-await
-  await assertRejects(async () => {
+Deno.test("deriveTimeout error test", () => {
+  assertThrows(() => {
     // deno-lint-ignore no-explicit-any
     TimeoutInput.deriveTimeout(null as any)
   }, TypeError);

@@ -1,5 +1,5 @@
 import { fromIterableLike } from "../async/fromIterableLike.ts";
-import type { IterableLike } from "../async/fromIterableLike.ts";
+import type { IterableLike } from "../async/IterableLike.ts";
 import { Promises } from "../async/Promises.ts";
 import type { Callable, ErrorLike, TimeoutInput } from "../types.ts";
 import type {

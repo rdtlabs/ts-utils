@@ -8,7 +8,8 @@ import { createObservable } from "../createObservable.ts";
 import { Flowable } from "./Flowable.ts";
 import type { FlowProcessor } from "./FlowProcessor.ts";
 import * as p from "../pipeable/pipeable-funcs.ts";
-import { fromIterableLike, type IterableLike } from "../fromIterableLike.ts";
+import { fromIterableLike } from "../fromIterableLike.ts";
+import type { IterableLike } from "../IterableLike.ts";
 import type { FlowPublisher } from "./FlowPublisher.ts";
 import { Maybe } from "../../Maybe.ts";
 

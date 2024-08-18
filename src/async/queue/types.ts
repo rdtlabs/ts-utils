@@ -100,7 +100,7 @@ export interface AsyncQueue<T> extends Disposable, AsyncIterable<T> {
   close(err?: ErrorLike): void;
 
   /** Returns a promise that resolves when the queue is closed. */
-  onClose(): Promise<void>;
+  onClose(propagateInjectedError?: boolean): Promise<void>;
 }
 
 /**

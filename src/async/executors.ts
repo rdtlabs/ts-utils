@@ -3,8 +3,9 @@ import type { ErrorLike } from "../types.ts";
 import type { CancellationToken } from "../cancellation/CancellationToken.ts";
 import { JobPool } from "./JobPool.ts";
 import { Promises } from "./Promises.ts";
+import type { ConcurrentExecutor, Executor } from "./executor.ts";
 
-export const Executor = Object.freeze({
+export const executors = Object.freeze({
   concurrent: (
     maxConcurrency?: number,
     maxQueueLength?: number,
@@ -41,7 +42,7 @@ export const Executor = Object.freeze({
     } as Executor;
   },
   sequentialize: (executor: Executor): Executor => {
-    const sequential = Executor.sequential();
+    const sequential = executors.sequential();
     return {
       execute: (callable, deadline) => {
         return sequential.execute(
@@ -55,7 +56,7 @@ export const Executor = Object.freeze({
       callable: Callable<T | PromiseLike<T>>,
       cancellation?: CancellationToken,
     ): Promise<T> => {
-      return Executor.invoke(callable, cancellation);
+      return executors.invoke(callable, cancellation);
     },
   },
   macro: <Executor> {
@@ -103,7 +104,7 @@ export const Executor = Object.freeze({
     executor?: Executor,
     cancellation?: CancellationToken,
   ) => {
-    return __invokeOn(callable, executor ?? Executor.immediate, cancellation);
+    return __invokeOn(callable, executor ?? executors.immediate, cancellation);
   },
 }) as {
   /**
@@ -159,49 +160,6 @@ export const Executor = Object.freeze({
     deadline?: CancellationToken,
   ) => Promise<T>;
 };
-
-/**
- * An abstraction for executing tasks.
- */
-export interface Executor {
-  /**
-   * @param callable The task to execute.
-   * @param deadline The deadline for the task to complete.
-   * @returns A promise that resolves with the result of the callable or rejects with an error.
-   */
-  execute: <T>(
-    callable: Callable<T | PromiseLike<T>>,
-    deadline?: CancellationToken,
-  ) => Promise<T>;
-}
-
-/**
- * An executor that executes tasks concurrently.
- */
-export interface ConcurrentExecutor extends Executor {
-  /**
-   * Initiates an orderly shutdown in which previously submitted tasks are executed, but no new tasks will be accepted.
-   * Invocation has no additional effect if already shut down.
-   * @returns A promise that resolves when the executor has completed shutdown.
-   */
-  shutdown(): void;
-
-  /**
-   * Awaits completion of all tasks in the executor.
-   * @returns A promise that resolves when the executor has completed shutdown.
-   */
-  onShutdown(): Promise<void>;
-
-  /**
-   * @returns `true` if the executor has initiated shutdown.
-   */
-  readonly isShutdownInitiated: boolean;
-
-  /**
-   * @returns `true` if the executor has completed shutdown.
-   */
-  readonly isShutdown: boolean;
-}
 
 const __invoke = <T = void>(
   callable: Callable<T | PromiseLike<T>>,

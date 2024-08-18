@@ -5,10 +5,10 @@
 /// <reference lib="deno.ns" />
 
 import { assert } from "https://deno.land/std@0.213.0/assert/assert.ts";
-import { assertRejects } from "https://deno.land/std@0.213.0/assert/assert_rejects.ts";
 import { List } from "./List.ts";
 import { assertEquals } from "https://deno.land/std@0.213.0/assert/assert_equals.ts";
 import { Deferred, deferred } from "./async/Deferred.ts";
+import { assertThrows } from "./index.ts";
 
 Deno.test("List groupBy function test", () => {
   const list = new List(1, 2, 3, 4, 5);
@@ -43,9 +43,9 @@ Deno.test("List instanceOf test", () => {
   assert(list instanceof List);
 });
 
-Deno.test("List readonly write error test", async () => {
+Deno.test("List readonly write error test", () => {
   const list = List.readonly(1, 2, 3, 4, 5);
-  await assertRejects(async () => {
+  assertThrows(() => {
     (list as any).push(6);
   });
   assert(list instanceof List);

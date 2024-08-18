@@ -5,7 +5,7 @@
 /// <reference lib="deno.ns" />
 
 import { assert } from "https://deno.land/std@0.213.0/assert/assert.ts";
-import { Executor } from "./executors.ts";
+import { executors } from "./executors.ts";
 import { monitor } from "./Monitor.ts";
 import { assertEquals } from "https://deno.land/std@0.213.0/assert/assert_equals.ts";
 import { signal } from "./Signal.ts";
@@ -13,14 +13,14 @@ import { delay } from "./delay.ts";
 
 Deno.test("executor immediate test", () => {
   let hasRun = false;
-  Executor.immediate.execute(() => {
+  executors.immediate.execute(() => {
     hasRun = true;
   });
   assert(hasRun);
 });
 
 Deno.test("executor sequential test", async () => {
-  const executor = Executor.sequential();
+  const executor = executors.sequential();
   const c = monitor();
 
   let counter = -1;
@@ -34,7 +34,7 @@ Deno.test("executor sequential test", async () => {
 
     executor.execute(async () => {
       if (index % 3 === 0) {
-        await Executor.macro.execute(increment);
+        await executors.macro.execute(increment);
       } else {
         increment();
       }
@@ -48,7 +48,7 @@ Deno.test("executor sequential test", async () => {
 });
 
 Deno.test("executor task/micro/seqential", async () => {
-  const executor = Executor.sequential();
+  const executor = executors.sequential();
   const c = monitor();
 
   let counter = -1;
@@ -62,9 +62,9 @@ Deno.test("executor task/micro/seqential", async () => {
 
     executor.execute(async () => {
       if (index % 3 === 0) {
-        await Executor.macro.execute(increment);
+        await executors.macro.execute(increment);
       } else if (index % 3 === 1) {
-        await Executor.micro.execute(increment);
+        await executors.micro.execute(increment);
       } else {
         increment();
       }
@@ -79,7 +79,7 @@ Deno.test("executor task/micro/seqential", async () => {
 
 Deno.test("executor concurrent", async () => {
   let counter = 0;
-  const executor = Executor.concurrent(3);
+  const executor = executors.concurrent(3);
 
   const sig = signal();
   for (let i = 0; i < 10; i++) {

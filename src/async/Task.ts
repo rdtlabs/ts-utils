@@ -1,7 +1,8 @@
 import type { CancellationToken } from "../cancellation/CancellationToken.ts";
 import type { Callable, TimeoutInput } from "../types.ts";
 import { delay } from "./delay.ts";
-import { Executor } from "./executors.ts";
+import type { Executor } from "./executor.ts";
+import { executors } from "./executors.ts";
 
 /**
  * Utility object for working with asynchronous tasks.
@@ -67,15 +68,15 @@ function getScheduler(
   scheduler: "micro" | "macro" | "sync" | Executor | undefined,
 ): Executor {
   if (!scheduler || scheduler === "sync") {
-    return Executor.immediate;
+    return executors.immediate;
   }
 
   if (scheduler === "micro") {
-    return Executor.micro;
+    return executors.micro;
   }
 
   if (scheduler === "macro") {
-    return Executor.macro;
+    return executors.macro;
   }
 
   if (typeof scheduler === "object") {

@@ -6,8 +6,8 @@
 
 import { assert } from "https://deno.land/std@0.213.0/assert/assert.ts";
 import { objects } from "./objects.ts";
-import { assertRejects } from "https://deno.land/std@0.213.0/assert/assert_rejects.ts";
 import { assertFalse } from "https://deno.land/std@0.213.0/assert/assert_false.ts";
+import { assertThrows } from "./index.ts";
 
 Deno.test("objects coalesce test", () => {
   assert(objects.coalesce(null, "a") === "a");
@@ -135,24 +135,22 @@ Deno.test("objects requireElseGet test", () => {
   assert(objects.requireElseGet(1, () => 2) === 1);
 });
 
-Deno.test("objects requireNonNil test", async () => {
+Deno.test("objects requireNonNil test", () => {
   assert(objects.requireNonNil(1) === 1);
   assert(objects.requireNonNil("a") === "a");
   assert(objects.requireNonNil({}));
   assert(objects.requireNonNil([]));
   assert(objects.requireNonNil(true) === true);
   assert(objects.requireNonNil(false) === false);
-  // deno-lint-ignore require-await
-  await assertRejects(async () => objects.requireNonNil(null));
+  assertThrows(() => objects.requireNonNil(null));
 });
 
-Deno.test("objects requireNumOrElse test", async () => {
+Deno.test("objects requireNumOrElse test", () => {
   assert(objects.requireNumOrElse(1, 2) === 1);
   assert(objects.requireNumOrElse(null, 2) === 2);
   assert(objects.requireNumOrElse(undefined, 2) === 2);
   assert(objects.requireNumOrElse("1", 2) === 1);
-  // deno-lint-ignore require-await
-  await assertRejects(async () => objects.requireNumOrElse("a", 2));
+  assertThrows(() => objects.requireNumOrElse("a", 2));
 });
 
 Deno.test("objects requireElse test", () => {

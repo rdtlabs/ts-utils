@@ -82,24 +82,24 @@ export function asyncQueue<T>(
   let _onClose: Deferred<void> | undefined;
   let _state: 0 | 1 | 2 = 0;
 
-  function enqueueUnsafe(item: T): void {
+  function _enqueueUnsafe(item: T): void {
     while (!dequeueResolvers.isEmpty) {
       const resolver = dequeueResolvers.dequeue()!;
       if (!resolver.getIsCancelled()) {
-        return resolver.resolve(notifyListeners(item, _onEnqueue));
+        return resolver.resolve(_notifyListeners(item, _onEnqueue));
       }
     }
 
     try {
       _buffer.write(item);
-      notifyListeners(item, _onEnqueue);
+      _notifyListeners(item, _onEnqueue);
       // deno-lint-ignore no-explicit-any
     } catch (e: any) {
       throw e.name === "BufferFullError" ? new QueueFullError() : e;
     }
   }
 
-  function notifyListeners(
+  function _notifyListeners(
     item: T,
     listeners: Array<{ cb: (item: T) => void; once: boolean }>,
   ): T {
@@ -115,7 +115,7 @@ export function asyncQueue<T>(
     return item;
   }
 
-  function attachEvent(
+  function _attachEvent(
     promise: Promise<T>,
     listeners: Array<{ cb: (item: T) => void; once: boolean }>,
   ) {
@@ -123,7 +123,7 @@ export function asyncQueue<T>(
       return promise;
     }
 
-    return promise.then((item) => notifyListeners(item, listeners));
+    return promise.then((item) => _notifyListeners(item, listeners));
   }
 
   function _on(
@@ -179,19 +179,29 @@ export function asyncQueue<T>(
 
       for (const resolver of dequeueResolvers.toBufferLike()) {
         if (!resolver.getIsCancelled()) {
-          resolver.reject(new QueueClosedError());
+          resolver.reject(err ??= new QueueClosedError());
         }
       }
     },
-    onClose(): Promise<void> {
+    async onClose(propagateInjectedError?: boolean): Promise<void> {
       if (!_onClose) {
         if (queue.isClosed) {
-          return Promise.resolve();
+          return;
         }
         _onClose = new Deferred<void>();
       }
 
-      return _onClose.promise;
+      if (propagateInjectedError === true) {
+        return await _onClose.promise;
+      }
+
+      try {
+        return await _onClose.promise;
+      } catch (e) {
+        if (!(e instanceof QueueClosedError)) {
+          throw e;
+        }
+      }
     },
     setReadOnly(): void {
       if (_state === 2) {
@@ -211,7 +221,7 @@ export function asyncQueue<T>(
       }
 
       try {
-        enqueueUnsafe(item);
+        _enqueueUnsafe(item);
         return true;
       } catch (e) {
         if (e instanceof QueueFullError) {
@@ -229,7 +239,7 @@ export function asyncQueue<T>(
         throw new QueueReadOnlyError();
       }
 
-      enqueueUnsafe(item);
+      _enqueueUnsafe(item);
     },
     dequeue(cancellationToken?: CancellationToken): Promise<T> {
       if (_state === 2) {
@@ -241,15 +251,15 @@ export function asyncQueue<T>(
       }
 
       if (!queue.isEmpty) {
-        return attachEvent(Promise.resolve(_buffer.read()!), _onDequeue);
+        return _attachEvent(Promise.resolve(_buffer.read()!), _onDequeue);
       }
 
       if (_state === 0) {
         if (!cancellationToken || cancellationToken.state === "none") {
-          return attachEvent(new Promise<T>(enqueueResolver), _onDequeue);
+          return _attachEvent(new Promise<T>(enqueueResolver), _onDequeue);
         }
 
-        return attachEvent(
+        return _attachEvent(
           new Promise<T>((resolve, reject) =>
             enqueueResolver(
               resolve,
@@ -276,7 +286,7 @@ export function asyncQueue<T>(
 
       if (!queue.isEmpty) {
         return {
-          value: notifyListeners(_buffer.read()!, _onDequeue),
+          value: _notifyListeners(_buffer.read()!, _onDequeue),
           ok: true,
         };
       }

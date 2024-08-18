@@ -5,10 +5,9 @@
 /// <reference lib="deno.ns" />
 
 import { CancellationError } from "./cancellation/CancellationError.ts";
-import { assert } from "./index.ts";
+import { assert, assertThrows } from "./index.ts";
 import { once } from "./once.ts";
 import { assertEquals } from "https://deno.land/std@0.213.0/assert/assert_equals.ts";
-import { assertRejects } from "https://deno.land/std@0.213.0/assert/assert_rejects.ts";
 
 Deno.test("once test with params", () => {
   let count = 0;
@@ -66,7 +65,7 @@ Deno.test("once cancel test", () => {
   assertEquals(fn.status, "none");
   fn[Symbol.dispose]();
   assertEquals(fn.status, "cancelled");
-  assertRejects(async () => {
-    await fn();
+  assertThrows(() => {
+    fn();
   }, CancellationError);
 });

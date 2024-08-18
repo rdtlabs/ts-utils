@@ -109,7 +109,7 @@ Deno.test("Cancellation Controller cancelAfter test", async () => {
 Deno.test("Cancellation timeout dispose test", async () => {
   const token = Cancellable.timeout(10);
   token[Symbol.dispose]();
-  assertRejects(async () => {
+  await assertRejects(async () => {
     try {
       await deferred(token).promise
     } catch (e) {

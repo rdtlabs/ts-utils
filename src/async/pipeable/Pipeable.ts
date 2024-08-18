@@ -1,4 +1,5 @@
-import { fromIterableLike, type IterableLike } from "../fromIterableLike.ts";
+import type { IterableLike } from "../IterableLike.ts";
+import { fromIterableLike } from "../fromIterableLike.ts";
 import { __fromHandler, __fromHandlerMulti, __ofFunc } from "./__utils.ts";
 
 /**

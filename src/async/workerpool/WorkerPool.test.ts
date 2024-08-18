@@ -8,10 +8,10 @@ import { workerPool } from "./WorkerPool.ts";
 import { signal } from "../Signal.ts";
 import { waitGroup } from "../WaitGroup.ts";
 import { delay } from "../delay.ts";
-import { assertRejects } from "https://deno.land/std@0.213.0/assert/assert_rejects.ts";
 import { QueueLengthExceededError } from "../../errors/QueueLengthExceededError.ts";
 import { ShutdownError } from "../../errors/ShutdownError.ts";
 import { assert } from "https://deno.land/std@0.213.0/assert/assert.ts";
+import { assertThrows } from "../../index.ts";
 
 Deno.test("WorkerPool test", async () => {
   let counter = 0;
@@ -88,9 +88,8 @@ Deno.test("WorkerPool fail max queue test", async () => {
     });
   }
 
-  await assertRejects(
-    // deno-lint-ignore require-await
-    async () => {
+  assertThrows(
+    () => {
       pool.submit(() => sig.wait());
     },
     QueueLengthExceededError
@@ -116,8 +115,8 @@ Deno.test("WorkerPool fail shutdown test", async () => {
 
   sig.notify();
 
-  await assertRejects(
-    async () => await pool.submit(sig.wait),
+  assertThrows(
+    () => pool.submit(sig.wait),
     ShutdownError
   );
 

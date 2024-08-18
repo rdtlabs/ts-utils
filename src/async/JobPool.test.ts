@@ -12,6 +12,7 @@ import { QueueLengthExceededError } from "../errors/QueueLengthExceededError.ts"
 import { ShutdownError } from "../errors/ShutdownError.ts";
 import { assert } from "https://deno.land/std@0.213.0/assert/assert.ts";
 import { createCancellation } from "../cancellation/createCancellation.ts";
+import { assertThrows } from "../index.ts";
 
 Deno.test("JobPool test", async () => {
   let counter = 0;
@@ -81,9 +82,8 @@ Deno.test("JobPool fail max queue test", async () => {
   promises.push(pool.submit(() => sig.wait()));
   promises.push(pool.submit(() => sig.wait()));
 
-  await assertRejects(
-    // deno-lint-ignore require-await
-    async () => {
+  assertThrows(
+    () => {
       promises.push(pool.submit(() => sig.wait()));
     },
     QueueLengthExceededError

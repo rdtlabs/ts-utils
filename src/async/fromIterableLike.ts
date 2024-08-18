@@ -1,4 +1,5 @@
 import { isThenable } from "../utils.ts";
+import type { IterableLike } from "./IterableLike.ts";
 
 /**
  * Converts an iterable-like object into an asynchronous generator.
@@ -47,16 +48,3 @@ async function* iterate(it: Iterable<any>) {
     yield await value;
   }
 }
-
-export type IterableLike<T> =
-  | readonly T[]
-  | readonly PromiseLike<T>[]
-  | AsyncGenerator<T>
-  | AsyncIterable<T>
-  | Iterable<T>
-  | Iterable<PromiseLike<T>>
-  | PromiseLike<readonly T[]>
-  | PromiseLike<readonly PromiseLike<T>[]>
-  | PromiseLike<AsyncIterable<T>>
-  | PromiseLike<Iterable<T>>
-  | PromiseLike<Iterable<PromiseLike<T>>>;

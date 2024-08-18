@@ -1,7 +1,7 @@
 import type { CancellationIterableOptions } from "../../cancellation/CancellationIterableOptions.ts";
 import type { ErrorLike } from "../../types.ts";
 import type { Observable } from "../_rx.types.ts";
-import type { IterableLike } from "../fromIterableLike.ts";
+import type { IterableLike } from "../IterableLike.ts";
 import type { CancellationError } from "../../cancellation/CancellationError.ts";
 import type { CancellationToken } from "../../cancellation/CancellationToken.ts";
 import type { Maybe } from "../../Maybe.ts";

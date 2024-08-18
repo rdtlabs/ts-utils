@@ -9,8 +9,83 @@ import { QueueClosedError, QueueFullError, QueueReadOnlyError } from "./errors.t
 import { assertRejects } from "https://deno.land/std@0.213.0/assert/assert_rejects.ts";
 import { asyncQueue } from './asyncQueue.ts';
 import { waitGroup } from "../WaitGroup.ts";
+import { assertThrows } from "../../index.ts";
 
 Deno.test("AsyncQueue on dequeue test", async () => {
+  let dequeued = 0;
+  let dequeuedOnce = 0;
+
+  const wg = waitGroup(4);
+
+  const queue = asyncQueue<number>();
+
+  queue.on("dequeue", () => {
+    dequeued++;
+    wg.done();
+  });
+
+  queue.on("dequeue", () => {
+    dequeuedOnce++;
+    wg.done();
+  }, true);
+
+  queue.enqueue(1);
+  queue.enqueue(2);
+  queue.enqueue(3);
+
+  queueMicrotask(() => {
+    queue.dequeue();
+    queue.dequeue();
+    queue.dequeue();
+  });
+
+  await wg.wait();
+
+  assert(dequeued === 3);
+  assert(dequeuedOnce === 1);
+
+  queue.close()
+  await queue.onClose();
+});
+
+Deno.test("AsyncQueue on enqueue test", async () => {
+  let queued = 0;
+  let queuedOnce = 0;
+
+  const wg = waitGroup(4);
+
+  const queue = asyncQueue<number>();
+
+  queue.on("enqueue", () => {
+    queued++;
+    wg.done();
+  });
+
+  queue.on("enqueue", () => {
+    queuedOnce++;
+    wg.done();
+  }, true);
+
+  queue.enqueue(1);
+  queue.enqueue(2);
+  queue.enqueue(3);
+
+  queueMicrotask(() => {
+    queue.dequeue();
+    queue.dequeue();
+    queue.dequeue();
+  });
+
+  await wg.wait();
+
+  assert(queued === 3);
+  assert(queuedOnce === 1);
+
+  queue.close()
+  await queue.onClose();
+});
+
+Deno.test("AsyncQueue on enqueue/dequeue test", async () => {
   let dequeued = 0;
   let queued = 0;
   let dequeuedOnce = 0;
@@ -61,7 +136,7 @@ Deno.test("AsyncQueue on dequeue test", async () => {
   await queue.onClose();
 });
 
-Deno.test("AsyncQueue enqueue full error", async () => {
+Deno.test("AsyncQueue enqueue full error", () => {
   const queue = asyncQueue<number>({
     bufferSize: 2,
     bufferStrategy: "fixed",
@@ -69,7 +144,7 @@ Deno.test("AsyncQueue enqueue full error", async () => {
 
   queue.enqueue(1);
   queue.enqueue(2);
-  await assertRejects(async () => await queue.enqueue(3), QueueFullError);
+  assertThrows(() => queue.enqueue(3), QueueFullError);
 });
 
 Deno.test("AsyncQueue error on close", async () => {
@@ -92,13 +167,13 @@ Deno.test("AsyncQueue error on close", async () => {
   await assertRejects(() => d, QueueClosedError);
 });
 
-Deno.test("AsyncQueue error on enqueue after readonly", async () => {
+Deno.test("AsyncQueue error on enqueue after readonly", () => {
   const queue = asyncQueue<number>();
 
   queue.enqueue(1);
   queue.setReadOnly();
 
-  await assertRejects(async () => await queue.enqueue(2), QueueReadOnlyError);
+  assertThrows(() => queue.enqueue(2), QueueReadOnlyError);
 });
 
 Deno.test("AsyncQueue enqueue drop", async () => {
@@ -168,6 +243,24 @@ Deno.test("AsyncQueue await onClose", async () => {
   queueMicrotask(() => queue.close());
 
   await queue.onClose();
+});
+
+Deno.test("AsyncQueue await onClose with propagation", async () => {
+  const queue = asyncQueue<number>();
+
+  queue.enqueue(1);
+  queue.setReadOnly();
+
+  queueMicrotask(() => queue.close(new Error("forced error")));
+
+  try {
+    await queue.onClose(true);
+    assert(false, "Expected an error to be thrown");
+  } catch (err) {
+    if (err instanceof Error) {
+      assert(err.message === "forced error");
+    }
+  }
 });
 
 Deno.test("AsyncQueue await dequeue", async () => {

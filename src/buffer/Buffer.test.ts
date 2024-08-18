@@ -6,9 +6,9 @@
 
 import { assertEquals } from "https://deno.land/std@0.213.0/assert/assert_equals.ts";
 import { Buffer } from "./Buffer.ts";
-import { assertRejects } from "https://deno.land/std@0.213.0/assert/assert_rejects.ts";
 import { BufferFullError } from "./BufferFullError.ts";
 import { assert } from "https://deno.land/std@0.213.0/assert/assert.ts";
+import { assertThrows } from "../index.ts";
 
 Deno.test("Buffer drop test", () => {
   const buffer = new Buffer(10, "drop");
@@ -47,8 +47,7 @@ Deno.test("Buffer latest test", () => {
 
 Deno.test("Buffer error test", () => {
   const buffer = new Buffer(10, "fixed");
-  // deno-lint-ignore require-await
-  assertRejects(async () => {
+  assertThrows(() => {
     for (let i = 0; i < 20; i++) {
       buffer.write(i);
     }
