@@ -1,6 +1,6 @@
 {
   "name": "rdt-utils",
-  "version": "0.2.38",
+  "version": "0.2.39",
   "description": "Library of typescript utilities",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
@@ -54,6 +54,3 @@
     "help": "tsup --help"
   }
 }
-
-
-// gh release create v0.2.38 .\rdt-utils-0.2.38.tgz --"minor notes updates, version update",
