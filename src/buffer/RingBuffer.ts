@@ -6,6 +6,12 @@ import type {
 import { DisposedError } from "../DisposedError.ts";
 import { BufferFullError } from "./BufferFullError.ts";
 
+/**
+ * A buffer that can store values of type T in a ring buffer.
+ * An optional strategy can be specified/provided, else will use a fixed buffer.
+ *
+ * The ring buffer is a fixed-size buffer that overwrites the oldest value when full.
+ */
 export class RingBuffer<T> implements BufferLike<T> {
   readonly #buffer: Array<T | undefined>;
   readonly #capacity: number;

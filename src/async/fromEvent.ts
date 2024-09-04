@@ -4,6 +4,9 @@ import type { CancellationToken } from "../cancellation/CancellationToken.ts";
 import { cancellationSignal } from "../cancellation/cancellationSignal.ts";
 import { fromObservable } from "./fromObservable.ts";
 
+/**
+ * Options for the event source.
+ */
 export type EventOptions<T> =
   | boolean
   | (AddEventListenerOptions & {
@@ -12,16 +15,25 @@ export type EventOptions<T> =
     cancellationToken?: CancellationToken;
   });
 
+/**
+ * Creates an async iterable from the specified event source.
+ */
 export function fromEvent<T extends Event>(
   type: string,
   options?: EventOptions<T>,
 ): AsyncIterable<T> & Disposable;
 
+/**
+ * Creates an async iterable from a WindowEventMap event source.
+ */
 export function fromEvent<K extends keyof WindowEventMap>(
   type: K,
   options?: EventOptions<WindowEventMap[K]>,
 ): AsyncIterable<WindowEventMap[K]> & Disposable;
 
+/**
+ * Overloaded implentation.
+ */
 export function fromEvent<T extends Event>(
   // deno-lint-ignore no-explicit-any
   ...args: any[]

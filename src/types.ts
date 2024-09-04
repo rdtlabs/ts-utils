@@ -21,12 +21,23 @@ export type Supplier<T> = () => T;
 // deno-lint-ignore no-explicit-any
 export type ErrorLike = Error | string | any;
 
+/**
+ * A type representing a value that may or may not be present.
+ */
 export type MaybeResult<T> = { value: T; ok: true } | {
   value?: undefined;
   ok: false;
 };
 
+/**
+ * A type representing a time value as a number of milliseconds,
+ * Date, or Deadline
+ */
 export type TimeoutInput = number | Date | Deadline;
+
+/**
+ * Utility functions for working with timeouts.
+ */
 export const TimeoutInput: {
   deriveTimeout(timeout: TimeoutInput): number;
 } = {

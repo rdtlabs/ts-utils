@@ -1,22 +1,35 @@
 import type { BufferLike } from "./buffer/BufferLike.ts";
 
+/**
+ * A queue that can be used to store items in a first-in-first-out order.
+ */
 export interface Queue<T> {
   readonly size: number;
   readonly isEmpty: boolean;
 
+  /** Adds an item to the end of the queue. */
   enqueue(item: T): void;
+
+  /** Removes and returns the item at the front of the queue. */
   dequeue(): T | undefined;
+
+  /** Returns the item at the front of the queue if exists else undefined is returned. */
   peek(): T | undefined;
+
+  /** Removes and returns the item at the front of the queue. */
   clear(): void;
 
+  /** Returns a buffer wrapper around the queue */
   toBufferLike(): BufferLike<T>;
   toArray(): T[];
 }
 
+/** Creates a new queue. */
 export function createQueue<T>(): Queue<T> {
   return new QueueImpl<T>();
 }
 
+/** Creates a new queue. */
 export const Queue = function <T>(): {
   new <T>(): Queue<T>;
 } {

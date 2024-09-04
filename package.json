@@ -54,3 +54,6 @@
     "help": "tsup --help"
   }
 }
+
+
+// gh release create v0.2.38 .\rdt-utils-0.2.38.tgz --"minor notes updates, version update",

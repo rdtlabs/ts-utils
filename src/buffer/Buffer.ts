@@ -6,6 +6,10 @@ import type {
 import { DisposedError } from "../DisposedError.ts";
 import { BufferFullError } from "./BufferFullError.ts";
 
+/**
+ * A buffer that can store values of type T. An optional strategy can be
+ * specified/provided, else will use an unbounded buffer (e.g., infinite capacity)
+ */
 export class Buffer<T> implements BufferLike<T> {
   readonly #buffer: T[] = [];
   readonly #capacity: number;

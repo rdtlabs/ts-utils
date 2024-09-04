@@ -1,17 +1,60 @@
 import { objects } from "./objects.ts";
 import type { ErrorLike } from "./types.ts";
 
+/**
+ * Maybe type that can be used to represent optional values.
+ */
 export type Maybe<T> = {
+  /**
+   * Returns the value if it is not null or undefined, otherwise throws an
+   * error
+   */
   elseThrow: (errFn: () => ErrorLike) => T;
+  /**
+   * Returns the value if it is not null or undefined, otherwise returns the
+   * alternative
+   */
   else: (alt: T) => T;
+  /**
+   * Returns the value if it is not null or undefined, otherwise returns the
+   * alternative from the provided function
+   */
   elseGet: (altFn: () => T) => T;
+  /**
+   * Returns the value if it is not null or undefined, otherwise returns an
+   * alternative maybe from the provided function
+   */
   or(orFn: () => Maybe<T>): Maybe<T>;
+  /**
+   * Returns the value if the provided predicate function within a Maybe, else
+   * a maybe with a nil value will be returned
+   */
   filter: (predicate: (t: T) => boolean) => Maybe<T>;
+  /**
+   * Maps the value to a new value using the provided mapper function
+   */
   map: <R>(mapper: (t: T) => R) => Maybe<R>;
+  /**
+   * Maps the Maybe to a new Maybe using the provided mapper function
+   */
   flatMap: <R>(mapper: (t: T) => Maybe<R>) => Maybe<R>;
+  /**
+   * Returns the value if it is not null or undefined, otherwise returns an
+   * object with the value and a boolean indicating if the value is present
+   */
   get: () => MaybeResult<T>;
+  /**
+   * Returns an iterator that will yield the value if it is not null or
+   * undefined
+   */
   [Symbol.iterator](): Iterator<T>;
+  /**
+   * The value of the maybe
+   */
   readonly value: T | undefined;
+  /**
+   * Indicates if the value is null or undefined
+   */
   readonly isNil: boolean;
 };
 
@@ -20,10 +63,19 @@ type __MaybeStatic = {
   ofAsync: <T>(value?: T | Promise<T>) => Promise<Maybe<T>>;
 };
 
+/**
+ * Utility object for creating Maybe instances.
+ */
 export const Maybe: __MaybeStatic = Object.freeze({
+  /**
+   * Creates a Maybe instance from the provided value.
+   */
   of<T>(value?: T): Maybe<T> {
     return maybe(value);
   },
+  /**
+   * Creates a Promise<Maybe> instance from the provided value or promise.
+   */
   ofAsync<T>(value?: T | Promise<T>): Promise<Maybe<T>> {
     if (value instanceof Promise) {
       return value.then(maybe);

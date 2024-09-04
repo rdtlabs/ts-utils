@@ -1,3 +1,6 @@
+/**
+ * Represents an object that can be used to iterate over.
+ */
 export type IterableLike<T> =
   | readonly T[]
   | readonly PromiseLike<T>[]

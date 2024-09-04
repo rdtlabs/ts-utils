@@ -4,6 +4,9 @@ import { deferred } from "./Deferred.ts";
 import type { CancellationToken } from "../cancellation/CancellationToken.ts";
 import { Promises } from "./Promises.ts";
 
+/**
+ * Represents a job that can be executed asynchronously.
+ */
 export type Job<T> = Callable<PromiseLike<T> | T>;
 
 /**
