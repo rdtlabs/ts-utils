@@ -103,7 +103,7 @@ export function fromObservable<T>(
     options?.cancellationToken,
   );
 
-  return {
+  return Object.seal({
     [Symbol.dispose]: () => dispose(Done),
     [Symbol.asyncIterator]: () => {
       const it = cancellable[Symbol.asyncIterator]();
@@ -145,5 +145,5 @@ export function fromObservable<T>(
         },
       };
     },
-  };
+  });
 }

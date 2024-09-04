@@ -7,7 +7,8 @@ import type { CancellationToken } from "../../cancellation/CancellationToken.ts"
 import type { Maybe } from "../../Maybe.ts";
 
 /**
- * Represents a flow publisher that applies various operations on a stream of values.
+ * Represents a flow publisher that applies various operations on a stream of
+ * values.
  *
  * @template T The values emitted by the publisher
  */
@@ -16,7 +17,8 @@ export interface FlowPublisher<T> {
    * Filters the items emitted by the publisher based on a predicate.
    *
    * @param predicate - The predicate function used to filter the items.
-   * @returns A new `FlowPublisher` that emits only the items that satisfy the predicate.
+   * @returns A new `FlowPublisher` that emits only the items that satisfy the
+   * predicate.
    */
   filter(
     predicate: (t: T) => Promise<boolean> | boolean,
@@ -53,8 +55,10 @@ export interface FlowPublisher<T> {
   /**
    * Skips items emitted by the publisher until a predicate is satisfied.
    *
-   * @param predicate - The predicate function used to determine when to stop skipping.
-   * @returns A new `FlowPublisher` that emits the remaining items after the predicate is satisfied.
+   * @param predicate - The predicate function used to determine when to stop
+   * skipping.
+   * @returns A new `FlowPublisher` that emits the remaining items after the
+   * predicate is satisfied.
    */
   skipUntil(
     predicate: (t: T) => Promise<boolean> | boolean,
@@ -63,8 +67,10 @@ export interface FlowPublisher<T> {
   /**
    * Takes items emitted by the publisher until a predicate is satisfied.
    *
-   * @param predicate - The predicate function used to determine when to stop taking items.
-   * @returns A new `FlowPublisher` that emits only the items until the predicate is satisfied.
+   * @param predicate - The predicate function used to determine when to stop
+   * taking items.
+   * @returns A new `FlowPublisher` that emits only the items until the
+   * predicate is satisfied.
    */
   takeWhile(
     predicate: (t: T) => Promise<boolean> | boolean,
@@ -73,8 +79,10 @@ export interface FlowPublisher<T> {
   /**
    * Resumes the flow of items emitted by the publisher after an error occurs.
    *
-   * @param onError - The error handler function to determine whether to resume or not.
-   * @returns A new `FlowPublisher` that resumes emitting items after an error occurs.
+   * @param onError - The error handler function to determine whether to resume
+   * or not.
+   * @returns A new `FlowPublisher` that resumes emitting items after an error
+   * occurs.
    */
   resumeOnError(
     onError?: (error: ErrorLike) => Promise<boolean> | boolean,
@@ -106,8 +114,10 @@ export interface FlowPublisher<T> {
   /**
    * Converts the publisher to an async generator.
    *
-   * @param cancellationToken - The cancellation token used to cancel the iteration.
-   * @returns An async generator that yields the items emitted by the publisher.
+   * @param cancellationToken - The cancellation token used to cancel the
+   * iteration.
+   * @returns An async generator that yields the items emitted by the
+   * publisher.
    */
   toIterable(cancellationToken?: CancellationToken): AsyncGenerator<T>;
 
@@ -115,7 +125,8 @@ export interface FlowPublisher<T> {
    * Converts the publisher to an async generator with a cancellation callback.
    *
    * @param onCancel - The cancellation callback function.
-   * @returns An async generator that yields the items emitted by the publisher.
+   * @returns An async generator that yields the items emitted by the
+   * publisher.
    */
   toIterable(onCancel: (error: CancellationError) => void): AsyncGenerator<T>;
 
@@ -123,7 +134,8 @@ export interface FlowPublisher<T> {
    * Converts the publisher to an async generator with cancellation options.
    *
    * @param throwOnCancellation - Whether to throw an error on cancellation.
-   * @returns An async generator that yields the items emitted by the publisher.
+   * @returns An async generator that yields the items emitted by the
+   * publisher.
    */
   toIterable(throwOnCancellation: boolean): AsyncGenerator<T>;
 
@@ -131,15 +143,18 @@ export interface FlowPublisher<T> {
    * Converts the publisher to an async generator with cancellation options.
    *
    * @param options - The cancellation options.
-   * @returns An async generator that yields the items emitted by the publisher.
+   * @returns An async generator that yields the items emitted by the
+   * publisher.
    */
   toIterable(options?: CancellationIterableOptions): AsyncGenerator<T>;
 
   /**
    * Converts the publisher to an array.
    *
-   * @param cancellationToken - The cancellation token used to cancel the operation.
-   * @returns A promise that resolves to an array of items emitted by the publisher.
+   * @param cancellationToken - The cancellation token used to cancel the
+   * operation.
+   * @returns A promise that resolves to an array of items emitted by the
+   * publisher.
    */
   toArray(cancellationToken?: CancellationToken): Promise<T[]>;
 
@@ -147,7 +162,8 @@ export interface FlowPublisher<T> {
    * Converts the publisher to an array with a cancellation callback.
    *
    * @param onCancel - The cancellation callback function.
-   * @returns A promise that resolves to an array of items emitted by the publisher.
+   * @returns A promise that resolves to an array of items emitted by the
+   * publisher.
    */
   toArray(onCancel: (error: CancellationError) => void): Promise<T[]>;
 
@@ -155,7 +171,8 @@ export interface FlowPublisher<T> {
    * Converts the publisher to an array with cancellation options.
    *
    * @param throwOnCancellation - Whether to throw an error on cancellation.
-   * @returns A promise that resolves to an array of items emitted by the publisher.
+   * @returns A promise that resolves to an array of items emitted by the
+   * publisher.
    */
   toArray(throwOnCancellation: boolean): Promise<T[]>;
 
@@ -163,7 +180,8 @@ export interface FlowPublisher<T> {
    * Converts the publisher to an array with cancellation options.
    *
    * @param options - The cancellation options.
-   * @returns A promise that resolves to an array of items emitted by the publisher.
+   * @returns A promise that resolves to an array of items emitted by the
+   * publisher.
    */
   toArray(options?: CancellationIterableOptions): Promise<T[]>;
 
@@ -171,7 +189,8 @@ export interface FlowPublisher<T> {
    * Executes a callback function for each item emitted by the publisher.
    *
    * @param cb - The callback function to execute for each item.
-   * @param cancellationToken - The cancellation token used to cancel the operation.
+   * @param cancellationToken - The cancellation token used to cancel the
+   * operation.
    * @returns A promise that resolves when all items have been processed.
    */
   forEach(
@@ -218,16 +237,20 @@ export interface FlowPublisher<T> {
   /**
    * Selects the first item emitted by the publisher.
    *
-   * @param cancellationToken - The cancellation token used to cancel the operation.
-   * @returns A promise that resolves to the first item emitted by the publisher, or `null` if no items are emitted.
+   * @param cancellationToken - The cancellation token used to cancel the
+   * operation.
+   * @returns A promise that resolves to the first item emitted by the
+   * publisher, or `null` if no items are emitted.
    */
   selectFirst(cancellationToken?: CancellationToken): Promise<Maybe<T>>;
 
   /**
-   * Selects the first item emitted by the publisher with a cancellation callback.
+   * Selects the first item emitted by the publisher with a cancellation
+   * callback.
    *
    * @param onCancel - The cancellation callback function.
-   * @returns A promise that resolves to the first item emitted by the publisher, or `null` if no items are emitted.
+   * @returns A promise that resolves to the first item emitted by the
+   * publisher, or `null` if no items are emitted.
    */
   selectFirst(onCancel: (error: CancellationError) => void): Promise<Maybe<T>>;
 
@@ -235,7 +258,8 @@ export interface FlowPublisher<T> {
    * Selects the first item emitted by the publisher with cancellation options.
    *
    * @param throwOnCancellation - Whether to throw an error on cancellation.
-   * @returns A promise that resolves to the first item emitted by the publisher, or `null` if no items are emitted.
+   * @returns A promise that resolves to the first item emitted by the
+   * publisher, or `null` if no items are emitted.
    */
   selectFirst(throwOnCancellation: boolean): Promise<Maybe<T>>;
 
@@ -243,23 +267,28 @@ export interface FlowPublisher<T> {
    * Selects the first item emitted by the publisher with cancellation options.
    *
    * @param options - The cancellation options.
-   * @returns A promise that resolves to the first item emitted by the publisher, or `null` if no items are emitted.
+   * @returns A promise that resolves to the first item emitted by the
+   * publisher, or `null` if no items are emitted.
    */
   selectFirst(options?: CancellationIterableOptions): Promise<Maybe<T>>;
 
   /**
    * Selects the last item emitted by the publisher.
    *
-   * @param cancellationToken - The cancellation token used to cancel the operation.
-   * @returns A promise that resolves to the last item emitted by the publisher, or `null` if no items are emitted.
+   * @param cancellationToken - The cancellation token used to cancel the
+   * operation.
+   * @returns A promise that resolves to the last item emitted by the
+   * publisher, or `null` if no items are emitted.
    */
   selectLast(cancellationToken?: CancellationToken): Promise<Maybe<T>>;
 
   /**
-   * Selects the last item emitted by the publisher with a cancellation callback.
+   * Selects the last item emitted by the publisher with a cancellation
+   * callback.
    *
    * @param onCancel - The cancellation callback function.
-   * @returns A promise that resolves to the last item emitted by the publisher, or `null` if no items are emitted.
+   * @returns A promise that resolves to the last item emitted by the
+   * publisher, or `null` if no items are emitted.
    */
   selectLast(onCancel: (error: CancellationError) => void): Promise<Maybe<T>>;
 
@@ -267,7 +296,8 @@ export interface FlowPublisher<T> {
    * Selects the last item emitted by the publisher with cancellation options.
    *
    * @param throwOnCancellation - Whether to throw an error on cancellation.
-   * @returns A promise that resolves to the last item emitted by the publisher, or `null` if no items are emitted.
+   * @returns A promise that resolves to the last item emitted by the
+   * publisher, or `null` if no items are emitted.
    */
   selectLast(throwOnCancellation: boolean): Promise<Maybe<T>>;
 
@@ -275,7 +305,8 @@ export interface FlowPublisher<T> {
    * Selects the last item emitted by the publisher with cancellation options.
    *
    * @param options - The cancellation options.
-   * @returns A promise that resolves to the last item emitted by the publisher, or `null` if no items are emitted.
+   * @returns A promise that resolves to the last item emitted by the
+   * publisher, or `null` if no items are emitted.
    */
   selectLast(options?: CancellationIterableOptions): Promise<Maybe<T>>;
 }
