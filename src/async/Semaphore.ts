@@ -41,6 +41,7 @@ import { deferred } from "./Deferred.ts";
 import type { WaitHandle } from "./WaitHandle.ts";
 import { CancellationError } from "../cancellation/CancellationError.ts";
 import { CancellationInput } from "../cancellation/cancellationInput.ts";
+import { Promises } from "./Promises.ts";
 
 /**
  * Represents a semaphore, which is a synchronization primitive that limits the number of concurrent accesses to a shared resource.
@@ -137,7 +138,7 @@ export function semaphore(permits: number): Semaphore {
       }
 
       if (args.length !== 1) {
-        return Promise.reject(new Error("invalid arguments"));
+        return Promises.reject(new Error("invalid arguments"));
       }
 
       return this.acquire(CancellationInput.of(args[0]));

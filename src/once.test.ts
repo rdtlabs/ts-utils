@@ -5,7 +5,7 @@
 /// <reference lib="deno.ns" />
 
 import { CancellationError } from "./cancellation/CancellationError.ts";
-import { assert, assertThrows } from "./index.ts";
+import { assert, assertThrows } from "https://deno.land/std@0.213.0/assert/mod.ts";
 import { once } from "./once.ts";
 import { assertEquals } from "https://deno.land/std@0.213.0/assert/assert_equals.ts";
 

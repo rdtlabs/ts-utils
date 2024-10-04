@@ -8,7 +8,7 @@ import { assertEquals } from "https://deno.land/std@0.213.0/assert/assert_equals
 import { Buffer } from "./Buffer.ts";
 import { BufferFullError } from "./BufferFullError.ts";
 import { assert } from "https://deno.land/std@0.213.0/assert/assert.ts";
-import { assertThrows } from "../index.ts";
+import { assertThrows } from "https://deno.land/std@0.213.0/assert/mod.ts";
 
 Deno.test("Buffer drop test", () => {
   const buffer = new Buffer(10, "drop");

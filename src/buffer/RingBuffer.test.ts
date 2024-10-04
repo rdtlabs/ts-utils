@@ -8,7 +8,7 @@ import { assertEquals } from "https://deno.land/std@0.213.0/assert/assert_equals
 import { RingBuffer } from "./RingBuffer.ts";
 import { BufferFullError } from "./BufferFullError.ts";
 import { assert } from "https://deno.land/std@0.213.0/assert/assert.ts";
-import { assertThrows } from "../index.ts";
+import { assertThrows } from "https://deno.land/std@0.213.0/assert/mod.ts";
 
 Deno.test("RingBuffer drop test", () => {
   const buffer = new RingBuffer(10, "drop");

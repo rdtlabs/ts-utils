@@ -10,9 +10,9 @@ import { delay } from "./delay.ts";
 import { assertRejects } from "https://deno.land/std@0.213.0/assert/assert_rejects.ts";
 import { QueueLengthExceededError } from "../errors/QueueLengthExceededError.ts";
 import { ShutdownError } from "../errors/ShutdownError.ts";
-import { assert } from "https://deno.land/std@0.213.0/assert/assert.ts";
 import { createCancellation } from "../cancellation/createCancellation.ts";
-import { assertThrows } from "../index.ts";
+import { assert, assertThrows } from "https://deno.land/std@0.213.0/assert/mod.ts";
+import { chance } from "../crypto/chance.ts";
 
 Deno.test("JobPool test", async () => {
   let counter = 0;
@@ -30,7 +30,7 @@ Deno.test("JobPool test", async () => {
       if (counter > 3) {
         throw new Error(`[${index}] Counter is greater than 3`);
       }
-      await delay(Math.floor(Math.random() * 10));
+      await delay(Math.floor(chance.random() * 10));
       counter--;
     });
 
@@ -54,7 +54,7 @@ Deno.test("JobPool sequential test", async () => {
     const index = i;
     const job = pool.submit(async () => {
       await sig.wait();
-      await delay(Math.floor(Math.random() * 10));
+      await delay(Math.floor(chance.random() * 10));
       if (index !== counter) {
         throw new Error(`[${index}] Execution order is invalid`);
       }

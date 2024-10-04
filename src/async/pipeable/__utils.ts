@@ -20,10 +20,11 @@ export function __fromHandler<T, R = T, A = undefined>(
       handler: Handler<T, R>,
     ) {
       const flow = createFlow<T, R>(it);
-      for await (let sourceValue of it) {
+      for await (const sourceValue of it) {
+        let innerValue = sourceValue;
         do {
           try {
-            const { done, value } = await handler(sourceValue, flow);
+            const { done, value } = await handler(innerValue, flow);
             if (done) {
               return;
             }
@@ -34,7 +35,7 @@ export function __fromHandler<T, R = T, A = undefined>(
             if (result.done) {
               return;
             }
-            sourceValue = result.value as Awaited<T>;
+            innerValue = result.value as Awaited<T>;
           }
         } while (true);
       }
@@ -67,17 +68,18 @@ export function __fromHandlerMulti<T, R = T, A = undefined>(
   return async function* (it) {
     const h = handler(arg);
     const flow = createFlow<T, R>(it);
-    for await (let sourceValue of it) {
+    for await (const sourceValue of it) {
+      let innerValue = sourceValue;
       do {
         try {
-          yield* h(sourceValue, flow);
+          yield* h(innerValue, flow);
           break;
         } catch (error) {
           const result = await it.throw(error);
           if (result.done) {
             return;
           }
-          sourceValue = result.value as Awaited<T>;
+          innerValue = result.value as Awaited<T>;
         }
       } while (true);
     }

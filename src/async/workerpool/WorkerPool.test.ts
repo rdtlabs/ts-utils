@@ -11,7 +11,8 @@ import { delay } from "../delay.ts";
 import { QueueLengthExceededError } from "../../errors/QueueLengthExceededError.ts";
 import { ShutdownError } from "../../errors/ShutdownError.ts";
 import { assert } from "https://deno.land/std@0.213.0/assert/assert.ts";
-import { assertThrows } from "../../index.ts";
+import { assertThrows } from "https://deno.land/std@0.213.0/assert/mod.ts";
+import { chance } from "../../crypto/chance.ts";
 
 Deno.test("WorkerPool test", async () => {
   let counter = 0;
@@ -30,7 +31,7 @@ Deno.test("WorkerPool test", async () => {
         if (counter > 3) {
           throw new Error(`[${index}] Counter is greater than 3`);
         }
-        await delay(Math.floor(Math.random() * 10));
+        await delay(Math.floor(chance.random() * 10));
         counter--;
       } finally {
         wg.done();
@@ -56,7 +57,7 @@ Deno.test("WorkerPool sequential test", async () => {
     pool.submit(async () => {
       try {
         await sig.wait();
-        await delay(Math.floor(Math.random() * 10));
+        await delay(Math.floor(chance.random() * 10));
         if (index !== counter) {
           throw new Error(`[${index}] Execution order is invalid`);
         }

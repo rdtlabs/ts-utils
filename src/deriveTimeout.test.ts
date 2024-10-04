@@ -8,7 +8,7 @@ import { assert } from "https://deno.land/std@0.213.0/assert/assert.ts";
 import { TimeoutInput } from "./types.ts";
 import { assertEquals } from "https://deno.land/std@0.213.0/assert/assert_equals.ts";
 import { deadline } from "./deadline.ts";
-import { assertThrows } from "./index.ts";
+import { assertThrows } from "https://deno.land/std@0.213.0/assert/mod.ts";
 
 Deno.test("deriveTimeout Date test", () => {
   const d = new Date(Date.now() + 1000);

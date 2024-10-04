@@ -170,10 +170,11 @@ export function chunk<T>(size: number): Pipeable<T[]> {
 
   return async function* (it) {
     let buffer: T[] = [];
-    for await (let item of it) {
+    for await (const item of it) {
+      let innerItem = item;
       do {
         try {
-          buffer.push(item as T);
+          buffer.push(innerItem as T);
           if (buffer.length >= size) {
             const toYield = buffer;
             buffer = [];
@@ -185,7 +186,7 @@ export function chunk<T>(size: number): Pipeable<T[]> {
           if (result.done) {
             return;
           }
-          item = result.value;
+          innerItem = result.value;
         }
       } while (true);
     }

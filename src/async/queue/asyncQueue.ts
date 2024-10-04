@@ -8,6 +8,7 @@ import { __getBufferFromOptions, __getQueueResolvers } from "./_utils.ts";
 import type { AsyncQueue, QueueOptions } from "./types.ts";
 import type { ErrorLike, MaybeResult } from "../../types.ts";
 import type { CancellationToken } from "../../cancellation/CancellationToken.ts";
+import { Promises } from "../Promises.ts";
 
 type QueueState = "rw" | "r" | "-rw";
 
@@ -159,7 +160,11 @@ export function asyncQueue<T>(
       return _buffer.isFull;
     },
     get state(): QueueState {
-      return _state === 0 ? "rw" : _state === 1 ? "r" : "-rw";
+      if (_state === 0) {
+        return "rw";
+      }
+
+      return _state === 1 ? "r" : "-rw";
     },
     close(err?: ErrorLike): void {
       if (_state === 2) {
@@ -247,7 +252,7 @@ export function asyncQueue<T>(
       }
 
       if (cancellationToken?.isCancelled === true) {
-        return Promise.reject(cancellationToken.reason);
+        return Promises.reject(cancellationToken.reason);
       }
 
       if (!queue.isEmpty) {

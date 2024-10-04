@@ -10,8 +10,7 @@ import { cancellationTimeout } from "./cancellationTimeout.ts";
 import { delay } from "../async/delay.ts";
 import { Cancellable } from "./Cancellable.ts";
 import { deferred } from "../async/Deferred.ts";
-import { assertRejects } from "../index.ts";
-
+import { assertRejects } from "https://deno.land/std@0.213.0/assert/mod.ts";
 
 import { CancellationError } from "./CancellationError.ts";
 import { DisposedError } from "../DisposedError.ts";

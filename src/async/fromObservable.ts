@@ -5,6 +5,7 @@ import type { Observable } from "./_rx.types.ts";
 import { Done } from "../done.ts";
 import { cancellableIterable } from "../cancellation/cancellableIterable.ts";
 import { asyncQueue } from "./queue/asyncQueue.ts";
+import { Promises } from "./Promises.ts";
 
 /**
  * Converts an Observable into an AsyncIterable.
@@ -131,7 +132,7 @@ export function fromObservable<T>(
         },
         throw: (e) => {
           dispose(e);
-          return Promise.reject(e);
+          return Promises.reject(e);
         },
         // deno-lint-ignore no-explicit-any
         return: (value: any) => {

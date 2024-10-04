@@ -1,6 +1,6 @@
 import type { EncryptedData } from "./types.ts";
 
-import { __encrypt, __stringToCryptoKey } from "./_utils.ts";
+import { __encrypt } from "./_utils.ts";
 
 export * from "./types.ts";
 export * from "./Secret.ts";
@@ -18,8 +18,7 @@ export function encryptOnce<T extends object>(
   data: T,
 ): Promise<EncryptedData> {
   try {
-    const cryptoKey = __stringToCryptoKey(key);
-    return __encrypt(cryptoKey, data);
+    return __encrypt(key, data);
   } catch (e) {
     return Promise.reject(new Error("Failed to encrypt data", { cause: e }));
   }

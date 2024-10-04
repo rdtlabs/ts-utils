@@ -4,12 +4,11 @@
 /// <reference lib="dom.asynciterable" />
 /// <reference lib="deno.ns" />
 
-import { assert } from "https://deno.land/std@0.213.0/assert/assert.ts";
 import { QueueClosedError, QueueFullError, QueueReadOnlyError } from "./errors.ts";
 import { assertRejects } from "https://deno.land/std@0.213.0/assert/assert_rejects.ts";
 import { asyncQueue } from './asyncQueue.ts';
 import { waitGroup } from "../WaitGroup.ts";
-import { assertThrows } from "../../index.ts";
+import { assert, assertThrows } from "https://deno.land/std@0.213.0/assert/mod.ts";
 
 Deno.test("AsyncQueue on dequeue test", async () => {
   let dequeued = 0;

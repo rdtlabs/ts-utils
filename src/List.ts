@@ -60,7 +60,7 @@ export class List<T> extends Array<T> {
    * @returns a new instance of the `List` interface
    */
   static of<T>(...array: readonly T[]): List<T> {
-    return new List(...array) as List<T>;
+    return new List<T>(...array);
   }
 
   /**
@@ -147,7 +147,6 @@ export class List<T> extends Array<T> {
    * @returns a new instance of the `ReadonlyList` interface
    */
   static readonly<T>(...array: readonly T[]): ReadonlyList<T> {
-    Array.from;
     return Object.freeze(new List(...array)) as ReadonlyList<T>;
   }
 

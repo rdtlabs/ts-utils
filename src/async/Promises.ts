@@ -10,7 +10,7 @@ export const Promises = Object.freeze({
     }
 
     if (!tpl.cancellable) {
-      return Promise.reject(tpl.error);
+      return Promises.reject(tpl.error);
     }
 
     try {
@@ -20,14 +20,14 @@ export const Promises = Object.freeze({
       ]);
     } catch (error) {
       tpl.unregister();
-      return Promise.reject(error);
+      return Promises.reject(error);
     }
   },
 
   race: (p, c) => {
     if (p.length === 0) {
       return c?.isCancelled === true
-        ? Promise.reject(c.reason)
+        ? Promises.reject(c.reason)
         : Promise.race(p); // defer to default logic
     }
 
@@ -37,13 +37,27 @@ export const Promises = Object.freeze({
     }
 
     if (!tpl.cancellable) {
-      return Promise.reject(tpl.error);
+      return Promises.reject(tpl.error);
     }
 
     return Promise.race([
       tpl.cancellable,
       ...p.map((p) => p.finally(tpl.unregister)),
     ]);
+  },
+
+  reject: (reason: ErrorLike, altMessage?: string) => {
+    if (reason instanceof Error) {
+      return Promise.reject(reason);
+    }
+
+    if (typeof reason === "string") {
+      return Promise.reject(new Error(reason));
+    }
+
+    return Promise.reject(
+      new Error(altMessage ?? "An unknown error occurred", { cause: reason }),
+    );
   },
 }) as Promises;
 
@@ -130,4 +144,6 @@ type Promises = {
     promises: Promise<T>[],
     cancellation?: CancellationToken,
   ): Promise<T>;
+
+  reject<T = never>(reason: ErrorLike, altMessage?: string): Promise<T>;
 };

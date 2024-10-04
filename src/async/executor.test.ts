@@ -10,6 +10,7 @@ import { monitor } from "./Monitor.ts";
 import { assertEquals } from "https://deno.land/std@0.213.0/assert/assert_equals.ts";
 import { signal } from "./Signal.ts";
 import { delay } from "./delay.ts";
+import { chance } from "../crypto/chance.ts";
 
 Deno.test("executor immediate test", () => {
   let hasRun = false;
@@ -90,7 +91,7 @@ Deno.test("executor concurrent", async () => {
       if (counter > 3) {
         throw new Error(`[${index}] Counter is greater than 3`);
       }
-      await delay(Math.floor(Math.random() * 10));
+      await delay(Math.floor(chance.random() * 10));
       counter--;
     });
   }

@@ -1,5 +1,4 @@
-import type { Callable } from "../types.ts";
-import type { ErrorLike } from "../types.ts";
+import type { Callable, ErrorLike } from "../types.ts";
 import type { CancellationToken } from "../cancellation/CancellationToken.ts";
 import { JobPool } from "./JobPool.ts";
 import { Promises } from "./Promises.ts";

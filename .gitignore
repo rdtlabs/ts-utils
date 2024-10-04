@@ -100,3 +100,5 @@ main.local.ts
 src/npm
 /jsr
 *.zip
+
+.__ignore*

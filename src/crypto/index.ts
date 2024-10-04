@@ -4,8 +4,12 @@
  * @module crypto
  */
 
+import { chance } from "./chance.ts";
+
 export * from "./types.ts";
 export { Secret } from "./Secret.ts";
+export { chance } from "./chance.ts";
 export { encryptOnce } from "./encryptOnce.ts";
 export { decryptOnce } from "./decryptOnce.ts";
-export { generateRandomString } from "./generateRandomString.ts";
+
+export const generateRandomString = chance.string;

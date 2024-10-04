@@ -24,11 +24,11 @@ export class Secret {
   static #idCounter = 1;
   #id: number = Secret.#idCounter++;
   #refCount = 1;
-  #key: Promise<CryptoKey> & { key: CryptoKey };
+  #key: Promise<CryptoKey>;
   #dispose: () => void;
 
   private constructor(
-    key: Promise<CryptoKey> & { key: CryptoKey },
+    key: Promise<CryptoKey>,
     dispose: () => void,
   ) {
     this.#key = key;
@@ -98,9 +98,10 @@ export class Secret {
    * @returns A promise that resolves to the encrypted data.
    * @throws {EncryptionError} If an error occurs during encryption.
    */
-  public encrypt(data: EncryptionSource): Promise<EncryptedData> {
+  public async encrypt(data: EncryptionSource): Promise<EncryptedData> {
     try {
-      return __encrypt(this.#key, data);
+      const key = await this.#key;
+      return __encrypt(key, data);
     } catch (e) {
       return Promise.reject(new EncryptionError(e));
     }
@@ -113,9 +114,10 @@ export class Secret {
    * @returns A promise that resolves to the decrypted data as an `ArrayBuffer`.
    * @throws {DecryptionError} If an error occurs during decryption.
    */
-  public decrypt(cipherData: EncryptedData): Promise<ArrayBuffer> {
+  public async decrypt(cipherData: EncryptedData): Promise<ArrayBuffer> {
     try {
-      return __decrypt(this.#key, cipherData);
+      const key = await this.#key;
+      return __decrypt(key, cipherData);
     } catch (e) {
       return Promise.reject(new DecryptionError(e));
     }
@@ -131,7 +133,8 @@ export class Secret {
    */
   public async decryptAs<T>(cipherData: EncryptedData): Promise<T> {
     try {
-      const json = await __decryptAsString(this.#key, cipherData);
+      const key = await this.#key;
+      const json = await __decryptAsString(key, cipherData);
       return JSON.parse(json);
     } catch (e) {
       throw new DecryptionError(e);
@@ -145,9 +148,10 @@ export class Secret {
    * @returns A promise that resolves to the decrypted string.
    * @throws {DecryptionError} If an error occurs during decryption.
    */
-  public decryptAsString(cipherData: EncryptedData): Promise<string> {
+  public async decryptAsString(cipherData: EncryptedData): Promise<string> {
     try {
-      return __decryptAsString(this.#key, cipherData);
+      const key = await this.#key;
+      return __decryptAsString(key, cipherData);
     } catch (e) {
       return Promise.reject(new DecryptionError(e));
     }
