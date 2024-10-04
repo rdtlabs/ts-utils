@@ -21,6 +21,6 @@ export function encryptOnce<T extends object>(
     const cryptoKey = __stringToCryptoKey(key);
     return __encrypt(cryptoKey, data);
   } catch (e) {
-    return Promise.reject(e);
+    return Promise.reject(new Error("Failed to encrypt data", { cause: e }));
   }
 }

@@ -104,7 +104,7 @@ export function __stringToCryptoKey(
         resolve(key = k);
       }).catch(reject);
     } catch (e) {
-      reject(e);
+      reject(new Error("Failed to create key", { cause: e }));
     }
   });
 
