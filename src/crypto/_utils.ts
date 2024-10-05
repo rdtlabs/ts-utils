@@ -35,9 +35,7 @@ export async function __encrypt<T extends string | CryptoKey>(
   key: T,
   data: EncryptionSource,
 ): Promise<EncryptedData> {
-  const resolvedKey = typeof key === "string"
-    ? await __stringToCryptoKey(key)
-    : key as CryptoKey;
+  const resolvedKey = await __keyToCryptoKey(key);
   const encoded = __getArrayBufferFor(data);
   const iv = globalThis.crypto.getRandomValues(new Uint8Array(16));
   const encrypted = await globalThis.crypto.subtle.encrypt(
@@ -59,9 +57,7 @@ export async function __decrypt<T extends string | CryptoKey>(
   key: T,
   cipherData: EncryptedData,
 ): Promise<ArrayBuffer> {
-  const resolvedKey = typeof key === "string"
-    ? await __stringToCryptoKey(key)
-    : key as CryptoKey;
+  const resolvedKey = await __keyToCryptoKey(key);
   const clearData = await globalThis.crypto.subtle.decrypt(
     {
       name: "AES-GCM",
@@ -96,19 +92,23 @@ export function __stringToCryptoKey(
 
   const encoder = new TextEncoder();
   const stringBytes = encoder.encode(ensure64CharKeyFromKey(secret));
-  return new Promise<CryptoKey>((resolve, reject) => {
-    try {
-      globalThis.crypto.subtle.importKey(
-        "raw",
-        stringBytes,
-        "AES-GCM",
-        true,
-        ["encrypt", "decrypt"],
-      )
-        .then(resolve)
-        .catch((e) => Errors.resolve(e, "Failed to create key"));
-    } catch (e) {
-      reject(new Error("Failed to create key", { cause: e }));
-    }
+  return new Promise<CryptoKey>((resolve) => {
+    globalThis.crypto.subtle.importKey(
+      "raw",
+      stringBytes,
+      "AES-GCM",
+      true,
+      ["encrypt", "decrypt"],
+    )
+      .then(resolve)
+      .catch((e) => Errors.resolve(e, "Failed to create key"));
   });
+}
+
+async function __keyToCryptoKey(
+  secret: string | CryptoKey,
+): Promise<CryptoKey> {
+  return typeof secret === "string"
+    ? await __stringToCryptoKey(secret)
+    : secret;
 }

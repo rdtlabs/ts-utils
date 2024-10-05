@@ -24,7 +24,7 @@ export class Secret {
   static #idCounter = 1;
   #id: number = Secret.#idCounter++;
   #refCount = 1;
-  #key: Promise<CryptoKey>;
+  readonly #key: Promise<CryptoKey>;
   #dispose: () => void;
 
   private constructor(

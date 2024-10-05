@@ -86,11 +86,7 @@ export const Errors = Object.freeze({
 function isTransientInternal(err: unknown, depth: number): boolean {
   // deno-lint-ignore no-explicit-any
   let error = err as any;
-  if (depth >= 3) {
-    return false;
-  }
-
-  if (error === undefined || error === null) {
+  if (depth >= 3 || error === undefined || error === null) {
     return false;
   }
 
@@ -113,6 +109,11 @@ function isTransientInternal(err: unknown, depth: number): boolean {
     return error === 429 || error === 500 || error === 503 || error === 504;
   }
 
+  return __getIsTransientFromObject(error, depth);
+}
+
+// deno-lint-ignore no-explicit-any
+function __getIsTransientFromObject(error: any, depth: number): boolean {
   if (typeof error !== "object") {
     return false;
   }

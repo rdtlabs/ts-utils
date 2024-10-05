@@ -110,7 +110,14 @@ function createCancellablePromise<T>(
 
   let cancel!: () => void;
   const cancellable = new Promise<never>((_, reject) => {
-    cancel = () => reject(cancellation.reason);
+    cancel = () => {
+      const reason = cancellation.reason;
+      reject(
+        reason instanceof Error
+          ? reason
+          : new Error("Operation cancelled", { cause: reason }),
+      );
+    };
   });
 
   const unregister = cancellation.register(cancel);

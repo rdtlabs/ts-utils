@@ -67,17 +67,9 @@ export class RateLimitError extends RetryableError {
   }
 }
 
-export class ShutdownError extends NonRetryableError {
-  constructor(message: string) {
-    super(message);
-  }
-}
+export class ShutdownError extends NonRetryableError {}
 
-export class QueueLengthExceededError extends Error {
-  constructor(message: string) {
-    super(message);
-  }
-}
+export class QueueLengthExceededError extends Error {}
 
 const asNilOrInvalidName = (a: string, b: boolean) =>
   `Argument '${a}' is ${b ? "nil" : "invalid"}`;

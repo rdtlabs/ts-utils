@@ -3,6 +3,7 @@ import type { CancellationToken } from "../cancellation/CancellationToken.ts";
 import { JobPool } from "./JobPool.ts";
 import { Promises } from "./Promises.ts";
 import type { ConcurrentExecutor, Executor } from "./executor.ts";
+import { Errors } from "../errors/errors.ts";
 
 export const executors = Object.freeze({
   concurrent: (
@@ -95,7 +96,7 @@ export const executors = Object.freeze({
         cancellation,
       );
     } catch (error) {
-      return Promise.reject<T>(error);
+      return Promises.reject<T>(error);
     }
   },
   invokeOn: <T>(
@@ -184,9 +185,9 @@ function __invokeOn<T>(
       executor
         .execute(() => __invoke(callable, resolve, reject, cancellation))
         .then((result) => resolve(result as T))
-        .catch((error) => reject(error));
+        .catch((e) => reject(Errors.resolve(e)));
     } catch (error) {
-      reject(error); // in case execute throws an error
+      reject(error);
     }
   });
 }
