@@ -8,11 +8,10 @@ import { workerPool } from "./WorkerPool.ts";
 import { signal } from "../Signal.ts";
 import { waitGroup } from "../WaitGroup.ts";
 import { delay } from "../delay.ts";
-import { QueueLengthExceededError } from "../../errors/QueueLengthExceededError.ts";
-import { ShutdownError } from "../../errors/ShutdownError.ts";
 import { assert } from "https://deno.land/std@0.213.0/assert/assert.ts";
 import { assertThrows } from "https://deno.land/std@0.213.0/assert/mod.ts";
 import { chance } from "../../crypto/chance.ts";
+import { QueueLengthExceededError, ShutdownError } from "../../errors/error.types.ts";
 
 Deno.test("WorkerPool test", async () => {
   let counter = 0;

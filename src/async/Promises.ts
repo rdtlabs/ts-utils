@@ -1,6 +1,10 @@
 import type { CancellationToken } from "../cancellation/CancellationToken.ts";
 import type { ErrorLike } from "../index.ts";
 
+/**
+ * A collection of utility functions for working with Promises.
+ * @module Promises
+ */
 export const Promises = Object.freeze({
   cancellableIterable,
   cancellable: (p, c) => {
@@ -125,25 +129,53 @@ type Maybe<T> = {
 };
 
 type Promises = {
+  /**
+   * Creates an async generator that can be cancelled.
+   * @param iterable The iterable to iterate over.
+   * @param cancellation The cancellation token to use.
+   */
   cancellableIterable<T>(
     iterable: AsyncIterable<T>,
     cancellation?: CancellationToken,
   ): AsyncGenerator<T>;
 
+  /**
+   * Creates a cancellable promise that can be cancelled.
+   * @param iterable The iterable to iterate over.
+   * @param cancellation The cancellation token to use.
+   */
   cancellableIterable<T>(
     iterable: AsyncGenerator<T>,
     cancellation?: CancellationToken,
   ): AsyncGenerator<T>;
 
+  /**
+   * Creates a cancellable promise that can be cancelled.
+   * @param promise The promise to wrap.
+   * @param cancellation The cancellation token to use.
+   */
   cancellable<T>(
     promise: Promise<T> | (() => Promise<T>),
     cancellation?: CancellationToken,
   ): Promise<T>;
 
+  /**
+   * Returns a promise that resolves or rejects with the first settled promise.
+   * @param promises the array of promises for use.
+   * @param cancellation The cancellation token to use.
+   */
   race<T = unknown>(
     promises: Promise<T>[],
     cancellation?: CancellationToken,
   ): Promise<T>;
 
-  reject<T = never>(reason: ErrorLike, altMessage?: string): Promise<T>;
+  /**
+   * Returns a promise that rejects with the given reason.
+   * @param reason The reason for the rejection.
+   * @param altMessage An alternative message to use if the reason is not an Error.
+   */
+  reject<T = never>(
+    reason: ErrorLike,
+    altMessage?: string,
+  ): Promise<T>;
 };

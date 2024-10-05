@@ -1,4 +1,4 @@
-import { Promises } from "../async/Promises.ts";
+import { Errors } from "../errors/errors.ts";
 import type { EncryptedData, EncryptionSource } from "./types.ts";
 
 export const __keyLength = 32;
@@ -96,7 +96,7 @@ export function __stringToCryptoKey(
 
   const encoder = new TextEncoder();
   const stringBytes = encoder.encode(ensure64CharKeyFromKey(secret));
-  return new Promise<CryptoKey>((resolve) => {
+  return new Promise<CryptoKey>((resolve, reject) => {
     try {
       globalThis.crypto.subtle.importKey(
         "raw",
@@ -106,9 +106,9 @@ export function __stringToCryptoKey(
         ["encrypt", "decrypt"],
       )
         .then(resolve)
-        .catch((e) => new Error("Failed to create key", { cause: e }));
+        .catch((e) => Errors.resolve(e, "Failed to create key"));
     } catch (e) {
-      return Promises.reject(e, "Failed to create key");
+      reject(new Error("Failed to create key", { cause: e }));
     }
   });
 }

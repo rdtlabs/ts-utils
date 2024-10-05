@@ -1,9 +1,11 @@
-import { QueueLengthExceededError } from "../../errors/QueueLengthExceededError.ts";
-import { ShutdownError } from "../../errors/ShutdownError.ts";
-import { ArgumentNilError } from "../../errors/ArgumentNilError.ts";
 import { Deferred } from "../Deferred.ts";
 import { fromOptions } from "./_utils.ts";
 import { Queue } from "../../Queue.ts";
+import {
+  ArgumentNilError,
+  QueueLengthExceededError,
+  ShutdownError,
+} from "../../errors/error.types.ts";
 
 type Task = () => Promise<unknown> | unknown;
 

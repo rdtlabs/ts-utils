@@ -1,6 +1,6 @@
 {
   "name": "@rdtlabs/ts-utils",
-  "version": "0.2.39",
+  "version": "0.2.41",
   "exports": {
     ".": "./src/index.ts",
     "./async": "./src/async/index.ts",

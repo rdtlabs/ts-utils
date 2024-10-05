@@ -1,4 +1,4 @@
-import { InvalidArgumentError } from "./errors/InvalidArgumentError.ts";
+import { InvalidArgumentError } from "./errors/error.types.ts";
 import type { Func, Supplier } from "./types.ts";
 
 // deno-lint-ignore no-explicit-any
