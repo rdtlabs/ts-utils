@@ -31,7 +31,7 @@ export const Promises = Object.freeze({
   race: (p, c) => {
     if (p.length === 0) {
       return c?.isCancelled === true
-        ? Promises.reject(c.reason!)
+        ? Promises.reject(c.reason)
         : Promise.race(p); // defer to default logic
     }
 
