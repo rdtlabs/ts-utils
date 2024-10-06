@@ -96,11 +96,12 @@ Deno.test("fromObservable buffer latest test", async () => {
   const start = new WaitGroup(1);
   const fn = (sub: Required<Subscriber<number>>) => {
     queueMicrotask(() => {
-      sub.next(1);
-      sub.next(2);
-      sub.next(3);
+      sub.next(10);
+      sub.next(9);
+      sub.next(8);
       timerId = setTimeout(() => {
-        sub.next(4);
+        sub.next(7);
+        sub.next(6);
         sub.next(5);
         start.done();
         timerId = setTimeout(() => sub.complete(), 0);
@@ -121,7 +122,7 @@ Deno.test("fromObservable buffer latest test", async () => {
     arr.push(value);
   }
   assert(arr.length === 2);
-  assert(arr[0] === 4);
+  assert(arr[0] === 6);
   assert(arr[1] === 5);
 
   if (timerId) {
@@ -138,10 +139,8 @@ Deno.test("fromObservable buffer error test", async () => {
     queueMicrotask(() => {
       sub.next(1);
       sub.next(2);
-      sub.next(3);
       timerId = setTimeout(() => {
-        sub.next(4);
-        sub.next(5);
+        sub.next(3);
         start.done();
         timerId = setTimeout(() => sub.complete(), 0);
       }, 0);
@@ -157,7 +156,7 @@ Deno.test("fromObservable buffer error test", async () => {
   await start.wait();
 
   let finished = false;
-  assertRejects(async () => {
+  await assertRejects(async () => {
     for await (const _ of it) {
       // no-op
     }
