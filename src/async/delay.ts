@@ -8,6 +8,7 @@
  */
 import { DisposedError } from "../DisposedError.ts";
 import type { CancellationToken } from "../cancellation/CancellationToken.ts";
+import { Errors } from "../errors/errors.ts";
 import { TimeoutInput } from "../types.ts";
 
 export function delay(
@@ -27,7 +28,7 @@ export function delay(
 
     unregister = cancellationToken.register(() => {
       clearTimeout(id);
-      reject(cancellationToken.reason);
+      reject(Errors.resolve(cancellationToken.reason));
     });
   });
 

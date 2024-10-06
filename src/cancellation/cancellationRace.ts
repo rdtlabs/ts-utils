@@ -1,4 +1,5 @@
 import { deferred } from "../async/Deferred.ts";
+import { Promises } from "../async/Promises.ts";
 import type { CancellationError } from "./CancellationError.ts";
 import type { CancellationToken } from "./CancellationToken.ts";
 import { CancellationInput } from "./cancellationInput.ts";
@@ -30,7 +31,7 @@ export function cancellationRace<T>(
     if (onCancel) {
       queueMicrotask(() => onCancel(token.reason));
     }
-    return Promise.reject(token.reason);
+    return Promises.reject(token.reason);
   }
 
   if (typeof promises === "function") {
@@ -77,7 +78,7 @@ const wrap = <T>(p: any, onFinally: () => void) => {
     },
     (err: unknown) => {
       onFinally();
-      return Promise.reject(err);
+      return Promises.reject(err);
     },
   );
 };

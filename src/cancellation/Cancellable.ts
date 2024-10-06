@@ -64,7 +64,7 @@ export const Cancellable = Object.freeze({
         CancellationInput.of(cancellation),
       );
     } catch (error) {
-      return Promise.reject(error);
+      return Promises.reject(error);
     }
   },
 }) as Cancellable;
