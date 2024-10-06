@@ -171,7 +171,7 @@ const __invoke = <T = void>(
     const result = Promise.resolve(callable());
     resolve(Promises.cancellable(result, deadline));
   } catch (error) {
-    reject(error);
+    reject(Errors.resolve(error));
   }
 };
 
@@ -187,7 +187,7 @@ function __invokeOn<T>(
         .then((result) => resolve(result as T))
         .catch((e) => reject(Errors.resolve(e)));
     } catch (error) {
-      reject(error);
+      reject(Errors.resolve(error));
     }
   });
 }
