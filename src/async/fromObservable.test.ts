@@ -57,13 +57,13 @@ Deno.test("fromObservable buffer drop test", async () => {
       sub.next(1);
       sub.next(2);
       sub.next(3);
-      timerId = setTimeout(() => {
-        sub.next(4);
-        sub.next(5);
-        start.done();
-        timerId = setTimeout(() => sub.complete(), 0);
-      }, 0);
     });
+    timerId = setTimeout(() => {
+      sub.next(4);
+      sub.next(5);
+      start.done();
+      timerId = setTimeout(() => sub.complete(), 0);
+    }, 0);
   };
 
   const observer = createObservable<number>(fn);
@@ -99,16 +99,17 @@ Deno.test("fromObservable buffer latest test", async () => {
       sub.next(10);
       sub.next(9);
       sub.next(8);
-      timerId = setTimeout(() => {
-        sub.next(7);
-        sub.next(6);
-        sub.next(5);
-        start.done();
-        timerId = setTimeout(() => sub.complete(), 0);
-      }, 0);
     });
-  };
 
+    timerId = setTimeout(() => {
+      sub.next(7);
+      sub.next(6);
+      sub.next(5);
+      start.done();
+      timerId = setTimeout(() => sub.complete(), 0);
+    }, 0);
+
+  };
   const observer = createObservable<number>(fn);
   const it = fromObservable(observer, {
     bufferSize: 2,
@@ -139,12 +140,13 @@ Deno.test("fromObservable buffer error test", async () => {
     queueMicrotask(() => {
       sub.next(1);
       sub.next(2);
-      timerId = setTimeout(() => {
-        sub.next(3);
-        start.done();
-        timerId = setTimeout(() => sub.complete(), 0);
-      }, 0);
     });
+
+    timerId = setTimeout(() => {
+      sub.next(3);
+      start.done();
+      timerId = setTimeout(() => sub.complete(), 0);
+    }, 0);
   };
 
   const observer = createObservable<number>(fn);

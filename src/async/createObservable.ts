@@ -47,10 +47,11 @@ export function createObservable<T>(
 class ObservableImpl<T> {
   readonly #scheduler: Scheduler<T>;
   readonly #completionScheduler: CompletionScheduler<T>;
-  #isSubscribed = false;
-  #onSubscribed: (
+  readonly #onSubscribed: (
     subscriber: Required<Subscriber<T>> & { isCancelled: boolean },
   ) => void;
+
+  #isSubscribed = false;
 
   constructor(
     onSubscribed: (
