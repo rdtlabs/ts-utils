@@ -93,12 +93,15 @@ export function skipUntil<T>(
   return Pipeable.from<T>(() => {
     let skipping = true;
     return async (value, flow) => {
-      while (!(!skipping || !(skipping = !(await predicate(value))))) {
-        const result = await flow.continue();
-        if (result.done) {
-          return flow.break();
+      if (skipping) {
+        while (!(await predicate(value))) {
+          const result = await flow.continue();
+          if (result.done) {
+            return flow.break();
+          }
+          value = result.value;
         }
-        value = result.value;
+        skipping = false;
       }
 
       return flow.asResult(value);
@@ -118,11 +121,17 @@ export function takeWhile<T>(
   return Pipeable.from<T>(() => {
     let done = false;
     return async (value, flow) => {
-      if (done || (done = !(await predicate(value)))) {
+      if (done) {
         return flow.break();
       }
 
-      return flow.asResult(value);
+      if(await predicate(value)) {
+        return flow.asResult(value);
+      }
+
+      done = true;
+
+      return flow.break();
     };
   });
 }
