@@ -18,10 +18,10 @@ export const CancellationInput: {
   of(input?: CancellationInput): CancellationToken;
 } = {
   of(input?: CancellationInput): CancellationToken {
-    return __isToken(input)
-      ? input
-      : input
-      ? cancellationTimeout(input)
-      : __never;
+    if (__isToken(input)) {
+      return input;
+    }
+
+    return input ? cancellationTimeout(input) : __never;
   },
 };

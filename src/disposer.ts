@@ -46,7 +46,8 @@ export const Disposer: {
             await disposable();
           }
         } catch (e) {
-          (errors ??= []).push(e instanceof Error ? e : new Error(String(e)));
+          errors ??= [];
+          errors.push(e instanceof Error ? e : new Error(String(e)));
         }
       }
       return errors ?? emptyErrorArray;
@@ -77,7 +78,8 @@ export const Disposer: {
             disposable();
           }
         } catch (e) {
-          (errors ??= []).push(e instanceof Error ? e : new Error(String(e)));
+          errors ??= [];
+          errors.push(e instanceof Error ? e : new Error(String(e)));
         }
       }
 
@@ -109,7 +111,8 @@ export const Disposer: {
             (errors ?? (errors = [])).push(...errs);
           }
         } catch (e) {
-          (errors ??= []).push(e instanceof Error ? e : new Error(String(e)));
+          errors ??= [];
+          errors.push(e instanceof Error ? e : new Error(String(e)));
         }
       }
 
@@ -140,7 +143,8 @@ export const Disposer: {
             (errors ?? (errors = [])).push(...errs);
           }
         } catch (e) {
-          (errors ??= []).push(e instanceof Error ? e : new Error(String(e)));
+          errors ??= [];
+          errors.push(e instanceof Error ? e : new Error(String(e)));
         }
       }
 

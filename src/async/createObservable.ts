@@ -1,6 +1,8 @@
 import type { ErrorLike } from "../types.ts";
 import type { Observable, Subscriber, Unsubscribe } from "./_rx.types.ts";
 
+type SchedulerType = "micro" | "macro" | "sync";
+
 /**
  * Creates an observable that can be subscribed to.
  *
@@ -8,9 +10,9 @@ import type { Observable, Subscriber, Unsubscribe } from "./_rx.types.ts";
  * @param {(
  *   subscriber: Required<Subscriber<T>> & { isCancelled: boolean }
  * ) => void} onSubscribed - A function that will be called when a subscriber subscribes to the observable.
- * @param {("micro" | "macro" | "sync" | {
- *   scheduler: "micro" | "macro" | "sync";
- *   completionScheduler: "micro" | "macro" | "sync";
+ * @param {(SchedulerType | {
+ *   scheduler: SchedulerType;
+ *   completionScheduler: SchedulerType;
  * })} [options] - Optional options for the observable.
  * @returns {Observable<T>} - The created observable.
  */
@@ -18,9 +20,9 @@ export function createObservable<T>(
   onSubscribed: (
     subscriber: Required<Subscriber<T>> & { isCancelled: boolean },
   ) => void,
-  options?: "micro" | "macro" | "sync" | {
-    scheduler: "micro" | "macro" | "sync";
-    completionScheduler: "micro" | "macro" | "sync";
+  options?: SchedulerType | {
+    scheduler: SchedulerType;
+    completionScheduler: SchedulerType;
   },
 ): Observable<T> {
   let scheduler: Scheduler<T>;
@@ -43,8 +45,8 @@ export function createObservable<T>(
 }
 
 class ObservableImpl<T> {
-  #scheduler: Scheduler<T>;
-  #completionScheduler: CompletionScheduler<T>;
+  readonly #scheduler: Scheduler<T>;
+  readonly #completionScheduler: CompletionScheduler<T>;
   #isSubscribed = false;
   #onSubscribed: (
     subscriber: Required<Subscriber<T>> & { isCancelled: boolean },
@@ -128,7 +130,7 @@ type SubRef<T> = { current: Subscriber<T> };
 type Scheduler<T> = (ref: SubRef<T>, value: T) => void;
 type CompletionScheduler<T> = (ref: SubRef<T>, e?: unknown) => void;
 
-function getScheduler<T>(type: "micro" | "macro" | "sync"): Scheduler<T> {
+function getScheduler<T>(type: SchedulerType): Scheduler<T> {
   if (type === "sync") {
     return (ref, value) => {
       ref.current?.next?.(value);
@@ -151,7 +153,7 @@ function getScheduler<T>(type: "micro" | "macro" | "sync"): Scheduler<T> {
 }
 
 function getCompletionScheduler<T>(
-  type: "micro" | "macro" | "sync",
+  type: SchedulerType,
 ): CompletionScheduler<T> {
   if (type === "sync") {
     return (ref, e) => {

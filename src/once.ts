@@ -42,7 +42,11 @@ export const once = <T extends Func>(fn: T): Once<T> => {
 
   Object.defineProperty(wrapped, "status", {
     get() {
-      return called !== 0 ? called === 1 ? "invoked" : "cancelled" : "none";
+      if (called === 0) {
+        return "none";
+      }
+
+      return called === 1 ? "invoked" : "cancelled";
     },
   });
 
@@ -63,7 +67,7 @@ export const once = <T extends Func>(fn: T): Once<T> => {
     enumerable: false,
   });
 
-  return wrapped as Once<T>;
+  return wrapped;
 };
 
 export const Once: {

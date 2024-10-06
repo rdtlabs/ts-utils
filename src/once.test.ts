@@ -12,7 +12,8 @@ import { assertEquals } from "https://deno.land/std@0.213.0/assert/assert_equals
 Deno.test("once test with params", () => {
   let count = 0;
   const fn = once((value: number) => {
-    return count += value;
+    count += value;
+    return count;
   });
 
   assertEquals(fn.status, "none");

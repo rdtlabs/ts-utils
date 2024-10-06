@@ -10,7 +10,8 @@ import { assertEquals } from "https://deno.land/std@0.213.0/assert/assert_equals
 Deno.test("lazy fn test", () => {
   let count = 0;
   const fn = Lazy.fn(() => (value: number) => {
-    return count += value;
+    count += value;
+    return count;
   }, false);
 
   assertEquals(fn(10), 10); //should be same
@@ -23,7 +24,8 @@ Deno.test("lazy fn test", () => {
 Deno.test("lazy fn once test", () => {
   let count = 0;
   const fn = Lazy.fn(() => (value: number) => {
-    return count += value;
+    count += value;
+    return count;
   }, true);
 
   assertEquals(fn(7), 7); //should be same

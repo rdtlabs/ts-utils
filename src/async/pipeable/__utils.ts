@@ -119,12 +119,7 @@ const createFlow = (() => {
 
   const breakFromLoop = (() => {
     // deno-lint-ignore no-explicit-any
-    const promise = new Promise<IteratorResult<any>>(
-      (res) => {
-        res({ done: true, value: undefined });
-      },
-    );
-
+    const promise = Promise.resolve<any>({ done: true, value: undefined });
     return () => promise;
   })();
 

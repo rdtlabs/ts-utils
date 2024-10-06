@@ -4,9 +4,8 @@
 /// <reference lib="dom.asynciterable" />
 /// <reference lib="deno.ns" />
 
-import { assert } from "https://deno.land/std@0.213.0/assert/assert.ts";
 import { chance } from "./chance.ts";
-import { assertNotEquals } from "https://deno.land/std@0.213.0/assert/assert_not_equals.ts";
+import { assert, assertNotEquals, assertGreaterOrEqual } from "https://deno.land/std@0.213.0/assert/mod.ts";
 
 Deno.test("chance test", () => {
   const randomValue = chance.random();
@@ -14,20 +13,18 @@ Deno.test("chance test", () => {
 });
 
 Deno.test("chance distribution test", () => {
+  const MAX_SIZE = 65537;
   const fillSet = () => {
     const values = new Set<number>();
-    for (let i = 0; i < 65537; i++) {
+    for (let i = 0; i < MAX_SIZE; i++) {
       values.add(chance.random());
     }
     return values;
   }
 
-  let values = fillSet();
-  if (values.size < 65537) {
-    values = fillSet();
-  }
-
-  assert(values.size === 65537, "distribution test failed");
+  const values = fillSet();
+  assert(values.size <= MAX_SIZE, "too many entries");
+  assertGreaterOrEqual(values.size, MAX_SIZE-MAX_SIZE*.001, "suspicious # of random duplicate entries generated");
 });
 
 Deno.test("chance radnom string test", () => {

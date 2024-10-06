@@ -93,60 +93,59 @@ function maybe<T>(value?: T): Maybe<T> {
     return undefMaybe as unknown as Maybe<T>;
   }
 
-  let self: Maybe<T>;
-  return Object.freeze(
-    self = {
-      get value() {
-        return value;
-      },
-      get isNil() {
-        return false;
-      },
-      elseThrow() {
-        return value;
-      },
-      else() {
-        return value;
-      },
-      elseGet() {
-        return value;
-      },
-      map<R>(mapper: (t: T) => R) {
-        return maybe(mapper(value));
-      },
-      flatMap<R>(mapper: (t: T) => Maybe<R>) {
-        return mapper(value);
-      },
-      filter(predicate: (t: T) => boolean) {
-        if (objects.isNil(value) || predicate(value)) {
-          return self;
-        }
-        return maybe();
-      },
-      or() {
-        return self;
-      },
-      get: () => {
-        return {
-          value,
-          ok: true,
-        };
-      },
-      [Symbol.iterator](): Iterator<T> {
-        let done = false;
-        return {
-          next() {
-            if (done) {
-              return { done: true, value: undefined };
-            }
-
-            done = true;
-            return { value };
-          },
-        };
-      },
+  const self: Maybe<T> = {
+    get value() {
+      return value;
     },
-  );
+    get isNil() {
+      return false;
+    },
+    elseThrow() {
+      return value;
+    },
+    else() {
+      return value;
+    },
+    elseGet() {
+      return value;
+    },
+    map<R>(mapper: (t: T) => R) {
+      return maybe(mapper(value));
+    },
+    flatMap<R>(mapper: (t: T) => Maybe<R>) {
+      return mapper(value);
+    },
+    filter(predicate: (t: T) => boolean) {
+      if (objects.isNil(value) || predicate(value)) {
+        return self;
+      }
+      return maybe();
+    },
+    or() {
+      return self;
+    },
+    get: () => {
+      return {
+        value,
+        ok: true,
+      };
+    },
+    [Symbol.iterator](): Iterator<T> {
+      let done = false;
+      return {
+        next() {
+          if (done) {
+            return { done: true, value: undefined };
+          }
+
+          done = true;
+          return { value };
+        },
+      };
+    },
+  };
+
+  return Object.freeze(self);
 }
 
 type MaybeResult<T> = TrueResult<T> | FalseResult;
@@ -163,50 +162,49 @@ type FalseResult = {
 
 const { nullMaybe, undefMaybe } = (() => {
   function create(value: undefined | null) {
-    let self: Maybe<undefined | null>;
-    return Object.freeze(
-      self = {
-        value,
-        isNil: true,
-        elseThrow(errFn: () => ErrorLike) {
-          throw errFn();
-        },
-        // deno-lint-ignore no-explicit-any
-        else(alt: any) {
-          return alt;
-        },
-        // deno-lint-ignore no-explicit-any
-        elseGet(altFn: () => any) {
-          return altFn();
-        },
-        map<R>() {
-          return self as unknown as Maybe<R>;
-        },
-        flatMap<R>() {
-          return self as unknown as Maybe<R>;
-        },
-        filter() {
-          return self;
-        },
-        // deno-lint-ignore no-explicit-any
-        or(orFn: () => Maybe<any>) {
-          return orFn();
-        },
-        get: () => {
-          return {
-            ok: false,
-          };
-        },
-        // deno-lint-ignore no-explicit-any
-        [Symbol.iterator](): Iterator<any> {
-          return {
-            next() {
-              return { done: true, value: undefined };
-            },
-          };
-        },
+    const self: Maybe<undefined | null> = {
+      value,
+      isNil: true,
+      elseThrow(errFn: () => ErrorLike) {
+        throw errFn();
       },
-    );
+      // deno-lint-ignore no-explicit-any
+      else(alt: any) {
+        return alt;
+      },
+      // deno-lint-ignore no-explicit-any
+      elseGet(altFn: () => any) {
+        return altFn();
+      },
+      map<R>() {
+        return self as unknown as Maybe<R>;
+      },
+      flatMap<R>() {
+        return self as unknown as Maybe<R>;
+      },
+      filter() {
+        return self;
+      },
+      // deno-lint-ignore no-explicit-any
+      or(orFn: () => Maybe<any>) {
+        return orFn();
+      },
+      get: () => {
+        return {
+          ok: false,
+        };
+      },
+      // deno-lint-ignore no-explicit-any
+      [Symbol.iterator](): Iterator<any> {
+        return {
+          next() {
+            return { done: true, value: undefined };
+          },
+        };
+      },
+    };
+
+    return Object.freeze(self);
   }
   return {
     nullMaybe: create(null) as Maybe<null>,

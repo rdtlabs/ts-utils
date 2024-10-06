@@ -12,9 +12,9 @@ import { fromObservable } from "./fromObservable.ts";
 import { createObservable } from "./createObservable.ts";
 import { assertEquals } from "https://deno.land/std@0.213.0/assert/assert_equals.ts";
 import { assert } from "https://deno.land/std@0.213.0/assert/assert.ts";
-import { delay } from "./delay.ts";
 import { WaitGroup } from "./WaitGroup.ts";
 import { assertRejects } from "https://deno.land/std@0.213.0/assert/assert_rejects.ts";
+import { Subscriber } from "./_rx.types.ts";
 
 Deno.test("fromObservable test", async () => {
   const queue = new AsyncQueue<number>();
@@ -48,9 +48,11 @@ Deno.test("fromObservable cancellation test", async () => {
 });
 
 Deno.test("fromObservable buffer drop test", async () => {
-  const start = new WaitGroup(1);
+  // deno-lint-ignore no-explicit-any
   let timerId: any;
-  const observer = createObservable<number>((sub) => {
+
+  const start = new WaitGroup(1);
+  const fn = (sub: Required<Subscriber<number>>) => {
     queueMicrotask(() => {
       sub.next(1);
       sub.next(2);
@@ -62,7 +64,9 @@ Deno.test("fromObservable buffer drop test", async () => {
         timerId = setTimeout(() => sub.complete(), 0);
       }, 0);
     });
-  });
+  };
+
+  const observer = createObservable<number>(fn);
 
   const it = fromObservable(observer, {
     bufferSize: 3,
@@ -86,9 +90,11 @@ Deno.test("fromObservable buffer drop test", async () => {
 });
 
 Deno.test("fromObservable buffer latest test", async () => {
-  const start = new WaitGroup(1);
+  // deno-lint-ignore no-explicit-any
   let timerId: any;
-  const observer = createObservable<number>((sub) => {
+
+  const start = new WaitGroup(1);
+  const fn = (sub: Required<Subscriber<number>>) => {
     queueMicrotask(() => {
       sub.next(1);
       sub.next(2);
@@ -100,8 +106,9 @@ Deno.test("fromObservable buffer latest test", async () => {
         timerId = setTimeout(() => sub.complete(), 0);
       }, 0);
     });
-  });
+  };
 
+  const observer = createObservable<number>(fn);
   const it = fromObservable(observer, {
     bufferSize: 2,
     bufferStrategy: "latest",
@@ -123,9 +130,11 @@ Deno.test("fromObservable buffer latest test", async () => {
 });
 
 Deno.test("fromObservable buffer error test", async () => {
-  const start = new WaitGroup(1);
+  // deno-lint-ignore no-explicit-any
   let timerId: any;
-  const observer = createObservable<number>((sub) => {
+
+  const start = new WaitGroup(1);
+  const fn = (sub: Required<Subscriber<number>>) => {
     queueMicrotask(() => {
       sub.next(1);
       sub.next(2);
@@ -137,8 +146,9 @@ Deno.test("fromObservable buffer error test", async () => {
         timerId = setTimeout(() => sub.complete(), 0);
       }, 0);
     });
-  });
+  };
 
+  const observer = createObservable<number>(fn);
   const it = fromObservable(observer, {
     bufferSize: 2,
     bufferStrategy: "fixed",
