@@ -147,9 +147,7 @@ export function resumeOnError<T>(
       }
     }
     try {
-      if (it.return) {
-        await it.return(undefined);
-      }
+      await it.return?.(undefined);
     } catch (error) {
       console.warn("Generator return threw an error", error);
     }
@@ -194,9 +192,7 @@ export function chunk<T>(size: number): Pipeable<T[]> {
       yield buffer;
     }
     try {
-      if (it.return) {
-        await it.return(undefined);
-      }
+      await it.return?.(undefined);
     } catch (error) {
       console.warn("Generator return threw an error", error);
     }
