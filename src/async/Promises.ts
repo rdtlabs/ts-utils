@@ -7,24 +7,24 @@ import type { ErrorLike } from "../index.ts";
  */
 export const Promises = Object.freeze({
   cancellableIterable,
-  cancellable: (p, c) => {
+  cancellable: async (p, c) => {
     const tpl = createCancellablePromise(c);
     if (tpl === undefined) {
-      return p instanceof Promise ? p : p();
+      return await (p instanceof Promise ? p : p());
     }
 
     if (!tpl.cancellable) {
-      return Promises.reject(tpl.error);
+      throw tpl.error;
     }
 
     try {
-      return Promise.race([
+      return await Promise.race([
         tpl.cancellable,
         p instanceof Promise ? p : p(),
       ]);
-    } catch (error) {
+    } catch (e) {
       tpl.unregister();
-      return Promises.reject(error);
+      throw e;
     }
   },
 

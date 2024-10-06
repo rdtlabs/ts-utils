@@ -181,13 +181,9 @@ function __invokeOn<T>(
   cancellation?: CancellationToken,
 ): Promise<T> {
   return new Promise<T>((resolve, reject) => {
-    try {
-      executor
-        .execute(() => __invoke(callable, resolve, reject, cancellation))
-        .then((result) => resolve(result as T))
-        .catch((e) => reject(Errors.resolve(e)));
-    } catch (error) {
-      reject(Errors.resolve(error));
-    }
+    executor
+      .execute(() => __invoke(callable, resolve, reject, cancellation))
+      .then((result) => resolve(result as T))
+      .catch((e) => reject(Errors.resolve(e)));
   });
 }
