@@ -77,7 +77,10 @@ export async function* cancellableIterable<T>(
     }
   };
 
-  const unregister = onCancel && token ? token.register(t => onCancel(t.reason)) : () => { };
+  const unregister = onCancel && token ?
+    token.register(t => onCancel(t.reason as CancellationError)) :
+    () => { };
+
   try {
     const it = Promises.cancellableIterable(iterable, token);
     yield* it[Symbol.asyncIterator]();

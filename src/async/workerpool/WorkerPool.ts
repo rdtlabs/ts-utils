@@ -7,7 +7,7 @@ import {
   ShutdownError,
 } from "../../errors/error.types.ts";
 
-type Task = () => Promise<unknown> | unknown;
+type Task = () => Promise<void> | void;
 
 export type WorkerPoolOptions = {
   // defaults to 4

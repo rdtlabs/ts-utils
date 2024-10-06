@@ -17,9 +17,7 @@ export type NonNil<T> = T extends null | undefined ? never : T;
 // deno-lint-ignore no-explicit-any
 export type Callable<T = any> = () => T;
 export type Supplier<T> = () => T;
-
-// deno-lint-ignore no-explicit-any
-export type ErrorLike = Error | string | any;
+export type ErrorLike = Error | string;
 
 /**
  * A type representing a value that may or may not be present.

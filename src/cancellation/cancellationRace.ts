@@ -29,7 +29,7 @@ export function cancellationRace<T>(
   const token = CancellationInput.of(cancellation);
   if (token.isCancelled) {
     if (onCancel) {
-      queueMicrotask(() => onCancel(token.reason));
+      queueMicrotask(() => onCancel(token.reason as CancellationError));
     }
     return Promises.reject(token.reason);
   }
@@ -46,7 +46,7 @@ export function cancellationRace<T>(
   const def = deferred();
   const cancel = (tk: CancellationToken) => {
     if (onCancel) {
-      queueMicrotask(() => onCancel(tk.reason));
+      queueMicrotask(() => onCancel(tk.reason as CancellationError));
     }
     def.reject(tk.reason);
   };
@@ -76,7 +76,7 @@ const wrap = <T>(p: any, onFinally: () => void) => {
       onFinally();
       return value;
     },
-    (err: unknown) => {
+    (err: Error) => {
       onFinally();
       return Promises.reject(err);
     },

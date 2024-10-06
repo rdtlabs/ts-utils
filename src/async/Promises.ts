@@ -31,7 +31,7 @@ export const Promises = Object.freeze({
   race: (p, c) => {
     if (p.length === 0) {
       return c?.isCancelled === true
-        ? Promises.reject(c.reason)
+        ? Promises.reject(c.reason!)
         : Promise.race(p); // defer to default logic
     }
 
@@ -111,7 +111,7 @@ function createCancellablePromise<T>(
   let cancel!: () => void;
   const cancellable = new Promise<never>((_, reject) => {
     cancel = () => {
-      const reason = cancellation.reason;
+      const reason = cancellation.reason as unknown as ErrorLike;
       reject(
         reason instanceof Error
           ? reason

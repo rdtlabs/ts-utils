@@ -6,7 +6,6 @@ import { waitGroup } from "../WaitGroup.ts";
 import { assert } from "https://deno.land/std@0.213.0/assert/assert.ts";
 import { createObservable } from "../createObservable.ts";
 import { deferred } from "../Deferred.ts";
-import { __createToken } from "../../cancellation/_utils.ts";
 import { CancellationError } from "../../cancellation/CancellationError.ts";
 import { assertRejects } from "https://deno.land/std@0.213.0/assert/assert_rejects.ts";
 

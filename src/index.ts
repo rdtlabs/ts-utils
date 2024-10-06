@@ -13,11 +13,7 @@ export { Lazy, lazyFn, lazyObject } from "./lazy.ts";
 export * from "./disposer.ts";
 export * from "./DisposedError.ts";
 export * from "./Queue.ts";
-export {
-  Deadline as Deadline,
-  deadline as deadline,
-  DeadlineExceededError as DeadlineExceededError,
-} from "./deadline.ts";
+export * from "./deadline.ts";
 export * from "./types.ts";
 export * from "./List.ts";
 

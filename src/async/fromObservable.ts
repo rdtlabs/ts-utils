@@ -90,7 +90,7 @@ export function fromObservable<T>(
       }
     },
     error: (e: unknown) => {
-      dispose(undefined, e ?? new Error("Observable error"));
+      dispose(undefined, (e as ErrorLike) ?? new Error("Observable error"));
     },
     complete: () => {
       dispose();

@@ -1,4 +1,3 @@
-import type { ErrorLike } from "../types.ts";
 import type {
   CancellationController,
   CancellationToken,
@@ -42,10 +41,10 @@ export function fromCancellation(
     get token() {
       return cancellation;
     },
-    cancel(reason?: ErrorLike): void {
+    cancel(reason?: Error): void {
       controller.cancel(reason);
     },
-    cancelAfter(timeoutMillis: number, reason?: ErrorLike): Promise<void> {
+    cancelAfter(timeoutMillis: number, reason?: Error): Promise<void> {
       return controller.cancelAfter(timeoutMillis, reason);
     },
   });

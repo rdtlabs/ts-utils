@@ -79,7 +79,7 @@ export function lazyObject<T extends object>(fn: () => T): T {
     setPrototypeOf(_, o) {
       return Reflect.setPrototypeOf(fn(), o);
     },
-  }) as T;
+  });
 }
 
 export const Lazy: {

@@ -103,36 +103,26 @@ export function __createFlowable<T>(
   return flowable;
 }
 
-function __createConnectableWithParams<T>(
+function __createConnectableWithParams<S, T = S>(
   // deno-lint-ignore no-explicit-any
   pipeables = new Array<Pipeable<any>>(),
-): FlowProcessor<T, T> {
+): FlowProcessor<S, T> {
   if (pipeables.length > 0) {
     pipeables = pipeables.slice(); //copy
   }
 
-  const connectable: FlowProcessor<T, T> = {
+  const connectable: FlowProcessor<S, T> = {
     filter: (predicate) => {
       pipeables.push(p.filter(predicate));
       return __createConnectableWithParams(pipeables);
     },
-    map: (mapper) => {
+    map: <R>(mapper: (t: T, index: number) => Promise<R> | R) => {
       pipeables.push(p.map(mapper));
-      return __createConnectableWithParams(pipeables) as FlowProcessor<
-        // deno-lint-ignore no-explicit-any
-        any,
-        // deno-lint-ignore no-explicit-any
-        any
-      >;
+      return __createConnectableWithParams<S, R>(pipeables);
     },
-    compose: (mapper) => {
+    compose: <R>(mapper: (t: T, index: number) => AsyncGenerator<R>) => {
       pipeables.push(p.compose(mapper));
-      return __createConnectableWithParams(pipeables) as FlowProcessor<
-        // deno-lint-ignore no-explicit-any
-        any,
-        // deno-lint-ignore no-explicit-any
-        any
-      >;
+      return __createConnectableWithParams<S, R>(pipeables);
     },
     peek: (cb) => {
       pipeables.push(p.peek(cb));
@@ -152,23 +142,18 @@ function __createConnectableWithParams<T>(
     },
     chunk: (size) => {
       pipeables.push(p.chunk(size));
-      return __createConnectableWithParams(pipeables) as FlowProcessor<
-        // deno-lint-ignore no-explicit-any
-        any,
-        // deno-lint-ignore no-explicit-any
-        any
-      >;
+      return __createConnectableWithParams(pipeables);
     },
     toIterable(input, options) {
       return __iter(input, pipeables, options);
     },
     async toArray(
-      input: IterableLike<T>,
+      input: IterableLike<S>,
       options?: CancellationIterableOptionsExtended,
     ): Promise<T[]> {
       const items: T[] = [];
       for await (
-        const item of __iter(input, pipeables, options, {
+        const item of __iter<S, T>(input, pipeables, options, {
           throwOnCancellation: true,
         })
       ) {
@@ -176,7 +161,7 @@ function __createConnectableWithParams<T>(
       }
       return items;
     },
-    async forEach(input: IterableLike<T>, cb, options) {
+    async forEach(input: IterableLike<S>, cb, options) {
       for await (
         const item of __iter(input, pipeables, options, {
           throwOnCancellation: true,
@@ -227,8 +212,8 @@ function __createConnectableWithParams<T>(
   return connectable;
 }
 
-function __iter<T>(
-  input: IterableLike<T>,
+function __iter<S, T = S>(
+  input: IterableLike<S>,
   pipeables: Array<Pipeable<unknown>>,
   options?: CancellationIterableOptionsExtended,
   defaults?: CancellationIterableOptions,

@@ -153,41 +153,27 @@ function getScheduler<T>(type: SchedulerType): Scheduler<T> {
   throw new TypeError("Invalid argument");
 }
 
+function setRef<T>(ref: SubRef<T>, e: unknown): void {
+  if (e) {
+    ref.current.error?.(e as ErrorLike);
+  } else {
+    ref.current.complete?.();
+  }
+}
+
 function getCompletionScheduler<T>(
   type: SchedulerType,
 ): CompletionScheduler<T> {
   if (type === "sync") {
-    return (ref, e) => {
-      if (e) {
-        ref.current.error?.(e);
-      } else {
-        ref.current.complete?.();
-      }
-    };
+    return setRef;
   }
 
   if (type === "micro") {
-    return (ref, e) => {
-      queueMicrotask(() => {
-        if (e) {
-          ref.current.error?.(e);
-        } else {
-          ref.current.complete?.();
-        }
-      });
-    };
+    return (ref, e) => queueMicrotask(() => setRef(ref, e));
   }
 
   if (type === "macro") {
-    return (ref, e) => {
-      setTimeout(() => {
-        if (e) {
-          ref.current.error?.(e);
-        } else {
-          ref.current.complete?.();
-        }
-      }, 0);
-    };
+    return (ref, e) => setTimeout(() => setRef(ref, e), 0);
   }
 
   throw new TypeError("Invalid argument");

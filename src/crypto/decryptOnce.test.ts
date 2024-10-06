@@ -6,10 +6,8 @@
 
 import { decryptOnce } from "./decryptOnce.ts";
 import { base64 } from "../encoding/base64.ts";
-import { TEST_STRING_KEY } from "./_utils.test.ts";
+import { TEST_ENCRYPTED_DATA, TEST_CLEAR_DATA, TEST_STRING_KEY } from "./_utils.test.ts";
 import { assertEquals } from "https://deno.land/std@0.213.0/assert/assert_equals.ts";
-import { TEST_ENCRYPTED_DATA } from "./_utils.test.ts";
-import { TEST_CLEAR_DATA } from "./_utils.test.ts";
 
 Deno.test("decryptOnce test", async () => {
   const enc = {
