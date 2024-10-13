@@ -4,10 +4,13 @@ import type { Func } from "./types.ts";
 const once_symbol = Symbol("once");
 
 /**
- * Wraps a function to ensure it can only be invoked once and returns the same value (or error) on subsequent calls.
+ * Wraps a function to ensure it can only be invoked once and returns the same
+ * value (or error) on subsequent calls.
+ *
  * @param fn Function to wrap
- * @returns a function whose return value (or error) will remain the same after first call. The function
- * can be disposed prior to the first call, it will throw a CancellationError if subsequently invoked.
+ * @returns a function whose return value (or error) will remain the same after
+ * first call. The function can be disposed prior to the first call, it will
+ * throw a CancellationError if subsequently invoked.
  */
 export const once = <T extends Func>(fn: T): Once<T> => {
   if (!fn || typeof fn !== "function") {
@@ -70,6 +73,10 @@ export const once = <T extends Func>(fn: T): Once<T> => {
   return wrapped;
 };
 
+/**
+ * Utility for working with creating/using functions that can
+ * only be invoked once.
+ */
 export const Once: {
   of: <T extends Func>(fn: T) => Once<T>;
   is: (fn: unknown) => fn is Once<Func>;

@@ -10,7 +10,7 @@ import { waitGroup } from "../WaitGroup.ts";
 import { delay } from "../delay.ts";
 import { assert } from "https://deno.land/std@0.213.0/assert/assert.ts";
 import { assertThrows } from "https://deno.land/std@0.213.0/assert/mod.ts";
-import { chance } from "../../crypto/chance.ts";
+import { chance } from "../../chance.ts";
 import { QueueLengthExceededError, ShutdownError } from "../../errors/error.types.ts";
 
 Deno.test("WorkerPool test", async () => {

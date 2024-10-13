@@ -10,8 +10,8 @@ import { delay } from "./delay.ts";
 import { assertRejects } from "https://deno.land/std@0.213.0/assert/assert_rejects.ts";
 import { createCancellation } from "../cancellation/createCancellation.ts";
 import { assert, assertThrows } from "https://deno.land/std@0.213.0/assert/mod.ts";
-import { chance } from "../crypto/chance.ts";
 import { QueueLengthExceededError, ShutdownError } from "../errors/error.types.ts";
+import { chance } from "../chance.ts";
 
 Deno.test("JobPool test", async () => {
   let counter = 0;

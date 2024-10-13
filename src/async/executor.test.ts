@@ -10,7 +10,7 @@ import { monitor } from "./Monitor.ts";
 import { assertEquals } from "https://deno.land/std@0.213.0/assert/assert_equals.ts";
 import { signal } from "./Signal.ts";
 import { delay } from "./delay.ts";
-import { chance } from "../crypto/chance.ts";
+import { chance } from "../chance.ts";
 
 Deno.test("executor immediate test", () => {
   let hasRun = false;

@@ -1,5 +1,16 @@
+/**
+ * A utility for generating random values.
+ * @packageDocumentation
+ * @module chance
+ */
 export const chance = Object.freeze({
-  random(useBufferCache): number {
+  /**
+   * Generates a cryptographically random number in the range 0 <= x < 1.
+   *
+   * @param useBufferCache - Whether to use a buffer cache for random number generation.
+   * @returns The randomly generated number.
+   */
+  random(useBufferCache?: boolean): number {
     if (useBufferCache === true) {
       crypto.getRandomValues(buffer);
       return dataView.getUint32(0) / random_divisor;
@@ -11,7 +22,13 @@ export const chance = Object.freeze({
     return view.getUint32(0) / random_divisor;
   },
 
-  string(length): string {
+  /**
+   * Generates a random string of the specified length.
+   *
+   * @param length - The length of the random string to generate.
+   * @returns The randomly generated string.
+   */
+  string(length: number): string {
     let result = "";
     const randomArray = globalThis.crypto.getRandomValues(
       new Uint8Array(length),
@@ -23,22 +40,7 @@ export const chance = Object.freeze({
 
     return result;
   },
-}) as Chance;
-
-type Chance = {
-  /**
-   * Generates a cryptographically random number in the range 0 <= x < 1.
-   */
-  random(useBufferCache?: boolean): number;
-
-  /**
-   * Generates a random string of the specified length.
-   *
-   * @param length - The length of the random string to generate.
-   * @returns The randomly generated string.
-   */
-  string(length: number): string;
-};
+});
 
 const charset =
   "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";

@@ -9,7 +9,7 @@ type Propped<K extends keyof any, TYPE = any> = {
 /**
  * Utility functions for working with objects.
  */
-export const objects = {
+export const objects = Object.freeze({
   /**
    * Returns the first non-null/undefined value.
    */
@@ -212,46 +212,4 @@ export const objects = {
 
     return parseResult;
   },
-} as objects;
-
-type objects = {
-  coalesce: <T>(nillable: T | undefined | null, alt: T) => T;
-  isNil: (value: unknown) => value is null | undefined;
-  isNotNil: <T>(value: T | null | undefined) => value is T;
-  isStr: (value: unknown) => value is string;
-  isNum: (value: unknown) => value is number;
-  isNotNum: (value: unknown) => boolean;
-  isSymbol: (value: unknown) => value is symbol;
-  isUndef: (value: unknown) => value is undefined;
-  isFunc: (value: unknown) => value is Func;
-  isObject: (value: unknown) => value is object;
-  isDate: (value: unknown) => value is Date;
-  isBool: (value: unknown) => value is boolean;
-  isNotBool: (value: unknown) => boolean;
-  isFalse: (
-    value: boolean | null | undefined,
-  ) => value is false | null | undefined;
-  isTrue: (value: boolean | null | undefined) => value is true;
-  isThenable: (value: unknown) => value is PromiseLike<unknown>;
-  has: <T = unknown, P extends string | symbol = string | symbol>(
-    value: T,
-    prop: P,
-  ) => value is T & Propped<P>;
-  hasFunc: <T = unknown, P extends string | symbol = string | symbol>(
-    value: T,
-    prop: P,
-  ) => value is T & Propped<P, Func>;
-  isPromise: <T = unknown>(value: unknown) => value is Promise<T>;
-  require: <T>(value: T | null | undefined, argName: string) => T;
-  requireElse: <T>(value: T | null | undefined, defaultValue: T) => T;
-  requireElseGet: <T>(value: T | null | undefined, defaultFn: Supplier<T>) => T;
-  requireNonNil: <T>(
-    value: T | null | undefined,
-    message?: string | (() => Error),
-  ) => T;
-  requireNumOrElse: (
-    value: string | number | undefined | null,
-    defaultValue: number,
-    radix?: number,
-  ) => number;
-};
+});
