@@ -82,6 +82,9 @@ export function lazyObject<T extends object>(fn: () => T): T {
   });
 }
 
+/**
+ * A utility for creating lazy functions and objects.
+ */
 export const Lazy: {
   fn: <T extends Func>(fn: () => T, firstResultOnly?: boolean) => T;
   of: <T extends object>(fn: () => T) => T;

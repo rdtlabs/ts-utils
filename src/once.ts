@@ -88,7 +88,21 @@ export const Once: {
   },
 });
 
+/**
+ * A function type that can only be invoked once. The function can be disposed
+ * prior to the first call, it will throw a CancellationError if subsequently
+ * invoked.
+ *
+ * @template T The function type.
+ */
 export type Once<T extends Func> = T & Disposable & {
+  /**
+   * The status of the function.
+   *
+   * - `none`: The function has not been invoked.
+   * - `invoked`: The function has been invoked.
+   * - `cancelled`: The function has been disposed.
+   */
   status: "none" | "invoked" | "cancelled";
 };
 

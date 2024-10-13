@@ -11,6 +11,12 @@ import type { CancellationToken } from "../cancellation/CancellationToken.ts";
 import { Errors } from "../errors/errors.ts";
 import { TimeoutInput } from "../types.ts";
 
+/**
+ * Creates a promise that will complete after the specified delay.
+ * @param ms The number of milliseconds to delay the promise.
+ * @param cancellationToken An optional cancellation token that can be used to cancel the delay.
+ * @returns A promise that will resolve after the specified delay.
+ */
 export function delay(
   ms: TimeoutInput,
   cancellationToken?: CancellationToken,

@@ -47,6 +47,10 @@ export interface ReadonlyList<T> extends ReadonlyArray<T> {
   groupBy<K extends keyof T>(key: K): Map<T[K], List<T>>;
 }
 
+/**
+ * A List type that extends Array providing additional functionl
+ * methods (e.g., `groupBy`)
+ */
 export class List<T> extends Array<T> {
   constructor(...args: T[]) {
     super();

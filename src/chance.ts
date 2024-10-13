@@ -3,8 +3,8 @@
  * @packageDocumentation
  * @module chance
  */
-export const chance: Chance = Object.freeze({
-  random(useBufferCache?: boolean): number {
+export const chance = Object.freeze({
+  random(useBufferCache) {
     if (useBufferCache === true) {
       crypto.getRandomValues(buffer);
       return dataView.getUint32(0) / random_divisor;
@@ -16,7 +16,7 @@ export const chance: Chance = Object.freeze({
     return view.getUint32(0) / random_divisor;
   },
 
-  string(length: number): string {
+  string(length) {
     let result = "";
     const randomArray = globalThis.crypto.getRandomValues(
       new Uint8Array(length),
@@ -28,14 +28,7 @@ export const chance: Chance = Object.freeze({
 
     return result;
   },
-});
-
-/**
- * A utility for generating random values.
- * @packageDocumentation
- * @module chance
- */
-type Chance = {
+}) as {
   /**
    * Generates a cryptographically random number in the range 0 <= x < 1.
    *

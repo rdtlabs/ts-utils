@@ -5,11 +5,11 @@ import { Promises } from "./Promises.ts";
 import type { ConcurrentExecutor, Executor } from "./executor.ts";
 import { Errors } from "../errors/errors.ts";
 
+/**
+ * A collection of utility functions for working with executors.
+ */
 export const executors = Object.freeze({
-  concurrent: (
-    maxConcurrency?: number,
-    maxQueueLength?: number,
-  ): ConcurrentExecutor => {
+  concurrent: (maxConcurrency, maxQueueLength) => {
     const pool = new JobPool({
       maxConcurrency: maxConcurrency ?? 4,
       maxQueueLength: maxQueueLength ?? 1024,
@@ -29,7 +29,8 @@ export const executors = Object.freeze({
       },
     };
   },
-  sequential: (): Executor => {
+
+  sequential: () => {
     let lastPromise = Promise.resolve();
     return {
       execute: (callable, deadline) => {
@@ -41,7 +42,8 @@ export const executors = Object.freeze({
       },
     } as Executor;
   },
-  sequentialize: (executor: Executor): Executor => {
+
+  sequentialize: (executor) => {
     const sequential = executors.sequential();
     return {
       execute: (callable, deadline) => {
@@ -51,59 +53,48 @@ export const executors = Object.freeze({
       },
     };
   },
+
   immediate: <Executor> {
-    execute: <T>(
-      callable: Callable<T | PromiseLike<T>>,
-      cancellation?: CancellationToken,
-    ): Promise<T> => {
+    execute: (callable, cancellation) => {
       return executors.invoke(callable, cancellation);
     },
   },
+
   macro: <Executor> {
-    execute: <T>(
-      callable: Callable<T | PromiseLike<T>>,
-      cancellation?: CancellationToken,
-    ): Promise<T> => {
+    execute: (callable, cancellation) => {
       return new Promise((resolve, reject) => {
         setTimeout(
           // deno-lint-ignore no-explicit-any
-          () => __invoke<T>(callable, resolve as any, reject, cancellation),
+          () => __invoke(callable, resolve as any, reject, cancellation),
           0,
         );
       });
     },
   },
+
   micro: <Executor> {
-    execute: <T>(
-      callable: Callable<T | PromiseLike<T>>,
-      cancellation?: CancellationToken,
-    ): Promise<T> => {
+    execute: (callable, cancellation) => {
       return new Promise((resolve, reject) => {
         queueMicrotask(() =>
           // deno-lint-ignore no-explicit-any
-          __invoke<T>(callable, resolve as any, reject, cancellation)
+          __invoke(callable, resolve as any, reject, cancellation)
         );
       });
     },
   },
-  invoke: <T>(
-    callable: Callable<T | PromiseLike<T>>,
-    cancellation?: CancellationToken,
-  ) => {
+
+  invoke: (callable, cancellation) => {
     try {
       return Promises.cancellable(
         Promise.resolve(callable()),
         cancellation,
       );
     } catch (error) {
-      return Promises.reject<T>(error);
+      return Promises.reject(error);
     }
   },
-  invokeOn: <T>(
-    callable: Callable<T | PromiseLike<T>>,
-    executor?: Executor,
-    cancellation?: CancellationToken,
-  ) => {
+
+  invokeOn: (callable, executor, cancellation) => {
     return __invokeOn(callable, executor ?? executors.immediate, cancellation);
   },
 }) as {
