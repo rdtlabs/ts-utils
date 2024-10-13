@@ -125,7 +125,7 @@ export function takeWhile<T>(
         return flow.break();
       }
 
-      if(await predicate(value)) {
+      if (await predicate(value)) {
         return flow.asResult(value);
       }
 
