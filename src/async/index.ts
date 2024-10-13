@@ -23,3 +23,5 @@ export { fromObservable } from "./fromObservable.ts";
 export { Task } from "./Task.ts";
 export * from "./Promises.ts";
 export * from "./flowable/Flowable.ts";
+export * from "./flowable/FlowProcessor.ts";
+export * from "./flowable/FlowPublisher.ts";
