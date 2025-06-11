@@ -37,7 +37,7 @@ export class CancellationError extends Error {
    * Gets the cause of the cancellation error.
    * If a cause is not explicitly provided, it returns the reason from the cancellation token, if available.
    */
-  public get cause(): ErrorLike | undefined {
+  public override get cause(): ErrorLike | undefined {
     return this.#cause ?? this.#token?.reason;
   }
 }

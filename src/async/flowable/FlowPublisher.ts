@@ -1,5 +1,4 @@
 import type { Observable } from "../_rx.types.ts";
-import type { ErrorLike } from "../../types.ts";
 import type { FlowProcessor } from "./FlowProcessor.ts";
 import type { CancellationIterableOptions } from "../../cancellation/CancellationIterableOptions.ts";
 import type { CancellationError } from "../../cancellation/CancellationError.ts";
@@ -85,7 +84,7 @@ export interface FlowPublisher<T> {
    * occurs.
    */
   resumeOnError(
-    onError?: (error: ErrorLike) => Promise<boolean> | boolean,
+    onError?: (error: unknown) => Promise<boolean> | boolean,
   ): FlowPublisher<T>;
 
   /**

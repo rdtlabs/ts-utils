@@ -111,11 +111,9 @@ Deno.test("Cancellation timeout dispose test", async () => {
   await assertRejects(async () => {
     try {
       await deferred(token).promise
-    } catch (e) {
-      if (e.cause) {
-        throw e.cause;
-      }
-      throw e;
+    } catch (e: unknown) {
+      // deno-lint-ignore no-explicit-any
+      throw (e as any)?.cause ?? e;
     }
   }, DisposedError);
 });

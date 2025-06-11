@@ -1,7 +1,6 @@
 import { CancellationError } from "./CancellationError.ts";
 import type { CancellationToken } from "./CancellationToken.ts";
 import { Promises } from "../async/Promises.ts";
-import type { ErrorLike } from "../types.ts";
 import {
   CancellationIterableOptions,
   type CancellationIterableOptionsExtended,
@@ -68,7 +67,7 @@ export async function* cancellableIterable<T>(
 ): AsyncGenerator<T> {
 
   const { token, onCancel, throwOnCancellation } = CancellationIterableOptions.from(options);
-  const reportCancellation = (e: ErrorLike) => {
+  const reportCancellation = (e: unknown) => {
     if (
       throwOnCancellation ||
       !(e instanceof CancellationError) ||

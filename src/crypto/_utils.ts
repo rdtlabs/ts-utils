@@ -3,13 +3,9 @@ import type { EncryptedData, EncryptionSource } from "./types.ts";
 
 export const __keyLength = 32;
 
-export function __getArrayBufferFor(data: EncryptionSource): ArrayBufferLike {
-  if (data instanceof ArrayBuffer) {
+export function __getArrayBufferFor(data: EncryptionSource): BufferSource {
+  if (data instanceof ArrayBuffer || data instanceof Uint8Array) {
     return data;
-  }
-
-  if (data instanceof Uint8Array) {
-    return data.buffer;
   }
 
   if (typeof data === "string") {
@@ -72,6 +68,14 @@ export async function __decrypt<T extends string | CryptoKey>(
 
 export function __stringToCryptoKey(
   secret: string,
+  algorithm:
+    | AlgorithmIdentifier
+    | RsaHashedImportParams
+    | EcKeyImportParams
+    | HmacImportParams
+    | AesKeyAlgorithm = { name: "AES-GCM" },
+  keyUsages: Iterable<KeyUsage> = ["encrypt", "decrypt"],
+  extractable = true,
 ): Promise<CryptoKey> {
   const ensure64CharKeyFromKey = (key: string): string => {
     if (key.length === __keyLength) {
@@ -96,9 +100,9 @@ export function __stringToCryptoKey(
     globalThis.crypto.subtle.importKey(
       "raw",
       stringBytes,
-      "AES-GCM",
-      true,
-      ["encrypt", "decrypt"],
+      algorithm,
+      extractable,
+      keyUsages,
     )
       .then(resolve)
       .catch((e) => Errors.resolve(e, "Failed to create key"));

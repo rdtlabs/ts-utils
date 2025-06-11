@@ -93,7 +93,7 @@ class ObservableImpl<T> {
             self.#scheduler(subRef, value);
           }
         },
-        error: (error: ErrorLike): void => {
+        error: (error: unknown): void => {
           if (self.#isSubscribed) {
             self.#isSubscribed = false;
             if (subscriber.error) {

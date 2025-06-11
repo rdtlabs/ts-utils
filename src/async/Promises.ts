@@ -1,4 +1,5 @@
 import type { CancellationToken } from "../cancellation/CancellationToken.ts";
+import { Errors } from "../errors/errors.ts";
 import type { ErrorLike } from "../index.ts";
 
 /**
@@ -50,18 +51,8 @@ export const Promises = Object.freeze({
     ]);
   },
 
-  reject: (reason: ErrorLike, altMessage?: string) => {
-    if (reason instanceof Error) {
-      return Promise.reject(reason);
-    }
-
-    if (typeof reason === "string") {
-      return Promise.reject(new Error(reason));
-    }
-
-    return Promise.reject(
-      new Error(altMessage ?? "An unknown error occurred", { cause: reason }),
-    );
+  reject: (reason: unknown, altMessage?: string) => {
+    return Promise.reject(Errors.resolve(reason, altMessage));
   },
 }) as {
   /**
@@ -110,7 +101,7 @@ export const Promises = Object.freeze({
    * @param altMessage An alternative message to use if the reason is not an Error.
    */
   reject<T = never>(
-    reason: ErrorLike,
+    reason: unknown,
     altMessage?: string,
   ): Promise<T>;
 };

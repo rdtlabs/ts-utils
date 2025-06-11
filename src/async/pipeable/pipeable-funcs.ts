@@ -1,4 +1,3 @@
-import type { ErrorLike } from "../../types.ts";
 import { Pipeable } from "./Pipeable.ts";
 
 /**
@@ -143,7 +142,7 @@ export function takeWhile<T>(
  * @returns {Pipeable<T>} The pipeable function.
  */
 export function resumeOnError<T>(
-  onError?: (error: ErrorLike) => Promise<boolean> | boolean,
+  onError?: (error: unknown) => Promise<boolean> | boolean,
 ): Pipeable<T> {
   return async function* (it) {
     for await (const item of it) {

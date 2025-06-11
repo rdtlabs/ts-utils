@@ -63,7 +63,7 @@ export class List<T> extends Array<T> {
    * @param array items to be added to the list
    * @returns a new instance of the `List` interface
    */
-  static of<T>(...array: readonly T[]): List<T> {
+  static override of<T>(...array: readonly T[]): List<T> {
     return new List<T>(...array);
   }
 
@@ -71,7 +71,7 @@ export class List<T> extends Array<T> {
    * Creates a List from an array-like object.
    * @param arrayLike An array-like object to convert to an List.
    */
-  static from<T>(arrayLike: ArrayLike<T>): List<T>;
+  static override from<T>(arrayLike: ArrayLike<T>): List<T>;
 
   /**
    * Creates an array from an iterable object.
@@ -79,14 +79,14 @@ export class List<T> extends Array<T> {
    * @param mapfn A mapping function to call on every element of the array.
    * @param thisArg Value of 'this' used to invoke the mapfn.
    */
-  static from<T, U>(
+  static override from<T, U>(
     arrayLike: ArrayLike<T>,
     mapfn: (v: T, k: number) => U,
     // deno-lint-ignore explicit-module-boundary-types
     thisArg?: any,
   ): List<T>;
 
-  static from<T>(...args: any[]): List<T> {
+  static override from<T>(...args: any[]): List<T> {
     if (args.length === 0) {
       throw new TypeError("List.from requires at least 1 argument");
     }
@@ -108,21 +108,23 @@ export class List<T> extends Array<T> {
     return list;
   }
 
-  static fromAsync<T>(
+  static override fromAsync<T>(
     iterableOrArrayLike:
       | AsyncIterable<T>
       | Iterable<T | Promise<T>>
       | ArrayLike<T | Promise<T>>,
   ): Promise<List<T>>;
 
-  static fromAsync<T, U>(
+  static override fromAsync<T, U>(
     iterableOrArrayLike: AsyncIterable<T> | Iterable<T> | ArrayLike<T>,
     mapFn: (value: Awaited<T>) => U,
     // deno-lint-ignore explicit-module-boundary-types
     thisArg?: any,
   ): Promise<Awaited<List<T>>>;
 
-  static async fromAsync<T>(...args: any[]): Promise<Awaited<List<T>>> {
+  static override async fromAsync<T>(
+    ...args: any[]
+  ): Promise<Awaited<List<T>>> {
     if (args.length === 0) {
       throw new TypeError("List.fromAsync requires at least 1 argument");
     }

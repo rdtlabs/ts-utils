@@ -1,5 +1,3 @@
-import type { ErrorLike } from "../types.ts";
-
 export type Unsubscribe = () => void;
 
 export interface Observable<T> {
@@ -8,26 +6,26 @@ export interface Observable<T> {
 
 export type Subscriber<T> = {
   next: (value: T) => void;
-  error?: (error: ErrorLike) => void;
+  error?: (error: unknown) => void;
   complete?: () => void;
 } | {
   next: (value: T) => void;
-  error: (error: ErrorLike) => void;
+  error: (error: unknown) => void;
   complete?: () => void;
 } | {
   next: (value: T) => void;
-  error: (error: ErrorLike) => void;
+  error: (error: unknown) => void;
   complete: () => void;
 } | {
   next?: (value: T) => void;
-  error: (error: ErrorLike) => void;
+  error: (error: unknown) => void;
   complete?: () => void;
 } | {
   next?: (value: T) => void;
-  error: (error: ErrorLike) => void;
+  error: (error: unknown) => void;
   complete: () => void;
 } | {
   next?: (value: T) => void;
-  error?: (error: ErrorLike) => void;
+  error?: (error: unknown) => void;
   complete: () => void;
 };

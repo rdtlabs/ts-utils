@@ -46,7 +46,10 @@ chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/",
 
 type Base64 = {
   toArrayBuffer: (data: string, urlMode?: boolean) => ArrayBuffer;
-  fromArrayBuffer: (arrBuf: ArrayBuffer, urlMode?: boolean) => string;
+  fromArrayBuffer: (
+    arrBuf: Uint8Array | ArrayBuffer,
+    urlMode?: boolean,
+  ) => string;
   fromBase64: (str: string, urlMode?: boolean) => string;
   toBase64: (str: string, urlMode?: boolean) => string;
   validate: (encoded: string, urlMode?: boolean) => boolean;
@@ -100,12 +103,17 @@ export const base64: Base64 = Object.freeze({
    * Convenience function for converting base64 encoded string to an ArrayBuffer instance
    * @public
    *
-   * @param {ArrayBuffer} arrBuf - ArrayBuffer to be encoded
+   * @param {Uint8Array} arrBuf - ArrayBuffer or Uint8Array to be encoded
    * @param {boolean} [urlMode] - If set to true, URL mode string will be returned
    * @returns {string} - Base64 representation of data
    */
-  fromArrayBuffer: (arrBuf: ArrayBuffer, urlMode = false): string => {
-    const bytes = new Uint8Array(arrBuf);
+  fromArrayBuffer: (
+    arrBuf: Uint8Array | ArrayBuffer,
+    urlMode = false,
+  ): string => {
+    const bytes = arrBuf instanceof Uint8Array
+      ? arrBuf
+      : new Uint8Array(arrBuf);
     let i,
       result = "";
 

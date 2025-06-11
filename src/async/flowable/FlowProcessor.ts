@@ -1,5 +1,4 @@
 import type { CancellationIterableOptions } from "../../cancellation/CancellationIterableOptions.ts";
-import type { ErrorLike } from "../../types.ts";
 import type { Observable } from "../_rx.types.ts";
 import type { IterableLike } from "../IterableLike.ts";
 import type { CancellationError } from "../../cancellation/CancellationError.ts";
@@ -74,7 +73,7 @@ export interface FlowProcessor<S, T> {
    * @returns A new `FlowProcessor` that resumes after an error occurs.
    */
   resumeOnError(
-    onError?: (error: ErrorLike) => Promise<boolean> | boolean,
+    onError?: (error: unknown) => Promise<boolean> | boolean,
   ): FlowProcessor<S, T>;
 
   /**
