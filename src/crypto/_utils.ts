@@ -3,22 +3,6 @@ import type { EncryptedData, EncryptionSource } from "./types.ts";
 
 export const __keyLength = 32;
 
-export function __getArrayBufferFor(data: EncryptionSource): BufferSource {
-  if (data instanceof ArrayBuffer || data instanceof Uint8Array) {
-    return data;
-  }
-
-  if (typeof data === "string") {
-    return new TextEncoder().encode(data);
-  }
-
-  if (data instanceof Object) {
-    return new TextEncoder().encode(JSON.stringify(data));
-  }
-
-  throw new Error("Invalid data type");
-}
-
 export async function __decryptAsString<T extends string | CryptoKey>(
   key: T,
   cipherData: EncryptedData,
@@ -34,7 +18,7 @@ export async function __encrypt<T extends string | CryptoKey>(
   const resolvedKey = await __keyToCryptoKey(key);
   const encoded = __getArrayBufferFor(data);
   const iv = globalThis.crypto.getRandomValues(new Uint8Array(16));
-  const encrypted = await globalThis.crypto.subtle.encrypt(
+  const encrypted = await crypto.subtle.encrypt(
     {
       name: "AES-GCM",
       iv: iv,
@@ -115,4 +99,24 @@ async function __keyToCryptoKey(
   return typeof secret === "string"
     ? await __stringToCryptoKey(secret)
     : secret;
+}
+
+function __getArrayBufferFor(data: EncryptionSource): BufferSource {
+  if (__isBufferSource(data)) {
+    return data;
+  }
+
+  if (typeof data === "string") {
+    return new TextEncoder().encode(data);
+  }
+
+  if (data instanceof Object) {
+    return new TextEncoder().encode(JSON.stringify(data));
+  }
+
+  throw new Error("Invalid data type");
+}
+
+function __isBufferSource(obj: EncryptionSource): obj is BufferSource {
+  return obj instanceof ArrayBuffer || ArrayBuffer.isView(obj);
 }
