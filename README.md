@@ -17,7 +17,7 @@ npm install rdt-utils
 
 ### Deno
 ```typescript
-import { /* utilities */ } from "jsr:@rdtlabs/ts-utils";
+import { WaitGroup, Mutex, createCancellation } from "jsr:@rdtlabs/ts-utils";
 ```
 
 ## Features
@@ -185,11 +185,11 @@ console.log(decrypted); // "sensitive data"
 The library provides granular imports for tree-shaking:
 
 ```typescript
-import { /* ... */ } from "rdt-utils";           // All utilities
-import { /* ... */ } from "rdt-utils/async";      // Async primitives
-import { /* ... */ } from "rdt-utils/cancellation"; // Cancellation
-import { /* ... */ } from "rdt-utils/buffer";     // Buffer utilities
-import { /* ... */ } from "rdt-utils/crypto";     // Crypto helpers
+import { WaitGroup, Mutex, objects, strings } from "rdt-utils";           // All utilities
+import { WaitGroup, Mutex, Semaphore, delay } from "rdt-utils/async";      // Async primitives
+import { createCancellation, CancellationToken } from "rdt-utils/cancellation"; // Cancellation
+import { Buffer, RingBuffer, BufferStrategy } from "rdt-utils/buffer";     // Buffer utilities
+import { Secret, encryptOnce, decryptOnce } from "rdt-utils/crypto";     // Crypto helpers
 ```
 
 ## Development Status
