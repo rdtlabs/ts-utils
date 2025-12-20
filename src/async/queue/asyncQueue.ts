@@ -12,6 +12,11 @@ import { Promises } from "../Promises.ts";
 
 type QueueState = "rw" | "r" | "-rw";
 
+// Internal state constants for better readability
+const STATE_READ_WRITE = 0;
+const STATE_READ_ONLY = 1;
+const STATE_CLOSED = 2;
+
 /**
  * asyncQueue creates a new async queue with the given {@linkcode QueueOptions options}.
  *
@@ -81,16 +86,32 @@ export function asyncQueue<T>(
   const _onEnqueue = new Array<{ cb: (item: T) => void; once: boolean }>();
   const _onDequeue = new Array<{ cb: (item: T) => void; once: boolean }>();
   let _onClose: Deferred<void> | undefined;
-  let _state: 0 | 1 | 2 = 0;
+  let _state: typeof STATE_READ_WRITE | typeof STATE_READ_ONLY | typeof STATE_CLOSED = STATE_READ_WRITE;
 
-  function _enqueueUnsafe(item: T): void {
+  // Helper to check if a resolver has been cancelled
+  function isResolverActive(resolver: { getIsCancelled: () => boolean }): boolean {
+    return !resolver.getIsCancelled();
+  }
+
+  // Helper to resolve pending dequeuers with the given item
+  function resolvePendingDequeuer(item: T): boolean {
     while (!dequeueResolvers.isEmpty) {
       const resolver = dequeueResolvers.dequeue()!;
-      if (!resolver.getIsCancelled()) {
-        return resolver.resolve(_notifyListeners(item, _onEnqueue));
+      if (isResolverActive(resolver)) {
+        resolver.resolve(_notifyListeners(item, _onEnqueue));
+        return true;
       }
     }
+    return false;
+  }
 
+  function _enqueueUnsafe(item: T): void {
+    // If there are pending dequeuers waiting, resolve the first active one
+    if (resolvePendingDequeuer(item)) {
+      return;
+    }
+
+    // Otherwise, write to buffer and notify listeners
     try {
       _buffer.write(item);
       _notifyListeners(item, _onEnqueue);
@@ -104,12 +125,13 @@ export function asyncQueue<T>(
     item: T,
     listeners: Array<{ cb: (item: T) => void; once: boolean }>,
   ): T {
-    // reverse for loop to allow for splicing and act on last listener first semantic
+    // Iterate backwards to safely remove one-time listeners while iterating
     for (let i = listeners.length - 1; i >= 0; i--) {
       const listener = listeners[i];
       if (listener.once) {
         listeners.splice(i, 1);
       }
+      // Execute listener asynchronously to avoid blocking
       queueMicrotask(() => listener.cb(item));
     }
 
@@ -119,7 +141,8 @@ export function asyncQueue<T>(
   function _attachEvent(
     promise: Promise<T>,
     listeners: Array<{ cb: (item: T) => void; once: boolean }>,
-  ) {
+  ): Promise<T> {
+    // Only attach event handlers if there are listeners
     if (listeners.length === 0) {
       return promise;
     }
@@ -132,7 +155,8 @@ export function asyncQueue<T>(
     listener: (item: T) => void,
     once?: boolean,
   ): void {
-    _off(listeners, listener); // remove if the listeners is already attached
+    // Remove existing listener to prevent duplicates
+    _off(listeners, listener);
     listeners.push({ cb: listener, once: !!once });
   }
 
@@ -146,9 +170,31 @@ export function asyncQueue<T>(
     }
   }
 
+  // Helper to check if queue state allows reads
+  function isReadable(): boolean {
+    return _state !== STATE_CLOSED;
+  }
+
+  // Helper to check if queue state allows writes
+  function isWritable(): boolean {
+    return _state === STATE_READ_WRITE;
+  }
+
+  // Helper to get the external queue state representation
+  function getQueueState(): QueueState {
+    switch (_state) {
+      case STATE_READ_WRITE:
+        return "rw";
+      case STATE_READ_ONLY:
+        return "r";
+      case STATE_CLOSED:
+        return "-rw";
+    }
+  }
+
   const queue = {
     get isClosed(): boolean {
-      return _state === 2;
+      return _state === STATE_CLOSED;
     },
     get size(): number {
       return _buffer.size;
@@ -160,35 +206,37 @@ export function asyncQueue<T>(
       return _buffer.isFull;
     },
     get state(): QueueState {
-      if (_state === 0) {
-        return "rw";
-      }
-
-      return _state === 1 ? "r" : "-rw";
+      return getQueueState();
     },
     close(err?: ErrorLike): void {
-      if (_state === 2) {
+      if (_state === STATE_CLOSED) {
         return;
       }
 
-      _state = 2;
+      _state = STATE_CLOSED;
+      
+      // Handle onClose promise resolution/rejection
       if (err) {
         (_onClose ??= new Deferred<void>()).reject(err);
       } else {
         _onClose?.resolve();
       }
 
+      // Clean up resources
       _buffer.clear();
       _onEnqueue.length = 0;
       _onDequeue.length = 0;
 
+      // Reject all pending dequeuers
+      const closeError = err ?? new QueueClosedError();
       for (const resolver of dequeueResolvers.toBufferLike()) {
-        if (!resolver.getIsCancelled()) {
-          resolver.reject(err ??= new QueueClosedError());
+        if (isResolverActive(resolver)) {
+          resolver.reject(closeError);
         }
       }
     },
     async onClose(propagateInjectedError?: boolean): Promise<void> {
+      // Initialize onClose promise if not already created
       if (!_onClose) {
         if (queue.isClosed) {
           return;
@@ -196,6 +244,7 @@ export function asyncQueue<T>(
         _onClose = new Deferred<void>();
       }
 
+      // Propagate error if requested, otherwise swallow QueueClosedError
       if (propagateInjectedError === true) {
         return await _onClose.promise;
       }
@@ -209,11 +258,13 @@ export function asyncQueue<T>(
       }
     },
     setReadOnly(): void {
-      if (_state === 2) {
+      if (_state === STATE_CLOSED) {
         throw new QueueClosedError();
       }
 
-      _state = 1;
+      _state = STATE_READ_ONLY;
+      
+      // Auto-close if queue is empty, otherwise clear enqueue listeners
       if (queue.isEmpty) {
         this.close();
       } else {
@@ -221,7 +272,7 @@ export function asyncQueue<T>(
       }
     },
     tryEnqueue(item: T): boolean {
-      if (_state !== 0) {
+      if (!isWritable()) {
         return false;
       }
 
@@ -236,18 +287,18 @@ export function asyncQueue<T>(
       }
     },
     enqueue(item: T): void {
-      if (_state === 2) {
+      if (_state === STATE_CLOSED) {
         throw new QueueClosedError();
       }
 
-      if (_state === 1) {
+      if (_state === STATE_READ_ONLY) {
         throw new QueueReadOnlyError();
       }
 
       _enqueueUnsafe(item);
     },
     dequeue(cancellationToken?: CancellationToken): Promise<T> {
-      if (_state === 2) {
+      if (_state === STATE_CLOSED) {
         return Promise.reject(new QueueClosedError());
       }
 
@@ -255,11 +306,13 @@ export function asyncQueue<T>(
         return Promises.reject(cancellationToken.reason);
       }
 
+      // If buffer has items, return immediately
       if (!queue.isEmpty) {
         return _attachEvent(Promise.resolve(_buffer.read()!), _onDequeue);
       }
 
-      if (_state === 0) {
+      // If writable, queue is open and we can wait for items
+      if (isWritable()) {
         if (!cancellationToken || cancellationToken.state === "none") {
           return _attachEvent(new Promise<T>(enqueueResolver), _onDequeue);
         }
@@ -276,6 +329,7 @@ export function asyncQueue<T>(
         );
       }
 
+      // Queue is read-only and empty, close and reject
       this.close();
 
       return Promise.reject(
@@ -285,7 +339,7 @@ export function asyncQueue<T>(
       );
     },
     tryDequeue(): MaybeResult<T> {
-      if (_state === 2) {
+      if (_state === STATE_CLOSED) {
         throw new QueueClosedError();
       }
 
@@ -296,7 +350,8 @@ export function asyncQueue<T>(
         };
       }
 
-      if (_state === 1) {
+      // If read-only and empty, close the queue
+      if (_state === STATE_READ_ONLY) {
         this.close();
       }
 
@@ -324,18 +379,19 @@ export function asyncQueue<T>(
       listener: (item: T) => void,
       once?: boolean,
     ): void {
-      if (_state === 2) {
+      if (_state === STATE_CLOSED) {
         throw new QueueClosedError();
       }
 
       if (event === "dequeue") {
         _on(_onDequeue, listener, once);
-      } else if (_state !== 1) {
+      } else if (isWritable()) {
+        // Only allow enqueue listeners if queue is writable
         _on(_onEnqueue, listener, once);
       }
     },
     off(event: "dequeue" | "enqueue", listener: (item: T) => void): void {
-      if (_state === 2) {
+      if (_state === STATE_CLOSED) {
         throw new QueueClosedError();
       }
 
