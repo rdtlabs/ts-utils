@@ -214,7 +214,7 @@ export function asyncQueue<T>(
       }
 
       _state = STATE_CLOSED;
-      
+
       // Handle onClose promise resolution/rejection
       if (err) {
         (_onClose ??= new Deferred<void>()).reject(err);
@@ -263,7 +263,7 @@ export function asyncQueue<T>(
       }
 
       _state = STATE_READ_ONLY;
-      
+
       // Auto-close if queue is empty, otherwise clear enqueue listeners
       if (queue.isEmpty) {
         this.close();
