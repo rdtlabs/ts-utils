@@ -189,6 +189,9 @@ export function asyncQueue<T>(
         return "r";
       case STATE_CLOSED:
         return "-rw";
+      default:
+        // This should never happen, but TypeScript needs exhaustive checking
+        return "-rw";
     }
   }
 
