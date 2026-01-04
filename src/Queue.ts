@@ -130,7 +130,7 @@ class QueueImpl<T> {
   toArray(): T[] {
     const array: T[] = [];
     while (!this.isEmpty) {
-      array.push(this.dequeue()!);
+      array.push(this.dequeue());
     }
 
     return array;

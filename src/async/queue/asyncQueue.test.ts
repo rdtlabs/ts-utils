@@ -267,9 +267,7 @@ Deno.test("AsyncQueue await dequeue", async () => {
 
   const dequeuers = new Array<Promise<number>>();
 
-  dequeuers.push(queue.dequeue());
-  dequeuers.push(queue.dequeue());
-  dequeuers.push(queue.dequeue());
+  dequeuers.push(queue.dequeue(), queue.dequeue(), queue.dequeue());
 
   queueMicrotask(() => queue.enqueue(1));
   queueMicrotask(() => queue.enqueue(2));

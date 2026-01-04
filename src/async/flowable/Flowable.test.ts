@@ -387,7 +387,7 @@ Deno.test("flowable toObservable unsubscribe test", async () => {
   }
 });
 
-Deno.test("flowable into test", async () => {
+Deno.test("flowable into processor test", async () => {
   const queue = createQueue();
 
   queueMicrotask(() => {
@@ -517,4 +517,3 @@ Deno.test("flowable selectLast single test", async () => {
 
   assert(result.else(-1) === 1);
 });
-

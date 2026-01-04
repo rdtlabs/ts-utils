@@ -39,13 +39,6 @@ export function __fromHandler<T, R = T, A = undefined>(
           }
         } while (true);
       }
-      try {
-        if (it.return) {
-          await it.return(undefined);
-        }
-      } catch (error) {
-        console.warn("Generator return threw an error", error);
-      }
     })(it, handler(arg));
   };
 }
@@ -82,13 +75,6 @@ export function __fromHandlerMulti<T, R = T, A = undefined>(
           innerValue = result.value as Awaited<T>;
         }
       } while (true);
-    }
-    try {
-      if (it.return) {
-        await it.return(undefined);
-      }
-    } catch (error) {
-      console.warn("Generator return threw an error", error);
     }
   };
 }

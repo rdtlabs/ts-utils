@@ -295,10 +295,10 @@ function __groupBy<T>(list: readonly T[], arg: unknown): Map<unknown, T[]> {
   for (const value of list) {
     const key = fn(value);
     const group = map.get(key);
-    if (!group) {
-      map.set(key, [value]);
-    } else {
+    if (group) {
       group.push(value);
+    } else {
+      map.set(key, [value]);
     }
   }
   return map;

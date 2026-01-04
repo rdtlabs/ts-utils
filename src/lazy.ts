@@ -16,7 +16,7 @@ export function lazyFn<T extends Func>(
     throw new Error(`'fn' must be a valid function`);
   }
 
-  const f = once(!firstResultOnly ? fn : () => once(fn()));
+  const f = once(firstResultOnly ? () => once(fn()) : fn);
   return ((...args: unknown[]) => f()(...args)) as T;
 }
 

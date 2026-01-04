@@ -20,19 +20,19 @@ export const objects = Object.freeze({
     return !objects.isNil(value);
   },
   isStr: (value) => {
-    return value instanceof String || typeof value === "string";
+    return typeof value === "string";
   },
   isNum: (value) => {
     return typeof value === "number";
   },
   isNotNum: (value) => {
-    return typeof value !== "number" || isNaN(value);
+    return typeof value !== "number" || Number.isNaN(value);
   },
   isSymbol: (value) => {
     return typeof value === "symbol";
   },
   isUndef: (value) => {
-    return typeof value === "undefined";
+    return value === undefined;
   },
   isFunc: (value) => {
     return !objects.isNil(value) && typeof value === "function";
@@ -113,9 +113,9 @@ export const objects = Object.freeze({
 
     const parseResult = typeof value === "number"
       ? value
-      : parseInt(value, radix ?? 10);
+      : Number.parseInt(value, radix ?? 10);
 
-    if (isNaN(parseResult)) {
+    if (Number.isNaN(parseResult)) {
       throw new InvalidArgumentError(
         `value '${value}' could not be parsed as a number`,
       );

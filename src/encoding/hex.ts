@@ -8,7 +8,7 @@
 const hexTable = new TextEncoder().encode("0123456789abcdef");
 
 function errInvalidByte(byte: number): TypeError {
-  return new TypeError(`Invalid byte '${String.fromCharCode(byte)}'`);
+  return new TypeError(`Invalid byte '${String.fromCodePoint(byte)}'`);
 }
 
 function errLength(): RangeError {

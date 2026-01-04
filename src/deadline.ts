@@ -74,7 +74,7 @@ export function deadline(timeoutMillis: number): Deadline {
     remainingMillis: {
       get: () => {
         const remaining = deadline - Date.now();
-        return remaining > 0 ? remaining : 0;
+        return Math.max(remaining, 0);
       },
     },
     isExpired: {

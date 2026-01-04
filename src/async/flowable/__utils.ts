@@ -171,14 +171,16 @@ function __createConnectableWithParams<S, T = S>(
       }
     },
     async selectFirst(input, options) {
-      for await (
-        const item of __iter(input, pipeables, options, {
-          throwOnCancellation: true,
-        })
-      ) {
-        return Maybe.of(item as T);
+      const gen = __iter(input, pipeables, options, {
+        throwOnCancellation: true,
+      });
+
+      const { value, done } = await gen.next();
+      if (done) {
+        await gen.return?.(undefined);
       }
-      return Maybe.of();
+
+      return Maybe.of(value as T);
     },
     async selectLast(input, options) {
       let lastItem: T | undefined;

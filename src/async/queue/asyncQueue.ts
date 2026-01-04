@@ -74,7 +74,7 @@ type QueueState = "rw" | "r" | "-rw";
  * @param options: The buffer options used to create the queue.
  */
 export function asyncQueue<T>(
-  options: QueueOptions<T> = { bufferSize: Infinity },
+  options: QueueOptions<T> = { bufferSize: Infinity } as QueueOptions<T>,
 ): AsyncQueue<T> {
   const { dequeueResolvers, enqueueResolver } = __getQueueResolvers<T>();
   const _buffer = __getBufferFromOptions<T>(options);
@@ -173,7 +173,8 @@ export function asyncQueue<T>(
 
       _state = 2;
       if (err) {
-        (_onClose ??= new Deferred<void>()).reject(err);
+        _onClose ??= new Deferred<void>();
+        _onClose.reject(err);
       } else {
         _onClose?.resolve();
       }
@@ -184,7 +185,8 @@ export function asyncQueue<T>(
 
       for (const resolver of dequeueResolvers.toBufferLike()) {
         if (!resolver.getIsCancelled()) {
-          resolver.reject(err ??= new QueueClosedError());
+          err ??= new QueueClosedError();
+          resolver.reject(err);
         }
       }
     },

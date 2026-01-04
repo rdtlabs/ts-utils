@@ -32,7 +32,7 @@ export function filter<T = unknown>(
 ): Pipeable<T> {
   return Pipeable.from<T>(() => {
     return async (value, flow) => {
-      while (!(await predicate(value as T))) {
+      while (!(await predicate(value))) {
         const result = await flow.continue();
         if (result.done) {
           return flow.break();
@@ -154,11 +154,6 @@ export function resumeOnError<T>(
         }
       }
     }
-    try {
-      await it.return?.(undefined);
-    } catch (error) {
-      console.warn("Generator return threw an error", error);
-    }
   };
 }
 
@@ -198,11 +193,6 @@ export function chunk<T>(size: number): Pipeable<T[]> {
     }
     if (buffer.length > 0) {
       yield buffer;
-    }
-    try {
-      await it.return?.(undefined);
-    } catch (error) {
-      console.warn("Generator return threw an error", error);
     }
   };
 }

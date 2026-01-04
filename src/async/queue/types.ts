@@ -25,7 +25,7 @@ export interface AsyncQueue<T> extends Disposable, AsyncIterable<T> {
    * Indicates the current state of the queue with respect to its
    * read/write capabilities.
    *
-   * "rw": The queue is in a read-write state,items can be enqueued/dequeued.
+   * "rw": The queue is in a read-write state, items can be enqueued/dequeued.
    * "r": The queue is in a read-only state, items can only be dequeued.
    * "-rw": The queue is in a state neither enqueuing/dequeuing is allowed.
    */
@@ -109,7 +109,7 @@ export interface AsyncQueue<T> extends Disposable, AsyncIterable<T> {
  * @returns A new async queue.
  */
 export const AsyncQueue = function <T>(
-  options: QueueOptions<T> = { bufferSize: Infinity },
+  options: QueueOptions<T> = { bufferSize: Infinity } as QueueOptions<T>,
 ): AsyncQueue<T> {
   return asyncQueue(options ?? { bufferSize: Infinity });
 } as unknown as {

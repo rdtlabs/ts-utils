@@ -103,7 +103,7 @@ export class Secret {
       const key = await this.#key;
       return __encrypt(key, data);
     } catch (e) {
-      return Promise.reject(new EncryptionError(e));
+      throw new EncryptionError(e);
     }
   }
 
@@ -119,7 +119,7 @@ export class Secret {
       const key = await this.#key;
       return __decrypt(key, cipherData);
     } catch (e) {
-      return Promise.reject(new DecryptionError(e));
+      throw new DecryptionError(e);
     }
   }
 
@@ -153,7 +153,7 @@ export class Secret {
       const key = await this.#key;
       return __decryptAsString(key, cipherData);
     } catch (e) {
-      return Promise.reject(new DecryptionError(e));
+      throw new DecryptionError(e);
     }
   }
 

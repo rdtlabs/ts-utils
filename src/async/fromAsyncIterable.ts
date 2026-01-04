@@ -32,28 +32,31 @@ export function fromAsyncIterable<T>(
         cancellationToken,
       );
 
-      let done = false;
       const iterator = cancellable[Symbol.asyncIterator]();
       (async () => {
         try {
-          while (!done) {
-            const { done, value } = await iterator.next();
-            if (done) {
-              break;
-            }
-
+          for await (const value of iterator) {
             sub.next?.(value);
           }
-          sub.complete?.();
+          if (isSubscribed) {
+            isSubscribed = false;
+            sub.complete?.();
+          }
         } catch (e) {
           sub.error?.(e);
         }
       })();
 
+      let canceled = false;
       return () => {
-        done = true;
-        isSubscribed = false;
-        iterator?.return?.(undefined);
+        if (canceled) {
+          return;
+        }
+        canceled = true;
+        if (isSubscribed) {
+          isSubscribed = false;
+          iterator?.return?.(undefined);
+        }
       };
     },
   };

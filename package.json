@@ -1,6 +1,6 @@
 {
   "name": "rdt-utils",
-  "version": "0.2.46",
+  "version": "0.2.47",
   "description": "Library of typescript utilities",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
