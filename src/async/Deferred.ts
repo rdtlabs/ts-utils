@@ -1,6 +1,11 @@
 import type { CancellationToken } from "../cancellation/CancellationToken.ts";
+import { CancellationError } from "../cancellation/CancellationError.ts";
 import type { ErrorLike } from "../types.ts";
-import { Promises } from "./Promises.ts";
+
+const PENDING = "pending";
+const RESOLVED = "resolved";
+const REJECTED = "rejected";
+const REJECTED_CANCELLED = "rejected_cancelled";
 
 /**
  * Represents a deferred computation that may produce a value of type `T`.
@@ -27,6 +32,15 @@ export interface Deferred<T = void> {
    * Indicates whether the deferred computation has been resolved or rejected.
    */
   readonly isDone: boolean;
+
+  /**
+   * The current status of the deferred computation.
+   */
+  readonly status:
+    | typeof PENDING
+    | typeof RESOLVED
+    | typeof REJECTED
+    | typeof REJECTED_CANCELLED;
 }
 
 /**
@@ -41,28 +55,57 @@ export const Deferred = function <T = void>(
     cancellationToken?: CancellationToken,
   ): Deferred<T>;
 } {
-  if (!cancellationToken || cancellationToken.state === "none") {
-    // deno-lint-ignore no-explicit-any
-    return create<T>() as any;
+  if (cancellationToken?.isCancelled === true) {
+    return (Object.freeze({
+      promise: Promise.reject(
+        cancellationToken.reason ?? new CancellationError(cancellationToken),
+      ),
+      resolve: (() => {}) as Resolve<T>,
+      reject: (() => {}) as (reason?: unknown) => void,
+      get isDone() {
+        return true;
+      },
+      get status() {
+        return "rejected_cancelled";
+      },
+      // deno-lint-ignore no-explicit-any
+    }) as any);
   }
 
-  let isDone = false;
+  let status = PENDING;
   const controller = create<T>();
-  return {
-    promise: Promises.cancellable(controller.promise, cancellationToken),
+  if (cancellationToken && cancellationToken.state !== "none") {
+    const unregister = cancellationToken.register((token) => {
+      if (status === PENDING) {
+        status = REJECTED_CANCELLED;
+        controller.reject(token.reason ?? new CancellationError(token));
+      }
+    });
+    controller.promise = controller.promise.finally(unregister);
+  }
+
+  return Object.freeze({
+    promise: controller.promise,
     resolve: (value: T) => {
-      isDone = true;
-      controller.resolve(value);
+      if (status === PENDING) {
+        status = RESOLVED;
+        controller.resolve(value);
+      }
     },
     reject: (err: ErrorLike) => {
-      isDone = true;
-      controller.reject(err);
+      if (status === PENDING) {
+        status = REJECTED;
+        controller.reject(err);
+      }
     },
     get isDone() {
-      return isDone;
+      return status.startsWith(PENDING) === false;
+    },
+    get status() {
+      return status;
     },
     // deno-lint-ignore no-explicit-any
-  } as any;
+  } as any);
 } as unknown as {
   new <T = void>(
     cancellationToken?: CancellationToken,
@@ -93,11 +136,11 @@ function create<T>(): {
     reject = rej;
   });
 
-  return Object.seal({
+  return {
     promise,
     resolve,
     reject,
-  });
+  };
 }
 
 // utility type
