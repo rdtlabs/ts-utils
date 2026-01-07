@@ -99,8 +99,8 @@ function isTransientInternal(err: unknown, depth: number): boolean {
     ) {
       return true;
     }
-    error = parseInt(error, 10);
-    if (isNaN(error)) {
+    error = Number.parseInt(error, 10);
+    if (Number.isNaN(error)) {
       return false;
     }
   }
