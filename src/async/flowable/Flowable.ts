@@ -125,7 +125,9 @@ export const Flowable = Object.freeze({
       }
     });
   },
-  fromGenerator: __createFlowable,
+  fromGenerator<T>(generator: () => AsyncGenerator<T>): FlowPublisher<T> {
+    return __createFlowable(generator);
+  },
   fromObservable: <T>(o: Observable<T>, p: FromOptions<T>) => {
     return Flowable.of(fromObservable<T>(o, p));
   },

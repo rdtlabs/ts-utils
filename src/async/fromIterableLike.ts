@@ -18,7 +18,7 @@ export async function* fromIterableLike<T>(
     }
     yield* fromAsyncIterable(iterable);
   } else if (Symbol.iterator in iterable) {
-    yield* iterate(iterable);
+    yield* iterate<T>(iterable as Iterable<T>);
   } else if (Array.isArray(iterable)) {
     yield* iterate(iterable);
   } else if (isThenable<IterableLike<T>>(iterable)) {
@@ -42,8 +42,7 @@ export async function* fromAsyncIterable<T>(
   }
 }
 
-// deno-lint-ignore no-explicit-any
-async function* iterate(it: Iterable<any>) {
+async function* iterate<T>(it: Iterable<T>) {
   for (const value of it) {
     yield await value;
   }

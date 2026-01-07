@@ -61,7 +61,8 @@ export const objects = Object.freeze({
     return value === true;
   },
   isThenable: (value) => {
-    return objects.hasFunc(value, "then");
+    return typeof value === "object" &&
+      typeof (value as { then: unknown }).then === "function";
   },
   has: (value, prop) => {
     // deno-lint-ignore no-explicit-any

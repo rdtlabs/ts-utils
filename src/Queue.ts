@@ -99,32 +99,29 @@ class QueueImpl<T> {
   }
 
   toBufferLike(): BufferLike<T> {
-    // deno-lint-ignore no-this-alias
-    const self = this;
-    return {
-      write: this.enqueue.bind(this),
-      read: this.tryDequeue.bind(this),
-      peek: this.peek.bind(this),
-      get isEmpty(): boolean {
-        return self.isEmpty;
-      },
-      get isFull(): boolean {
-        return false;
-      },
-      get size(): number {
-        return self.size;
-      },
-      clear: this.clear.bind(this),
-      [Symbol.dispose]: (): void => {
-        self.clear();
-      },
-      // deno-lint-ignore explicit-function-return-type
-      *[Symbol.iterator]() {
-        while (!self.isEmpty) {
-          yield self.dequeue();
-        }
-      },
-    };
+    return Object.freeze(((queue: QueueImpl<T>) => {
+      return {
+        write: (value) => queue.enqueue(value),
+        read: () => queue.dequeue(),
+        peek: () => queue.peek(),
+        get isEmpty(): boolean {
+          return queue.isEmpty;
+        },
+        get isFull(): boolean {
+          return false;
+        },
+        get size(): number {
+          return queue.size;
+        },
+        clear: () => queue.clear(),
+        [Symbol.dispose]: () => queue.clear(),
+        *[Symbol.iterator]() {
+          while (!queue.isEmpty) {
+            yield queue.dequeue();
+          }
+        },
+      } as BufferLike<T>;
+    })(this));
   }
 
   toArray(): T[] {

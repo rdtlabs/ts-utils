@@ -4,11 +4,12 @@ import {
   QueueReadOnlyError,
 } from "./errors.ts";
 import { Deferred } from "../Deferred.ts";
-import { __getBufferFromOptions, __getQueueResolvers } from "./_utils.ts";
 import type { AsyncQueue, QueueOptions } from "./types.ts";
 import type { ErrorLike, MaybeResult } from "../../types.ts";
 import type { CancellationToken } from "../../cancellation/CancellationToken.ts";
-import { Promises } from "../Promises.ts";
+import type { BufferLike } from "../../buffer/BufferLike.ts";
+import { Buffer } from "../../buffer/Buffer.ts";
+import { createQueue } from "../../Queue.ts";
 
 type QueueState = "rw" | "r" | "-rw";
 
@@ -76,73 +77,25 @@ type QueueState = "rw" | "r" | "-rw";
 export function asyncQueue<T>(
   options: QueueOptions<T> = { bufferSize: Infinity } as QueueOptions<T>,
 ): AsyncQueue<T> {
-  const { dequeueResolvers, enqueueResolver } = __getQueueResolvers<T>();
+  const _dequeueAwaiters = new Awaiters<T>();
+
   const _buffer = __getBufferFromOptions<T>(options);
-  const _onEnqueue = new Array<{ cb: (item: T) => void; once: boolean }>();
-  const _onDequeue = new Array<{ cb: (item: T) => void; once: boolean }>();
+  const _listeners = new Listeners<T>();
   let _onClose: Deferred<void> | undefined;
   let _state: 0 | 1 | 2 = 0;
 
   function _enqueueUnsafe(item: T): void {
-    while (!dequeueResolvers.isEmpty) {
-      const resolver = dequeueResolvers.dequeue()!;
-      if (!resolver.getIsCancelled()) {
-        return resolver.resolve(_notifyListeners(item, _onEnqueue));
-      }
+    if (_dequeueAwaiters.notifyOne(item)) {
+      _listeners.notifyEnqueue(item);
+      return;
     }
 
     try {
       _buffer.write(item);
-      _notifyListeners(item, _onEnqueue);
+      _listeners.notifyEnqueue(item);
       // deno-lint-ignore no-explicit-any
     } catch (e: any) {
       throw e.name === "BufferFullError" ? new QueueFullError() : e;
-    }
-  }
-
-  function _notifyListeners(
-    item: T,
-    listeners: Array<{ cb: (item: T) => void; once: boolean }>,
-  ): T {
-    // reverse for loop to allow for splicing and act on last listener first semantic
-    for (let i = listeners.length - 1; i >= 0; i--) {
-      const listener = listeners[i];
-      if (listener.once) {
-        listeners.splice(i, 1);
-      }
-      queueMicrotask(() => listener.cb(item));
-    }
-
-    return item;
-  }
-
-  function _attachEvent(
-    promise: Promise<T>,
-    listeners: Array<{ cb: (item: T) => void; once: boolean }>,
-  ) {
-    if (listeners.length === 0) {
-      return promise;
-    }
-
-    return promise.then((item) => _notifyListeners(item, listeners));
-  }
-
-  function _on(
-    listeners: Array<{ cb: (item: T) => void; once: boolean }>,
-    listener: (item: T) => void,
-    once?: boolean,
-  ): void {
-    _off(listeners, listener); // remove if the listeners is already attached
-    listeners.push({ cb: listener, once: !!once });
-  }
-
-  function _off(
-    listeners: Array<{ cb: (item: T) => void; once: boolean }>,
-    listener: (item: T) => void,
-  ): void {
-    const index = listeners.findIndex((l) => l.cb === listener);
-    if (index !== -1) {
-      listeners.splice(index, 1);
     }
   }
 
@@ -180,15 +133,8 @@ export function asyncQueue<T>(
       }
 
       _buffer.clear();
-      _onEnqueue.length = 0;
-      _onDequeue.length = 0;
-
-      for (const resolver of dequeueResolvers.toBufferLike()) {
-        if (!resolver.getIsCancelled()) {
-          err ??= new QueueClosedError();
-          resolver.reject(err);
-        }
-      }
+      _listeners.clear();
+      _dequeueAwaiters.close(err);
     },
     async onClose(propagateInjectedError?: boolean): Promise<void> {
       if (!_onClose) {
@@ -219,7 +165,7 @@ export function asyncQueue<T>(
       if (queue.isEmpty) {
         this.close();
       } else {
-        _onEnqueue.length = 0;
+        _listeners.clearEnqueueListeners();
       }
     },
     tryEnqueue(item: T): boolean {
@@ -248,42 +194,29 @@ export function asyncQueue<T>(
 
       _enqueueUnsafe(item);
     },
-    dequeue(cancellationToken?: CancellationToken): Promise<T> {
+    async dequeue(cancellationToken?: CancellationToken): Promise<T> {
       if (_state === 2) {
-        return Promise.reject(new QueueClosedError());
+        throw new QueueClosedError();
       }
 
       if (cancellationToken?.isCancelled === true) {
-        return Promises.reject(cancellationToken.reason);
+        throw cancellationToken.reason;
       }
 
       if (!queue.isEmpty) {
-        return _attachEvent(Promise.resolve(_buffer.read()!), _onDequeue);
+        return _listeners.notifyDequeue(_buffer.read()!);
       }
 
       if (_state === 0) {
-        if (!cancellationToken || cancellationToken.state === "none") {
-          return _attachEvent(new Promise<T>(enqueueResolver), _onDequeue);
-        }
-
-        return _attachEvent(
-          new Promise<T>((resolve, reject) =>
-            enqueueResolver(
-              resolve,
-              reject,
-              () => cancellationToken.isCancelled,
-            )
-          ),
-          _onDequeue,
-        );
+        return await _dequeueAwaiters
+          .add(cancellationToken)
+          .then((item) => _listeners.notifyDequeue(item));
       }
 
       this.close();
 
-      return Promise.reject(
-        new QueueClosedError(
-          "Queue is read-only and has been exhausted of its items",
-        ),
+      throw new QueueClosedError(
+        "Queue is read-only and has been exhausted of its items",
       );
     },
     tryDequeue(): MaybeResult<T> {
@@ -293,7 +226,7 @@ export function asyncQueue<T>(
 
       if (!queue.isEmpty) {
         return {
-          value: _notifyListeners(_buffer.read()!, _onDequeue),
+          value: _listeners.notifyDequeue(_buffer.read()!),
           ok: true,
         };
       }
@@ -330,20 +263,156 @@ export function asyncQueue<T>(
         throw new QueueClosedError();
       }
 
-      if (event === "dequeue") {
-        _on(_onDequeue, listener, once);
-      } else if (_state !== 1) {
-        _on(_onEnqueue, listener, once);
-      }
+      _listeners.on(event, listener, once);
     },
     off(event: "dequeue" | "enqueue", listener: (item: T) => void): void {
       if (_state === 2) {
         throw new QueueClosedError();
       }
 
-      _off(event === "enqueue" ? _onEnqueue : _onDequeue, listener);
+      _listeners.off(event, listener);
     },
   };
 
   return queue;
+}
+
+function __getBufferFromOptions<T>(
+  options: QueueOptions<T>,
+): BufferLike<T> {
+  if (options?.bufferSize !== Infinity) {
+    return new Buffer<T>(
+      options.bufferSize,
+      options.bufferStrategy ?? "fixed",
+    );
+  }
+
+  if (!("strategy" in options)) {
+    return createQueue<T>().toBufferLike();
+  }
+
+  throw new Error("Buffer strategy is not supported for infinite buffer");
+}
+
+class Awaiters<T> {
+  readonly #_q = createQueue<Deferred<T>>();
+
+  constructor() {
+    this.add = this.add.bind(this);
+  }
+
+  get isEmpty(): boolean {
+    return this.#_q.isEmpty;
+  }
+
+  add(
+    cancellationToken?: CancellationToken,
+  ): Promise<T> {
+    const d = new Deferred<T>(cancellationToken);
+    this.#_q.enqueue(d);
+    return d.promise;
+  }
+
+  close(err?: ErrorLike): void {
+    while (!this.#_q.isEmpty) {
+      const awaiter = this.#_q.dequeue()!;
+      if (!awaiter.isDone) {
+        err ??= new QueueClosedError();
+        awaiter.reject(err);
+      }
+    }
+  }
+
+  notifyOne(item: T): boolean {
+    while (!this.#_q.isEmpty) {
+      const awaiter = this.#_q.dequeue()!;
+      if (!awaiter.isDone) {
+        awaiter.resolve(item);
+        return true;
+      }
+    }
+
+    return false;
+  }
+}
+
+class Listeners<T> {
+  readonly #_onEnqueue = new EventListeners<T>();
+  readonly #_onDequeue = new EventListeners<T>();
+
+  on(
+    event: "dequeue" | "enqueue",
+    listener: (item: T) => void,
+    once?: boolean,
+  ): void {
+    (event === "enqueue" ? this.#_onEnqueue : this.#_onDequeue).add(
+      listener,
+      once,
+    );
+  }
+
+  off(event: "dequeue" | "enqueue", listener: (item: T) => void): void {
+    (event === "enqueue" ? this.#_onEnqueue : this.#_onDequeue).remove(
+      listener,
+    );
+  }
+
+  notifyEnqueue(item: T): T {
+    return this.#_onEnqueue.notify(item);
+  }
+
+  notifyDequeue(item: T): T {
+    return this.#_onDequeue.notify(item);
+  }
+
+  clearEnqueueListeners(): void {
+    this.#_onEnqueue.clear();
+    this.#_onDequeue.clear();
+  }
+
+  clear(): void {
+    this.#_onEnqueue.clear();
+    this.#_onDequeue.clear();
+  }
+}
+
+class EventListeners<T> {
+  readonly #_l = new Array<{ cb: (item: T) => void; once: boolean }>();
+
+  constructor() {
+    this.notify = this.notify.bind(this);
+  }
+
+  get length(): number {
+    return this.#_l.length;
+  }
+
+  clear(): void {
+    this.#_l.length = 0;
+  }
+
+  add(listener: (item: T) => void, once?: boolean): void {
+    this.remove(listener); // remove if the listeners is already attached
+    this.#_l.push({ cb: listener, once: !!once });
+  }
+
+  remove(listener: (item: T) => void): void {
+    const index = this.#_l.findIndex((l) => l.cb === listener);
+    if (index !== -1) {
+      this.#_l.splice(index, 1);
+    }
+  }
+
+  notify(item: T): T {
+    // reverse for loop to allow for splicing and act on last listener first semantic
+    for (let i = this.#_l.length - 1; i >= 0; i--) {
+      const listener = this.#_l[i];
+      if (listener.once) {
+        this.#_l.splice(i, 1);
+      }
+      queueMicrotask(() => listener.cb(item));
+    }
+
+    return item;
+  }
 }

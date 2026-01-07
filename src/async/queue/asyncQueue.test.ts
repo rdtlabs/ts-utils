@@ -9,6 +9,8 @@ import { assertRejects } from "https://deno.land/std@0.213.0/assert/assert_rejec
 import { asyncQueue } from './asyncQueue.ts';
 import { waitGroup } from "../WaitGroup.ts";
 import { assert, assertThrows } from "https://deno.land/std@0.213.0/assert/mod.ts";
+import { Cancellable } from "../../index.ts";
+import { CancellationError } from "../../cancellation/index.ts";
 
 Deno.test("AsyncQueue on dequeue test", async () => {
   let dequeued = 0;
@@ -282,7 +284,32 @@ Deno.test("AsyncQueue await dequeue", async () => {
   assert(queue.isClosed);
 });
 
-Deno.test("AsyncQueue tryEnqueue", async () => {
+Deno.test("AsyncQueue await dequeue with cancellation", async () => {
+  const controller = Cancellable.create();
+
+  const queue = asyncQueue<number>();
+
+  const wg = waitGroup(3);
+
+  queueMicrotask(() => {
+    queue.enqueue(1);
+    wg.done();
+  });
+
+  queue.dequeue().finally(() => wg.done());
+
+  const p = queue.dequeue(controller.token);
+  queueMicrotask(() => {
+    controller.cancel();
+    wg.done();
+  });
+
+  await wg.wait();
+
+  await assertRejects(() => p, CancellationError);
+});
+
+Deno.test("AsyncQueue tryEnqueue", () => {
   const queue = asyncQueue<number>();
 
   assert(queue.tryEnqueue(1));
@@ -302,7 +329,7 @@ Deno.test("AsyncQueue isEmpty test", async () => {
   queue.dequeue();
   // getting strange typescript warning regarding the isEmpty being true
   // (as if it thinks the previous check implies the isEmpty property does not change)
-  assert((queue as any).isEmpty === true);
+  assert((queue as {isEmpty: boolean}).isEmpty === true);
 
   queue.close();
 
@@ -320,7 +347,7 @@ Deno.test("AsyncQueue isFull test", async () => {
 
   // getting strange typescript warning regarding the isFull being true
   // (as if it thinks the previous check implies the isFull property does not change)
-  assert((queue as any).isFull === true);
+  assert((queue as {isFull: boolean}).isFull === true);
 
   queue.dequeue();
   assert(queue.isFull === false);
