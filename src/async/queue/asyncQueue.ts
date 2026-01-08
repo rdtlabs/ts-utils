@@ -279,14 +279,16 @@ export function asyncQueue<T>(
 function _getBufferFromOptions<T>(
   options: QueueOptions<T>,
 ): BufferLike<T> {
-  if (options?.bufferSize !== Infinity) {
+  const hasFiniteBufferSize = options?.bufferSize !== Infinity;
+  
+  if (hasFiniteBufferSize) {
     return new Buffer<T>(
       options.bufferSize,
       options.bufferStrategy ?? "fixed",
     );
   }
 
-  if (!("strategy" in options)) {
+  if (!("bufferStrategy" in options)) {
     return createQueue<T>().toBufferLike();
   }
 
@@ -339,21 +341,20 @@ class Listeners<T> {
   readonly #onEnqueueListeners = new EventListeners<T>();
   readonly #onDequeueListeners = new EventListeners<T>();
 
+  private _getEventListeners(event: "dequeue" | "enqueue"): EventListeners<T> {
+    return event === "enqueue" ? this.#onEnqueueListeners : this.#onDequeueListeners;
+  }
+
   on(
     event: "dequeue" | "enqueue",
     listener: (item: T) => void,
     once?: boolean,
   ): void {
-    (event === "enqueue" ? this.#onEnqueueListeners : this.#onDequeueListeners).add(
-      listener,
-      once,
-    );
+    this._getEventListeners(event).add(listener, once);
   }
 
   off(event: "dequeue" | "enqueue", listener: (item: T) => void): void {
-    (event === "enqueue" ? this.#onEnqueueListeners : this.#onDequeueListeners).remove(
-      listener,
-    );
+    this._getEventListeners(event).remove(listener);
   }
 
   notifyEnqueue(item: T): T {
