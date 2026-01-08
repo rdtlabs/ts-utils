@@ -13,6 +13,11 @@ import { createQueue } from "../../Queue.ts";
 
 type QueueState = "rw" | "r" | "-rw";
 
+// Queue state constants for better readability
+const STATE_READ_WRITE = 0;
+const STATE_READ_ONLY = 1;
+const STATE_CLOSED = 2;
+
 /**
  * asyncQueue creates a new async queue with the given {@linkcode QueueOptions options}.
  *
@@ -79,10 +84,10 @@ export function asyncQueue<T>(
 ): AsyncQueue<T> {
   const _dequeueAwaiters = new Awaiters<T>();
 
-  const _buffer = __getBufferFromOptions<T>(options);
+  const _buffer = _getBufferFromOptions<T>(options);
   const _listeners = new Listeners<T>();
   let _onClose: Deferred<void> | undefined;
-  let _state: 0 | 1 | 2 = 0;
+  let _state = STATE_READ_WRITE;
 
   function _enqueueUnsafe(item: T): void {
     if (_dequeueAwaiters.notifyOne(item)) {
@@ -101,7 +106,7 @@ export function asyncQueue<T>(
 
   const queue = {
     get isClosed(): boolean {
-      return _state === 2;
+      return _state === STATE_CLOSED;
     },
     get size(): number {
       return _buffer.size;
@@ -113,18 +118,18 @@ export function asyncQueue<T>(
       return _buffer.isFull;
     },
     get state(): QueueState {
-      if (_state === 0) {
+      if (_state === STATE_READ_WRITE) {
         return "rw";
       }
 
-      return _state === 1 ? "r" : "-rw";
+      return _state === STATE_READ_ONLY ? "r" : "-rw";
     },
     close(err?: ErrorLike): void {
-      if (_state === 2) {
+      if (_state === STATE_CLOSED) {
         return;
       }
 
-      _state = 2;
+      _state = STATE_CLOSED;
       if (err) {
         _onClose ??= new Deferred<void>();
         _onClose.reject(err);
@@ -157,11 +162,11 @@ export function asyncQueue<T>(
       }
     },
     setReadOnly(): void {
-      if (_state === 2) {
+      if (_state === STATE_CLOSED) {
         throw new QueueClosedError();
       }
 
-      _state = 1;
+      _state = STATE_READ_ONLY;
       if (queue.isEmpty) {
         this.close();
       } else {
@@ -169,7 +174,7 @@ export function asyncQueue<T>(
       }
     },
     tryEnqueue(item: T): boolean {
-      if (_state !== 0) {
+      if (_state !== STATE_READ_WRITE) {
         return false;
       }
 
@@ -184,18 +189,18 @@ export function asyncQueue<T>(
       }
     },
     enqueue(item: T): void {
-      if (_state === 2) {
+      if (_state === STATE_CLOSED) {
         throw new QueueClosedError();
       }
 
-      if (_state === 1) {
+      if (_state === STATE_READ_ONLY) {
         throw new QueueReadOnlyError();
       }
 
       _enqueueUnsafe(item);
     },
     async dequeue(cancellationToken?: CancellationToken): Promise<T> {
-      if (_state === 2) {
+      if (_state === STATE_CLOSED) {
         throw new QueueClosedError();
       }
 
@@ -207,7 +212,7 @@ export function asyncQueue<T>(
         return _listeners.notifyDequeue(_buffer.read()!);
       }
 
-      if (_state === 0) {
+      if (_state === STATE_READ_WRITE) {
         return await _dequeueAwaiters
           .add(cancellationToken)
           .then((item) => _listeners.notifyDequeue(item));
@@ -220,7 +225,7 @@ export function asyncQueue<T>(
       );
     },
     tryDequeue(): MaybeResult<T> {
-      if (_state === 2) {
+      if (_state === STATE_CLOSED) {
         throw new QueueClosedError();
       }
 
@@ -231,7 +236,7 @@ export function asyncQueue<T>(
         };
       }
 
-      if (_state === 1) {
+      if (_state === STATE_READ_ONLY) {
         this.close();
       }
 
@@ -259,14 +264,14 @@ export function asyncQueue<T>(
       listener: (item: T) => void,
       once?: boolean,
     ): void {
-      if (_state === 2) {
+      if (_state === STATE_CLOSED) {
         throw new QueueClosedError();
       }
 
       _listeners.on(event, listener, once);
     },
     off(event: "dequeue" | "enqueue", listener: (item: T) => void): void {
-      if (_state === 2) {
+      if (_state === STATE_CLOSED) {
         throw new QueueClosedError();
       }
 
@@ -277,7 +282,7 @@ export function asyncQueue<T>(
   return queue;
 }
 
-function __getBufferFromOptions<T>(
+function _getBufferFromOptions<T>(
   options: QueueOptions<T>,
 ): BufferLike<T> {
   if (options?.bufferSize !== Infinity) {
@@ -295,27 +300,27 @@ function __getBufferFromOptions<T>(
 }
 
 class Awaiters<T> {
-  readonly #_q = createQueue<Deferred<T>>();
+  readonly #queue = createQueue<Deferred<T>>();
 
   constructor() {
     this.add = this.add.bind(this);
   }
 
   get isEmpty(): boolean {
-    return this.#_q.isEmpty;
+    return this.#queue.isEmpty;
   }
 
   add(
     cancellationToken?: CancellationToken,
   ): Promise<T> {
-    const d = new Deferred<T>(cancellationToken);
-    this.#_q.enqueue(d);
-    return d.promise;
+    const deferred = new Deferred<T>(cancellationToken);
+    this.#queue.enqueue(deferred);
+    return deferred.promise;
   }
 
   close(err?: ErrorLike): void {
-    while (!this.#_q.isEmpty) {
-      const awaiter = this.#_q.dequeue()!;
+    while (!this.#queue.isEmpty) {
+      const awaiter = this.#queue.dequeue()!;
       if (!awaiter.isDone) {
         err ??= new QueueClosedError();
         awaiter.reject(err);
@@ -324,8 +329,8 @@ class Awaiters<T> {
   }
 
   notifyOne(item: T): boolean {
-    while (!this.#_q.isEmpty) {
-      const awaiter = this.#_q.dequeue()!;
+    while (!this.#queue.isEmpty) {
+      const awaiter = this.#queue.dequeue()!;
       if (!awaiter.isDone) {
         awaiter.resolve(item);
         return true;
@@ -337,78 +342,77 @@ class Awaiters<T> {
 }
 
 class Listeners<T> {
-  readonly #_onEnqueue = new EventListeners<T>();
-  readonly #_onDequeue = new EventListeners<T>();
+  readonly #onEnqueueListeners = new EventListeners<T>();
+  readonly #onDequeueListeners = new EventListeners<T>();
 
   on(
     event: "dequeue" | "enqueue",
     listener: (item: T) => void,
     once?: boolean,
   ): void {
-    (event === "enqueue" ? this.#_onEnqueue : this.#_onDequeue).add(
+    (event === "enqueue" ? this.#onEnqueueListeners : this.#onDequeueListeners).add(
       listener,
       once,
     );
   }
 
   off(event: "dequeue" | "enqueue", listener: (item: T) => void): void {
-    (event === "enqueue" ? this.#_onEnqueue : this.#_onDequeue).remove(
+    (event === "enqueue" ? this.#onEnqueueListeners : this.#onDequeueListeners).remove(
       listener,
     );
   }
 
   notifyEnqueue(item: T): T {
-    return this.#_onEnqueue.notify(item);
+    return this.#onEnqueueListeners.notify(item);
   }
 
   notifyDequeue(item: T): T {
-    return this.#_onDequeue.notify(item);
+    return this.#onDequeueListeners.notify(item);
   }
 
   clearEnqueueListeners(): void {
-    this.#_onEnqueue.clear();
-    this.#_onDequeue.clear();
+    this.#onEnqueueListeners.clear();
   }
 
   clear(): void {
-    this.#_onEnqueue.clear();
-    this.#_onDequeue.clear();
+    this.#onEnqueueListeners.clear();
+    this.#onDequeueListeners.clear();
   }
 }
 
 class EventListeners<T> {
-  readonly #_l = new Array<{ cb: (item: T) => void; once: boolean }>();
+  readonly #listeners = new Array<{ cb: (item: T) => void; once: boolean }>();
 
   constructor() {
     this.notify = this.notify.bind(this);
   }
 
   get length(): number {
-    return this.#_l.length;
+    return this.#listeners.length;
   }
 
   clear(): void {
-    this.#_l.length = 0;
+    this.#listeners.length = 0;
   }
 
   add(listener: (item: T) => void, once?: boolean): void {
     this.remove(listener); // remove if the listeners is already attached
-    this.#_l.push({ cb: listener, once: !!once });
+    this.#listeners.push({ cb: listener, once: !!once });
   }
 
   remove(listener: (item: T) => void): void {
-    const index = this.#_l.findIndex((l) => l.cb === listener);
+    const index = this.#listeners.findIndex((l) => l.cb === listener);
     if (index !== -1) {
-      this.#_l.splice(index, 1);
+      this.#listeners.splice(index, 1);
     }
   }
 
   notify(item: T): T {
     // reverse for loop to allow for splicing and act on last listener first semantic
-    for (let i = this.#_l.length - 1; i >= 0; i--) {
-      const listener = this.#_l[i];
+    for (let i = this.#listeners.length - 1; i >= 0; i--) {
+      const listener = this.#listeners[i];
       if (listener.once) {
-        this.#_l.splice(i, 1);
+        this.#listeners.splice(i, 1);
       }
       queueMicrotask(() => listener.cb(item));
     }
