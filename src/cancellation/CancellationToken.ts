@@ -39,7 +39,7 @@ export type CancellationToken =
       readonly isCancelled: true;
 
       /**
-       * Gets the reason for the cancellation, if any.
+       * Gets the reason for the cancellation.
        */
       readonly reason: Error;
     }
