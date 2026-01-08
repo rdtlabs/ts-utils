@@ -89,6 +89,19 @@ export function asyncQueue<T>(
   let _onClose: Deferred<void> | undefined;
   let _state = STATE_READ_WRITE;
 
+  function _throwIfClosed(): void {
+    if (_state === STATE_CLOSED) {
+      throw new QueueClosedError();
+    }
+  }
+
+  function _throwIfNotReadWrite(): void {
+    _throwIfClosed();
+    if (_state === STATE_READ_ONLY) {
+      throw new QueueReadOnlyError();
+    }
+  }
+
   function _enqueueUnsafe(item: T): void {
     if (_dequeueAwaiters.notifyOne(item)) {
       _listeners.notifyEnqueue(item);
@@ -162,9 +175,7 @@ export function asyncQueue<T>(
       }
     },
     setReadOnly(): void {
-      if (_state === STATE_CLOSED) {
-        throw new QueueClosedError();
-      }
+      _throwIfClosed();
 
       _state = STATE_READ_ONLY;
       if (queue.isEmpty) {
@@ -189,20 +200,11 @@ export function asyncQueue<T>(
       }
     },
     enqueue(item: T): void {
-      if (_state === STATE_CLOSED) {
-        throw new QueueClosedError();
-      }
-
-      if (_state === STATE_READ_ONLY) {
-        throw new QueueReadOnlyError();
-      }
-
+      _throwIfNotReadWrite();
       _enqueueUnsafe(item);
     },
     async dequeue(cancellationToken?: CancellationToken): Promise<T> {
-      if (_state === STATE_CLOSED) {
-        throw new QueueClosedError();
-      }
+      _throwIfClosed();
 
       if (cancellationToken?.isCancelled === true) {
         throw cancellationToken.reason;
@@ -225,9 +227,7 @@ export function asyncQueue<T>(
       );
     },
     tryDequeue(): MaybeResult<T> {
-      if (_state === STATE_CLOSED) {
-        throw new QueueClosedError();
-      }
+      _throwIfClosed();
 
       if (!queue.isEmpty) {
         return {
@@ -264,17 +264,11 @@ export function asyncQueue<T>(
       listener: (item: T) => void,
       once?: boolean,
     ): void {
-      if (_state === STATE_CLOSED) {
-        throw new QueueClosedError();
-      }
-
+      _throwIfClosed();
       _listeners.on(event, listener, once);
     },
     off(event: "dequeue" | "enqueue", listener: (item: T) => void): void {
-      if (_state === STATE_CLOSED) {
-        throw new QueueClosedError();
-      }
-
+      _throwIfClosed();
       _listeners.off(event, listener);
     },
   };
