@@ -138,7 +138,9 @@ export function takeWhile<T>(
 /**
  * Creates a new pipeable function that resumes the pipeline after encountering an error, optionally handling the error.
  * @template T The type of the input values.
- * @param {(error: ErrorLike) => Promise<boolean> | boolean} [onError] The error handler function.
+ * @param {(error: unknown) => Promise<boolean> | boolean} [onError] The error handler function.
+ *        Return `true` to resume iteration, `false` to re-throw the error.
+ *        If not provided, all errors are swallowed and iteration continues.
  * @returns {Pipeable<T>} The pipeable function.
  */
 export function resumeOnError<T>(
@@ -150,7 +152,8 @@ export function resumeOnError<T>(
         yield item;
       } catch (error) {
         if (onError && !(await onError(error))) {
-          await it.throw(error);
+          await it.throw?.(error);
+          throw error;
         }
       }
     }
