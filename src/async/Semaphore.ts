@@ -41,18 +41,15 @@ import { deferred } from "./Deferred.ts";
 import type { WaitHandle } from "./WaitHandle.ts";
 import { CancellationError } from "../cancellation/CancellationError.ts";
 import { CancellationInput } from "../cancellation/cancellationInput.ts";
-import { Promises } from "./Promises.ts";
+import type { TimeoutInput } from "../types.ts";
 
 /**
  * Represents a semaphore, which is a synchronization primitive that limits the number of concurrent accesses to a shared resource.
  * return a new instance of a Semaphore with the specified number of permits.
  */
-export const Semaphore = function (permits: number): {
-  new (permits: number): Semaphore;
-} {
-  // deno-lint-ignore no-explicit-any
-  return semaphore(permits) as any;
-} as unknown as {
+export const Semaphore = (function (permits: number): Semaphore {
+  return semaphore(permits);
+}) as unknown as {
   new (permits: number): Semaphore;
 };
 
@@ -67,7 +64,11 @@ export function semaphore(permits: number): Semaphore {
     throw new Error("Semaphore initial permits must be >= 0");
   }
 
+  // Number of available permits
   let _permits = permits;
+
+  // Queue of resolve functions waiting for permits
+  // When a permit becomes available, we call resolve() to notify the waiter
   const _awaiters: Array<() => void> = [];
 
   function addAwaiter(resolve: () => void): void {
@@ -93,55 +94,63 @@ export function semaphore(permits: number): Semaphore {
       }
       return false;
     },
-    async acquire(cancellationToken?: CancellationToken): Promise<void> {
+    acquire(cancellationToken?: CancellationToken): Promise<void> {
+      // Fast path: if permit available, return resolved promise immediately
       if (this.tryAcquire()) {
-        return;
+        return Promise.resolve();
       }
 
+      // Simple path: no cancellation support needed
       if (!cancellationToken || cancellationToken.state === "none") {
-        return await new Promise<void>((r) => addAwaiter(r));
+        return new Promise<void>((r) => addAwaiter(r));
       }
 
-      cancellationToken.throwIfCancelled();
+      // Cancellable path: check if already cancelled
+      if (cancellationToken.isCancelled) {
+        return Promise.reject(
+          cancellationToken.reason ?? new CancellationError(cancellationToken),
+        );
+      }
 
       const controller = deferred(cancellationToken);
-
       addAwaiter(controller.resolve);
 
-      controller.promise.catch((e) => {
+      // Handle cancellation by removing from awaiter queue
+      // Return the same promise (not a new one from .catch())
+      return controller.promise.catch((e) => {
         if (e instanceof CancellationError) {
           removeAwaiter(controller.resolve);
         }
+        // Re-throw to propagate the error to the caller
         throw e;
       });
-
-      return await controller.promise;
     },
     release(count = 1): void {
-      if (!count || count < 0) {
+      if (count <= 0) {
         throw new Error("Release count must be at least 1");
       }
 
-      _permits += count;
+      // Determine how many waiters we can resolve immediately
+      const waitersToResolve = Math.min(count, _awaiters.length);
 
-      _awaiters
-        .splice(0, count)
-        .forEach((resolve) => {
-          _permits--;
-          resolve();
-        });
+      // Update permits: add count, subtract the ones we're giving to waiters
+      _permits += count - waitersToResolve;
+
+      // Resolve waiters without modifying permits (already accounted for above)
+      // Use queueMicrotask to avoid deep call stacks with many waiters
+      if (waitersToResolve > 0) {
+        const resolvers = _awaiters.splice(0, waitersToResolve);
+        for (const resolve of resolvers) {
+          queueMicrotask(resolve);
+        }
+      }
     },
-    // deno-lint-ignore no-explicit-any
-    wait(...args: any[]): Promise<void> {
-      if (args.length === 0) {
+    wait(arg?: TimeoutInput | CancellationToken): Promise<void> {
+      if (arg === undefined) {
         return this.acquire();
       }
 
-      if (args.length !== 1) {
-        return Promises.reject(new Error("invalid arguments"));
-      }
-
-      return this.acquire(CancellationInput.of(args[0]));
+      return this.acquire(CancellationInput.of(arg));
     },
   } as Semaphore;
 }

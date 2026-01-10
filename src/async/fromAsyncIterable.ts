@@ -35,15 +35,32 @@ export function fromAsyncIterable<T>(
       const iterator = cancellable[Symbol.asyncIterator]();
       (async () => {
         try {
-          for await (const value of iterator) {
-            sub.next?.(value);
+          let completed = false;
+          try {
+            while (isSubscribed) {
+              const result = await iterator.next();
+              if (result.done) {
+                completed = true;
+                break;
+              }
+              sub.next?.(result.value);
+            }
+            if (isSubscribed) {
+              isSubscribed = false;
+              sub.complete?.();
+            }
+          } catch (e) {
+            if (isSubscribed) {
+              isSubscribed = false;
+              sub.error?.(e);
+            }
+          } finally {
+            if (!completed) {
+              iterator.return?.(undefined);
+            }
           }
-          if (isSubscribed) {
-            isSubscribed = false;
-            sub.complete?.();
-          }
-        } catch (e) {
-          sub.error?.(e);
+        } catch {
+          console.error("Unhandled error during async iteration cleanup");
         }
       })();
 
@@ -55,7 +72,7 @@ export function fromAsyncIterable<T>(
         canceled = true;
         if (isSubscribed) {
           isSubscribed = false;
-          iterator?.return?.(undefined);
+          iterator.return?.(undefined);
         }
       };
     },

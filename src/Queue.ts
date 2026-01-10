@@ -21,6 +21,8 @@ export interface Queue<T> {
 
   /** Returns a buffer wrapper around the queue */
   toBufferLike(): BufferLike<T>;
+
+  /** Converts the queue to an array and fully clears it. */
   toArray(): T[];
 }
 

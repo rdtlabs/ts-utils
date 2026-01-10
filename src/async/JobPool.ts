@@ -133,7 +133,11 @@ function wrap<T>(
   job: Job<T>,
   cancellation?: CancellationToken,
 ): Job<T> {
-  return !cancellation ? job : () => {
+  if (!cancellation || cancellation.state === "none") {
+    return job;
+  }
+
+  return () => {
     return Promises.cancellable(
       async () => await job(),
       cancellation,

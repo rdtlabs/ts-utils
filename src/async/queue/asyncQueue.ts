@@ -342,7 +342,9 @@ class Listeners<T> {
   readonly #onDequeueListeners = new EventListeners<T>();
 
   private _getEventListeners(event: "dequeue" | "enqueue"): EventListeners<T> {
-    return event === "enqueue" ? this.#onEnqueueListeners : this.#onDequeueListeners;
+    return event === "enqueue"
+      ? this.#onEnqueueListeners
+      : this.#onDequeueListeners;
   }
 
   on(

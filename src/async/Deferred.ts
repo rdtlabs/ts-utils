@@ -144,6 +144,5 @@ function create<T>(): {
 }
 
 // utility type
-type Resolve<T> = T extends void | undefined
-  ? (value?: T | PromiseLike<T>) => void
+type Resolve<T> = T extends void | undefined ? () => void
   : (value: T | PromiseLike<T>) => void;

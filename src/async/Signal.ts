@@ -53,6 +53,8 @@ type Unsignaled = false;
 import type { WaitHandle } from "./WaitHandle.ts";
 import { Promises } from "./Promises.ts";
 import { CancellationInput } from "../cancellation/cancellationInput.ts";
+import type { CancellationToken } from "../cancellation/CancellationToken.ts";
+import type { TimeoutInput } from "../types.ts";
 
 /**
  * Creates a new `Signal` instance with the specified initial state.
@@ -60,16 +62,11 @@ import { CancellationInput } from "../cancellation/cancellationInput.ts";
  * Defaults to `false` (unsignaled) if not provided.
  * @returns A new `Signal` instance.
  */
-export const Signal = function (
+export const Signal = (function (
   initialState: SignalState = false,
-): {
-  new (
-    initialState?: SignalState,
-  ): Signal;
-} {
-  // deno-lint-ignore no-explicit-any
-  return signal(initialState ?? false) as any;
-} as unknown as {
+): Signal {
+  return signal(initialState ?? false);
+}) as unknown as {
   new (
     initialState?: SignalState,
   ): Signal;
@@ -82,58 +79,75 @@ export const Signal = function (
  * @returns A signal object with various methods for signaling and waiting.
  */
 export function signal(initialState: SignalState = false): Signal {
+  // The current resolve function for the promise
+  // When signal is signaled, this is set to SIGNALED sentinel
   let resolve!: () => void;
+
+  // The promise that waiters will wait on
+  // When signaled: Promise.resolve() (already resolved)
+  // When unsignaled: new Promise that resolves when notify() is called
   let promise!: Promise<void>;
 
-  const getAndSetUnsignaled = () => {
-    const res = resolve;
+  const setUnsignaled = () => {
     promise = new Promise((r) => resolve = r);
-    return res;
   };
 
-  const getAndSetSignaled = () => {
-    const res = resolve;
+  const setSignaled = () => {
+    // Set promise to already-resolved promise
     promise = Promise.resolve();
+    // Mark resolve as SIGNALED sentinel to indicate signaled state
     resolve = SIGNALED;
-    return res;
   };
 
   if (initialState === true) {
-    getAndSetSignaled();
+    setSignaled();
   } else {
-    getAndSetUnsignaled();
+    setUnsignaled();
   }
 
   const getState = () => resolve === SIGNALED;
 
   const signal = {
     notify: () => {
-      getAndSetSignaled()();
+      // Only notify if currently unsignaled
+      if (resolve !== SIGNALED) {
+        const oldResolve = resolve;
+        setSignaled();
+        // Resolve waiters AFTER updating state to prevent race conditions
+        oldResolve();
+      }
     },
 
     notifyAndReset: () => {
-      getAndSetUnsignaled()();
+      // Notify existing waiters and immediately reset
+      if (resolve === SIGNALED) {
+        // If signaled, just reset to unsignaled (no one to notify)
+        setUnsignaled();
+      } else {
+        // If already unsignaled, resolve current waiters and create new promise
+        const oldResolve = resolve;
+        setUnsignaled();
+        oldResolve();
+      }
     },
 
     reset: () => {
       if (resolve === SIGNALED) {
-        getAndSetUnsignaled();
+        setUnsignaled();
       }
     },
 
-    // deno-lint-ignore no-explicit-any
-    wait: (...args: any[]) => {
-      if (args.length === 0 || getState() === true) {
+    wait: (arg?: TimeoutInput | CancellationToken): Promise<void> => {
+      // Fast path: if already signaled or no cancellation, return promise directly
+      if (arg === undefined || getState() === true) {
         return promise;
       }
 
-      if (args.length !== 1) {
-        return Promise.reject(new Error("invalid arguments"));
-      }
-
+      // Wrap with cancellation support
+      // Use the current promise directly instead of promise.then() to avoid extra microtask
       return Promises.cancellable(
-        promise.then(() => true),
-        CancellationInput.of(args[0]),
+        promise,
+        CancellationInput.of(arg),
       );
     },
   };
@@ -142,7 +156,7 @@ export function signal(initialState: SignalState = false): Signal {
     get: getState,
   });
 
-  return Object.freeze(signal) as unknown as Signal;
+  return Object.freeze(signal) as Signal;
 }
 
 const SIGNALED = Object.freeze(() => {});

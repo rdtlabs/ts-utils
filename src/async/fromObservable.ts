@@ -29,7 +29,7 @@ export function fromObservable<T>(
   // deno-lint-ignore no-explicit-any
   if (!options && (observable as any)[Symbol.asyncIterator]) {
     return {
-      [Symbol.dispose]: () => dispose(Done),
+      [Symbol.dispose]: () => {},
       [Symbol.asyncIterator]: () => {
         // deno-lint-ignore no-explicit-any
         return (observable as any)[Symbol.asyncIterator]();
@@ -104,47 +104,49 @@ export function fromObservable<T>(
     options?.cancellationToken,
   );
 
-  return Object.seal({
-    [Symbol.dispose]: () => dispose(Done),
-    [Symbol.asyncIterator]: () => {
-      const it = cancellable[Symbol.asyncIterator]();
-      return {
-        next: async () => {
-          if (isDone()) {
-            if (thrownError) {
-              throw thrownError;
-            }
-            return returnValue;
-          }
-
-          try {
-            const tpl = await it.next();
-            if (tpl.done) {
-              dispose(tpl.value);
+  return Object.seal(
+    {
+      [Symbol.dispose]: () => dispose(Done),
+      [Symbol.asyncIterator]: () => {
+        const it = cancellable[Symbol.asyncIterator]();
+        return {
+          next: async () => {
+            if (isDone()) {
+              if (thrownError) {
+                throw thrownError;
+              }
               return returnValue;
             }
 
-            return tpl;
-          } catch (e) {
-            dispose(e);
-            throw e;
-          }
-        },
-        throw: (e) => {
-          dispose(e);
-          return Promises.reject(e);
-        },
-        // deno-lint-ignore no-explicit-any
-        return: (value: any) => {
-          if (returnValue !== undefined) {
+            try {
+              const tpl = await it.next();
+              if (tpl.done) {
+                dispose(tpl.value);
+                return returnValue;
+              }
+
+              return tpl;
+            } catch (e) {
+              dispose(undefined, e as ErrorLike);
+              throw e;
+            }
+          },
+          throw: (e) => {
+            dispose(undefined, e as ErrorLike);
+            return Promises.reject(e);
+          },
+          // deno-lint-ignore no-explicit-any
+          return: (value: any) => {
+            if (returnValue !== undefined) {
+              return Promise.resolve(returnValue);
+            }
+
+            dispose(value);
+
             return Promise.resolve(returnValue);
-          }
-
-          dispose(value);
-
-          return Promise.resolve(returnValue);
-        },
-      };
-    },
-  });
+          },
+        };
+      },
+    } as AsyncIterable<T> & Disposable,
+  );
 }

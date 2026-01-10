@@ -75,7 +75,7 @@ export class RingBuffer<T> implements BufferLike<T> {
           };
           break;
         } else {
-          throw new Error("Invalid strategy");
+          throw new TypeError("Invalid strategy");
         }
     }
   }

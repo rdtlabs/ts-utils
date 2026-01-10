@@ -96,7 +96,7 @@ export interface AsyncQueue<T> extends Disposable, AsyncIterable<T> {
    */
   setReadOnly(): void;
 
-  /** Closes the queue. */
+  /** Closes the queue. Dispose and close are interchangeable and idempotent. */
   close(err?: ErrorLike): void;
 
   /** Returns a promise that resolves when the queue is closed. */

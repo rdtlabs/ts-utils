@@ -15,9 +15,11 @@ export const executors = Object.freeze({
       maxQueueLength: maxQueueLength ?? 1024,
     });
     return {
-      execute: (callable, deadline) => {
-        // deno-lint-ignore no-explicit-any
-        return (pool as any).submit(callable, deadline);
+      execute: <T>(
+        callable: Callable<T | PromiseLike<T>>,
+        deadline?: CancellationToken,
+      ) => {
+        return pool.submit(callable, deadline);
       },
       shutdown: () => pool.shutdown(),
       onShutdown: () => pool.onShutdown(),
@@ -31,14 +33,27 @@ export const executors = Object.freeze({
   },
 
   sequential: () => {
-    let lastPromise = Promise.resolve();
+    let lastPromise: Promise<unknown> = Promise.resolve();
     return {
       execute: (callable, deadline) => {
-        return new Promise((resolve, reject) => {
-          lastPromise = lastPromise.finally(() =>
-            __invoke(callable, resolve, reject, deadline)
+        // Create the new task promise
+        const taskPromise = new Promise((resolve, reject) => {
+          // Chain after the last promise, but use then/catch instead of finally
+          // to properly handle both success and failure cases
+          lastPromise = lastPromise.then(
+            () => __invoke(callable, resolve, reject, deadline),
+            () => __invoke(callable, resolve, reject, deadline),
           );
         });
+
+        // Update lastPromise to the current task so it completes before the next one
+        // This prevents the chain from growing indefinitely
+        lastPromise = taskPromise.catch(() => {
+          // Swallow errors here since they're already handled in taskPromise
+          // This prevents unhandled rejection warnings
+        });
+
+        return taskPromise;
       },
     } as Executor;
   },
@@ -61,11 +76,13 @@ export const executors = Object.freeze({
   },
 
   macro: <Executor> {
-    execute: (callable, cancellation) => {
-      return new Promise((resolve, reject) => {
+    execute: <T>(
+      callable: Callable<T | PromiseLike<T>>,
+      cancellation?: CancellationToken,
+    ) => {
+      return new Promise<T>((resolve, reject) => {
         setTimeout(
-          // deno-lint-ignore no-explicit-any
-          () => __invoke(callable, resolve as any, reject, cancellation),
+          () => __invoke(callable, resolve, reject, cancellation),
           0,
         );
       });
@@ -73,12 +90,12 @@ export const executors = Object.freeze({
   },
 
   micro: <Executor> {
-    execute: (callable, cancellation) => {
-      return new Promise((resolve, reject) => {
-        queueMicrotask(() =>
-          // deno-lint-ignore no-explicit-any
-          __invoke(callable, resolve as any, reject, cancellation)
-        );
+    execute: <T>(
+      callable: Callable<T | PromiseLike<T>>,
+      cancellation?: CancellationToken,
+    ) => {
+      return new Promise<T>((resolve, reject) => {
+        queueMicrotask(() => __invoke(callable, resolve, reject, cancellation));
       });
     },
   },
@@ -157,10 +174,22 @@ const __invoke = <T = void>(
   resolve: (value: T | PromiseLike<T>) => void,
   reject: (reason: ErrorLike) => void,
   deadline?: CancellationToken,
-) => {
+): void => {
   try {
-    const result = Promise.resolve(callable());
-    resolve(Promises.cancellable(result, deadline));
+    const result = callable();
+    // Only wrap in Promise.resolve if result is not already a Promise
+    // This avoids an extra microtask tick
+    const promise = result instanceof Promise
+      ? result
+      : Promise.resolve(result);
+
+    // Handle the promise resolution - no need to return since we're using callbacks
+    Promises
+      .cancellable(promise, deadline)
+      .then(resolve, (error) => {
+        // Use second parameter of then() instead of catch() to avoid creating another microtask
+        reject(Errors.resolve(error));
+      });
   } catch (error) {
     reject(Errors.resolve(error));
   }
@@ -171,10 +200,10 @@ function __invokeOn<T>(
   executor: Executor,
   cancellation?: CancellationToken,
 ): Promise<T> {
-  return new Promise<T>((resolve, reject) => {
-    executor
-      .execute(() => __invoke(callable, resolve, reject, cancellation))
-      .then((result) => resolve(result as T))
-      .catch((e) => reject(Errors.resolve(e)));
-  });
+  // Execute the callable on the executor and return its promise directly
+  // The executor.execute() already handles the promise resolution/rejection
+  return executor.execute(
+    () => executors.invoke(callable, cancellation),
+    cancellation,
+  );
 }

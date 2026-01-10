@@ -164,32 +164,24 @@ export function resumeOnError<T>(
  * @returns {Pipeable<T[]>} The pipeable function.
  * @throws {TypeError} If the size is invalid.
  */
-export function chunk<T>(size: number): Pipeable<T[]> {
-  if (size < 1 || size === Infinity) {
+export function chunk<T>(size: number): Pipeable<T, T[]> {
+  if (size < 1 || size === Infinity || Number.isNaN(size)) {
     throw new TypeError(`Invalid buffer size ${size}`);
+  }
+
+  if (!Number.isInteger(size)) {
+    throw new TypeError(`Buffer size must be an integer, got ${size}`);
   }
 
   return async function* (it) {
     let buffer: T[] = [];
     for await (const item of it) {
-      let innerItem = item;
-      do {
-        try {
-          buffer.push(innerItem as T);
-          if (buffer.length >= size) {
-            const toYield = buffer;
-            buffer = [];
-            yield toYield;
-          }
-          break;
-        } catch (error) {
-          const result = await it.throw(error);
-          if (result.done) {
-            return;
-          }
-          innerItem = result.value;
-        }
-      } while (true);
+      buffer.push(item);
+      if (buffer.length >= size) {
+        const toYield = buffer;
+        buffer = [];
+        yield toYield;
+      }
     }
     if (buffer.length > 0) {
       yield buffer;

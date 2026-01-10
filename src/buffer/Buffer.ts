@@ -27,7 +27,7 @@ export class Buffer<T> implements BufferLike<T> {
     this.#capacity = capacity;
     if (capacity === Infinity) {
       if (typeof strategy === "function") {
-        throw new Error(
+        throw new TypeError(
           "Buffer strategy selector cannot be used with infinite capacity",
         );
       }
@@ -35,6 +35,14 @@ export class Buffer<T> implements BufferLike<T> {
         throw new Error("Buffer is in an invalid state");
       };
       return;
+    }
+
+    if (Number.isNaN(capacity)) {
+      throw new TypeError("Buffer size must be a valid number");
+    }
+
+    if (!Number.isInteger(capacity)) {
+      throw new TypeError("Buffer size must be an integer");
     }
 
     switch (strategy) {
@@ -71,7 +79,7 @@ export class Buffer<T> implements BufferLike<T> {
           };
           break;
         } else {
-          throw new Error("Invalid strategy");
+          throw new TypeError("Invalid strategy");
         }
     }
   }

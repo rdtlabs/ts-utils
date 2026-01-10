@@ -37,23 +37,21 @@ export const Monitor = function (): {
  * @returns A new Monitor object.
  */
 export function monitor(): Monitor {
-  let waiters = new Array<Deferred<boolean>>();
-  let running = 0;
+  let waiters = new Array<Deferred<true>>();
 
   const monitor = {
     /**
      * Signals one waiting operation to continue.
      */
     pulseOne: () => {
-      running++;
-
-      if (waiters.length > 0) {
+      // Skip cancelled waiters to ensure pulse reaches an active waiter
+      while (waiters.length > 0) {
         const def = waiters.shift()!;
-        // deno-lint-ignore no-explicit-any
-        def.resolve(true as any);
+        if (!def.isDone) {
+          def.resolve(true);
+          break;
+        }
       }
-
-      running--;
     },
 
     /**
@@ -61,10 +59,10 @@ export function monitor(): Monitor {
      */
     pulseAll: () => {
       for (const def of waiters) {
-        // deno-lint-ignore no-explicit-any
-        def.resolve(true as any);
+        if (!def.isDone) {
+          def.resolve(true);
+        }
       }
-
       waiters = [];
     },
 
@@ -75,12 +73,8 @@ export function monitor(): Monitor {
      */
     // deno-lint-ignore no-explicit-any
     wait: (...args: any[]): any => {
-      running++;
-      const def = new Deferred<boolean>(args[0]);
+      const def = new Deferred<true>(args[0]);
       waiters.push(def);
-
-      running--;
-
       return def.promise;
     },
   };
