@@ -9,10 +9,20 @@ import {
 
 type Task = () => Promise<void> | void;
 
+/** Pool state constants for clarity */
+const STATE_RUNNING = 0;
+const STATE_SHUTTING_DOWN = 1;
+const STATE_SHUTDOWN = 2;
+
+type PoolState =
+  | typeof STATE_RUNNING
+  | typeof STATE_SHUTTING_DOWN
+  | typeof STATE_SHUTDOWN;
+
 export type WorkerPoolOptions = {
-  // defaults to 4
+  /** Maximum number of concurrent tasks. Defaults to 4. */
   maxConcurrency?: number;
-  // defaults to Infinity
+  /** Maximum queue length before rejecting new tasks. Defaults to 1024. */
   maxQueueLength?: number;
 };
 
@@ -23,6 +33,8 @@ export interface WorkerPool {
   /**
    * Submits a task to be executed by the worker pool.
    * @param runnable The task to be executed.
+   * @throws {QueueLengthExceededError} If the queue is full.
+   * @throws {ShutdownError} If the pool is shutting down or shutdown.
    */
   submit(runnable: Task): void;
 
@@ -30,11 +42,14 @@ export interface WorkerPool {
    * Tries to submit a task to the worker pool.
    * @param runnable The task to be submitted.
    * @returns A boolean indicating whether the task was successfully submitted.
+   * @throws {ArgumentNilError} If runnable is null or undefined.
+   * @throws {ShutdownError} If the pool is shutting down or shutdown.
    */
   trySubmit(runnable: Task): boolean;
 
   /**
    * Initiates the shutdown of the worker pool.
+   * Existing tasks will complete, but no new tasks are accepted.
    */
   shutdown(): void;
 
@@ -67,12 +82,12 @@ export interface WorkerPool {
 }
 
 /**
+ * WorkerPool constructor function.
  * Creates a worker pool with the specified options.
  *
  * @param options - The options for the worker pool.
  * @returns The worker pool object.
  */
-
 export const WorkerPool = function (options?: WorkerPoolOptions): {
   new (options?: WorkerPoolOptions): WorkerPool;
 } {
@@ -90,28 +105,45 @@ export const WorkerPool = function (options?: WorkerPoolOptions): {
  */
 export function workerPool(options?: WorkerPoolOptions): WorkerPool {
   const { maxConcurrency, maxQueueLength } = fromOptions(options);
-  const max_concurrency = maxConcurrency;
-  const max_queue_length = maxQueueLength;
   const queue = new Queue<Task>();
-  const onShutdownResolve = (() => {
-    const deferred = new Deferred<void>();
-    return {
-      promise: deferred.promise,
-      resolve: () => {
-        state = 2;
-        deferred.resolve();
-      },
-    };
-  })();
+  const shutdownDeferred = new Deferred<void>();
 
-  let state: 0 | 1 | 2 = 0;
-  let active = 0;
+  let state: PoolState = STATE_RUNNING;
+  let activeCount = 0;
 
-  const pool = {
+  function completeShutdown(): void {
+    if (state !== STATE_SHUTDOWN) {
+      state = STATE_SHUTDOWN;
+      shutdownDeferred.resolve();
+    }
+  }
+
+  function tryCompleteShutdown(): void {
+    if (state === STATE_SHUTTING_DOWN && activeCount === 0 && queue.isEmpty) {
+      completeShutdown();
+    }
+  }
+
+  async function runNext(): Promise<void> {
+    while (activeCount < maxConcurrency && !queue.isEmpty) {
+      const runnable = queue.dequeue()!;
+      activeCount++;
+      try {
+        await runnable();
+      } catch (err) {
+        console.error("Runnable failed", err);
+      }
+      activeCount--;
+    }
+
+    tryCompleteShutdown();
+  }
+
+  const pool: WorkerPool = {
     submit(runnable: Task): void {
       if (!pool.trySubmit(runnable)) {
         throw new QueueLengthExceededError(
-          "Worker pool is max queue length reached",
+          "Worker pool max queue length reached",
         );
       }
     },
@@ -121,13 +153,13 @@ export function workerPool(options?: WorkerPoolOptions): WorkerPool {
         throw new ArgumentNilError("Runnable is null or undefined");
       }
 
-      if (state > 0) {
+      if (state !== STATE_RUNNING) {
         throw new ShutdownError(
-          "Cannot submit, pool is shutdown or terminated",
+          "Cannot submit, pool is shutdown or shutting down",
         );
       }
 
-      if (queue.size >= max_queue_length) {
+      if (queue.size >= maxQueueLength) {
         return false;
       }
 
@@ -138,18 +170,16 @@ export function workerPool(options?: WorkerPoolOptions): WorkerPool {
     },
 
     onShutdown(): Promise<void> {
-      return onShutdownResolve.promise;
+      return shutdownDeferred.promise;
     },
 
     shutdown(): void {
-      if (this.isShutdownInitiated) {
+      if (pool.isShutdownInitiated) {
         return;
       }
 
-      state = 1;
-      if (active === 0 && queue.isEmpty) {
-        onShutdownResolve.resolve();
-      }
+      state = STATE_SHUTTING_DOWN;
+      tryCompleteShutdown();
     },
 
     shutdownNow(): Task[] {
@@ -158,44 +188,23 @@ export function workerPool(options?: WorkerPoolOptions): WorkerPool {
       }
 
       const remaining = queue.toArray();
-      onShutdownResolve.resolve();
+      completeShutdown();
 
       return remaining;
     },
 
-    get isShutdownInitiated() {
-      return state > 0;
+    get isShutdownInitiated(): boolean {
+      return state !== STATE_RUNNING;
     },
 
-    get isShutdown() {
-      return state === 2;
+    get isShutdown(): boolean {
+      return state === STATE_SHUTDOWN;
     },
 
-    get isFull() {
-      return queue.size >= max_queue_length;
+    get isFull(): boolean {
+      return queue.size >= maxQueueLength;
     },
   };
-
-  async function runNext(): Promise<void> {
-    while (active < max_concurrency && !queue.isEmpty) {
-      const runnable = queue.dequeue()!;
-      active++;
-      try {
-        await runnable();
-      } catch (err) {
-        console.error("Runnable failed", err);
-      }
-      active--;
-    }
-
-    if (
-      pool.isShutdownInitiated &&
-      active === 0 &&
-      queue.isEmpty
-    ) {
-      onShutdownResolve.resolve();
-    }
-  }
 
   return pool;
 }
