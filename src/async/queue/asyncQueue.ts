@@ -152,7 +152,9 @@ export function asyncQueue<T>(
 
       _buffer.clear();
       _listeners.clear();
-      _dequeueAwaiters.close(err);
+
+      // Reject all dequeue awaiters
+      _dequeueAwaiters.rejectAll(err);
     },
     async onClose(propagateInjectedError?: boolean): Promise<void> {
       if (!_onClose) {
@@ -178,8 +180,9 @@ export function asyncQueue<T>(
       _throwIfClosed();
 
       _state = STATE_READ_ONLY;
-      if (queue.isEmpty) {
-        this.close();
+
+      if (_buffer.isEmpty) {
+        this.close(); // if the buffer is empty, close the queue
       } else {
         _listeners.clearEnqueueListeners();
       }
@@ -227,8 +230,6 @@ export function asyncQueue<T>(
       );
     },
     tryDequeue(): MaybeResult<T> {
-      _throwIfClosed();
-
       if (!queue.isEmpty) {
         return {
           value: _listeners.notifyDequeue(_buffer.read()!),
@@ -314,7 +315,7 @@ class Awaiters<T> {
     return deferred.promise;
   }
 
-  close(err?: ErrorLike): void {
+  rejectAll(err?: ErrorLike): void {
     while (!this.#queue.isEmpty) {
       const awaiter = this.#queue.dequeue()!;
       if (!awaiter.isDone) {
