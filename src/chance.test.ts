@@ -1,11 +1,5 @@
-/// <reference no-default-lib="true" />
-/// <reference lib="dom" />
-/// <reference lib="dom.iterable" />
-/// <reference lib="dom.asynciterable" />
-/// <reference lib="deno.ns" />
-
 import { chance } from "./chance.ts";
-import { assert, assertNotEquals, assertGreaterOrEqual } from "https://deno.land/std@0.213.0/assert/mod.ts";
+import { assert, assertNotEquals, assertGreaterOrEqual } from "@std/assert";
 
 Deno.test("chance test", () => {
   const randomValue = chance.random();

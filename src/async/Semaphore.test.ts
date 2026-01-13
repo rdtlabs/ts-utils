@@ -1,12 +1,5 @@
-/// <reference no-default-lib="true" />
-/// <reference lib="dom" />
-/// <reference lib="dom.iterable" />
-/// <reference lib="dom.asynciterable" />
-/// <reference lib="deno.ns" />
-
-import { assert } from "https://deno.land/std@0.213.0/assert/assert.ts";
+import { assert, assertFalse } from "@std/assert";
 import { semaphore, Semaphore } from "./Semaphore.ts";
-import { assertFalse } from "https://deno.land/std@0.213.0/assert/assert_false.ts";
 import { WaitGroup } from "./WaitGroup.ts";
 import { delay } from "./delay.ts";
 import { Signal } from "./index.ts";

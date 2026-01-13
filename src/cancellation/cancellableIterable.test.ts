@@ -1,10 +1,4 @@
-/// <reference no-default-lib="true" />
-/// <reference lib="dom" />
-/// <reference lib="dom.iterable" />
-/// <reference lib="dom.asynciterable" />
-/// <reference lib="deno.ns" />
-
-import { assert } from "https://deno.land/std@0.213.0/assert/assert.ts";
+import { assert } from "@std/assert";
 import { AsyncQueue } from "../async/queue/types.ts";
 import { cancellableIterable } from "./cancellableIterable.ts";
 import { cancellationTimeout } from "./cancellationTimeout.ts";

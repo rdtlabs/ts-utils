@@ -52,16 +52,24 @@ export async function __decrypt<T extends string | CryptoKey>(
 
 export function __stringToCryptoKey(
   secret: string,
-  algorithm:
+  algorithm?:
     | AlgorithmIdentifier
     | RsaHashedImportParams
     | EcKeyImportParams
     | HmacImportParams
-    | AesKeyAlgorithm = { name: "AES-GCM" },
-  keyUsages: Iterable<KeyUsage> = ["encrypt", "decrypt"],
-  extractable = true,
+    | AesKeyAlgorithm,
+  keyUsages?: KeyUsage[],
+  extractable?: boolean,
 ): Promise<CryptoKey> {
-  const ensure64CharKeyFromKey = (key: string): string => {
+    algorithm ??= { name: "AES-GCM" };
+    keyUsages ??= ["encrypt", "decrypt"];
+    extractable ??= true;
+
+    if (algorithm === "HMAC" && !keyUsages.includes("sign")) {
+      keyUsages.push("sign");
+    }
+
+    const ensure64CharKeyFromKey = (key: string): string => {
     if (key.length === __keyLength) {
       return key;
     }

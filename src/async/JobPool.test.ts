@@ -1,15 +1,8 @@
-/// <reference no-default-lib="true" />
-/// <reference lib="dom" />
-/// <reference lib="dom.iterable" />
-/// <reference lib="dom.asynciterable" />
-/// <reference lib="deno.ns" />
-
+import { assert, assertThrows, assertRejects } from "@std/assert";
 import { JobPool } from "./JobPool.ts";
 import { signal } from "./Signal.ts";
 import { delay } from "./delay.ts";
-import { assertRejects } from "https://deno.land/std@0.213.0/assert/assert_rejects.ts";
 import { createCancellation } from "../cancellation/createCancellation.ts";
-import { assert, assertThrows } from "https://deno.land/std@0.213.0/assert/mod.ts";
 import { QueueLengthExceededError, ShutdownError } from "../errors/error.types.ts";
 import { chance } from "../chance.ts";
 

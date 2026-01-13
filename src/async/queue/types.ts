@@ -8,7 +8,7 @@ import type { CancellationToken } from "../../cancellation/CancellationToken.ts"
  */
 export type QueueOptions<T> = {
   /** The maximum number of items that can be enqueued before the buffer strategy is applied. */
-  bufferSize?: number;
+  bufferSize?: number | undefined;
 
   /**
    * The buffer strategy to apply when the buffer is full.
@@ -16,7 +16,7 @@ export type QueueOptions<T> = {
    * "latest": Drops the oldest and enqueues the new item.
    * "fixed": Throws an error when the buffer is full.
    */
-  bufferStrategy?: BufferStrategyOptions<T>;
+  bufferStrategy?: BufferStrategyOptions<T> | undefined;
 };
 
 /** An async queue that allows for enqueuing and dequeuing items concurrently */

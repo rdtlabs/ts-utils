@@ -1,12 +1,6 @@
-/// <reference no-default-lib="true" />
-/// <reference lib="dom" />
-/// <reference lib="dom.iterable" />
-/// <reference lib="dom.asynciterable" />
-/// <reference lib="deno.ns" />
-
+import { assertEquals } from "@std/assert";
 import { base64 } from "./encoding/base64.ts";
 import { Md5 } from "./md5.ts";
-import { assertEquals } from "https://deno.land/std@0.213.0/assert/assert_equals.ts";
 
 const TEST_HASH = "dd50283a23394e7660f44f8a117e0e59"
 const TEST_STRING = "md5 test string";

@@ -2,9 +2,9 @@ import type { CancellationError } from "./CancellationError.ts";
 import type { CancellationToken } from "./CancellationToken.ts";
 
 export type CancellationIterableOptions = {
-  token?: CancellationToken;
-  onCancel?: (error: CancellationError) => void;
-  throwOnCancellation?: boolean;
+  token?: CancellationToken | undefined;
+  onCancel?: ((error: CancellationError) => void) | undefined;
+  throwOnCancellation?: boolean | undefined;
 };
 
 export type CancellationIterableOptionsExtended =
@@ -15,13 +15,13 @@ export type CancellationIterableOptionsExtended =
 
 export const CancellationIterableOptions: {
   from: (
-    options?: CancellationIterableOptionsExtended,
-    defaults?: CancellationIterableOptions,
+    options?: CancellationIterableOptionsExtended | undefined,
+    defaults?: CancellationIterableOptions | undefined,
   ) => CancellationIterableOptions;
 } = Object.freeze({
   from: (
-    options?: CancellationIterableOptionsExtended,
-    defaults?: CancellationIterableOptions,
+    options?: CancellationIterableOptionsExtended | undefined,
+    defaults?: CancellationIterableOptions | undefined,
   ): CancellationIterableOptions => {
     defaults ??= {};
 
@@ -60,9 +60,9 @@ export const CancellationIterableOptions: {
     return {
       token: options.token ?? defaults.token,
       onCancel: options.onCancel ?? defaults.onCancel,
-      throwOnCancellation: options.throwOnCancellation !== undefined
-        ? options.throwOnCancellation === true
-        : defaults.throwOnCancellation === true,
+      throwOnCancellation: options.throwOnCancellation === undefined
+        ? defaults.throwOnCancellation === true
+        : options.throwOnCancellation === true,
     };
   },
 });

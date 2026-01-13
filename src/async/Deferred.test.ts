@@ -1,13 +1,6 @@
-/// <reference no-default-lib="true" />
-/// <reference lib="dom" />
-/// <reference lib="dom.iterable" />
-/// <reference lib="dom.asynciterable" />
-/// <reference lib="deno.ns" />
-
-import { assert } from "https://deno.land/std@0.213.0/assert/assert.ts";
+import { assert, assertRejects } from "@std/assert";
 import { deferred } from "./Deferred.ts";
 import { Cancellable } from "../cancellation/Cancellable.ts";
-import { assertRejects } from "https://deno.land/std@0.213.0/assert/assert_rejects.ts";
 import { CancellationError } from "../cancellation/CancellationError.ts";
 
 Deno.test("Deferred test", async () => {

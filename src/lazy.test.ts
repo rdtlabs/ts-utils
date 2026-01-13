@@ -1,11 +1,5 @@
-/// <reference no-default-lib="true" />
-/// <reference lib="dom" />
-/// <reference lib="dom.iterable" />
-/// <reference lib="dom.asynciterable" />
-/// <reference lib="deno.ns" />
-
 import { Lazy } from "./lazy.ts";
-import { assertEquals } from "https://deno.land/std@0.213.0/assert/assert_equals.ts";
+import { assertEquals } from "@std/assert";
 
 Deno.test("lazy fn test", () => {
   let count = 0;

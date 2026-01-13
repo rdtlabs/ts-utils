@@ -1,13 +1,9 @@
 {
     "deno.enable": true,
     "deno.lint": true,
-    "deno.unstable": true,
     "deno.enablePaths": [
         "./src",
-        "./tsup.config.ts",
-        "./release.ts",
-        "./build-deno.ts",
-        "./build.ts"
+        "./deno.jsonc"
     ],
     "typescript.preferences.preferTypeOnlyAutoImports": true,
     "files.trimTrailingWhitespace": true,

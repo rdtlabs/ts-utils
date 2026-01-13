@@ -7,7 +7,7 @@ export class RetryableError extends Error {
   }
 
   public readonly isRetryable: boolean = true;
-  public readonly retryAfter?: number;
+  public readonly retryAfter?: number | undefined;
 }
 
 export class NonRetryableError extends Error {
@@ -24,7 +24,7 @@ export class HttpRetryableError extends RetryableError {
   constructor(code: number, reason?: unknown) {
     super(typeof reason === "string" ? reason : "HTTP retryable error");
     this.httpCode = code;
-    this.cause = typeof reason !== "string" ? reason : undefined;
+    this.cause = typeof reason === "string" ? undefined : reason;
   }
 
   public readonly httpCode: number;
@@ -34,7 +34,7 @@ export class HttpNonRetryableError extends NonRetryableError {
   constructor(code: number, reason?: unknown) {
     super(typeof reason === "string" ? reason : "HTTP non-retryable error");
     this.httpCode = code;
-    this.cause = typeof reason !== "string" ? reason : undefined;
+    this.cause = typeof reason === "string" ? undefined : reason;
   }
 
   public readonly httpCode: number;
@@ -55,7 +55,7 @@ export class ArgumentNilError extends InvalidArgumentError {
 export class DataTooLargeError extends NonRetryableError {
   constructor(reason?: unknown) {
     super(typeof reason === "string" ? reason : "Data too large");
-    this.cause = typeof reason !== "string" ? reason : undefined;
+    this.cause = typeof reason === "string" ? undefined : reason;
     this.name = "DataTooLargeError";
   }
 }
@@ -63,7 +63,7 @@ export class DataTooLargeError extends NonRetryableError {
 export class RateLimitError extends RetryableError {
   constructor(error?: unknown, retryAfter?: number) {
     super(typeof error === "string" ? error : "Too many requests", retryAfter);
-    this.cause = typeof error !== "string" ? error : undefined;
+    this.cause = typeof error === "string" ? undefined : error;
   }
 }
 
@@ -89,9 +89,9 @@ function __getErrorMessage(
   }
 
   if (!args.message) {
-    return !args.name
-      ? asNilOrInvalid(isNil)
-      : asNilOrInvalidName(args.name, isNil);
+    return args.name
+      ? asNilOrInvalidName(args.name, isNil)
+      : asNilOrInvalid(isNil);
   }
 
   if (!args.name) {

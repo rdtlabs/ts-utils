@@ -1,11 +1,5 @@
-/// <reference no-default-lib="true" />
-/// <reference lib="dom" />
-/// <reference lib="dom.iterable" />
-/// <reference lib="dom.asynciterable" />
-/// <reference lib="deno.ns" />
-
+import { assertEquals } from "@std/assert";
 import { encryptOnce } from "./encryptOnce.ts";
-import { assertEquals } from "https://deno.land/std@0.213.0/assert/assert_equals.ts";
 import { TEST_CLEAR_DATA, TEST_STRING_KEY } from "./_utils.test.ts";
 import { decryptOnce } from "./decryptOnce.ts";
 

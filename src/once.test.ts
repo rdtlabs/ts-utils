@@ -1,13 +1,6 @@
-/// <reference no-default-lib="true" />
-/// <reference lib="dom" />
-/// <reference lib="dom.iterable" />
-/// <reference lib="dom.asynciterable" />
-/// <reference lib="deno.ns" />
-
+import { assert, assertThrows, assertEquals } from "@std/assert";
 import { CancellationError } from "./cancellation/CancellationError.ts";
-import { assert, assertThrows } from "https://deno.land/std@0.213.0/assert/mod.ts";
 import { once } from "./once.ts";
-import { assertEquals } from "https://deno.land/std@0.213.0/assert/assert_equals.ts";
 
 Deno.test("once test with params", () => {
   let count = 0;

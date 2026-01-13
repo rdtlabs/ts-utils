@@ -2,9 +2,9 @@ import type { CancellationError } from "./CancellationError.ts";
 import type { CancellationToken } from "./CancellationToken.ts";
 
 export type CancellationOptions<T = void> = {
-  token?: CancellationToken;
-  onCancel?: (error: CancellationError) => void;
-  defaultValueOnCancel?: () => T;
+  token?: CancellationToken | undefined;
+  onCancel?: ((error: CancellationError) => void) | undefined;
+  defaultValueOnCancel?: (() => T) | undefined;
 };
 
 export type CancellationOptionsExtended<T = void> =
@@ -14,13 +14,13 @@ export type CancellationOptionsExtended<T = void> =
 
 export const CancellationOptions: {
   from: <T = void>(
-    options?: CancellationOptionsExtended<T>,
-    defaults?: CancellationOptions<T>,
+    options?: CancellationOptionsExtended<T> | undefined,
+    defaults?: CancellationOptions<T> | undefined,
   ) => CancellationOptions<T>;
 } = Object.freeze({
   from: <T = void>(
-    options?: CancellationOptionsExtended<T>,
-    defaults?: CancellationOptions<T>,
+    options?: CancellationOptionsExtended<T> | undefined,
+    defaults?: CancellationOptions<T> | undefined,
   ): CancellationOptions<T> => {
     if (!options) {
       return defaults ?? {};

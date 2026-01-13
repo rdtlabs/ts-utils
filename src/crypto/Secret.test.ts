@@ -1,11 +1,4 @@
-/// <reference no-default-lib="true" />
-/// <reference lib="dom" />
-/// <reference lib="dom.iterable" />
-/// <reference lib="dom.asynciterable" />
-/// <reference lib="deno.ns" />
-
-import { assert } from "https://deno.land/std@0.213.0/assert/assert.ts";
-import { assertEquals, assertNotEquals } from 'https://deno.land/std@0.213.0/assert/mod.ts';
+import { assert, assertEquals, assertNotEquals } from "@std/assert";
 import { Secret } from './Secret.ts';
 
 Deno.test("Secret encrypt/decrypt", async () => {

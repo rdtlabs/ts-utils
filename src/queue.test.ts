@@ -1,13 +1,5 @@
-/// <reference no-default-lib="true" />
-/// <reference lib="dom" />
-/// <reference lib="dom.iterable" />
-/// <reference lib="dom.asynciterable" />
-/// <reference lib="deno.ns" />
-
-import { assert } from "https://deno.land/std@0.213.0/assert/assert.ts";
+import { assert, assertEquals, assertFalse } from "@std/assert";
 import { createQueue } from "./Queue.ts";
-import { assertEquals } from "https://deno.land/std@0.213.0/assert/assert_equals.ts";
-import { assertFalse } from "https://deno.land/std@0.213.0/assert/assert_false.ts";
 
 Deno.test("Queue test", () => {
   const queue = createQueue();

@@ -1,21 +1,22 @@
 import type { BufferStrategyOptions } from "../../buffer/BufferLike.ts";
 import type { CancellationToken } from "../../cancellation/CancellationToken.ts";
-import type { Observable } from "../_rx.types.ts";
-import { type EventOptions, fromEvent } from "../fromEvent.ts";
-import type { IterableLike } from "../IterableLike.ts";
-import { fromIterableLike } from "../fromIterableLike.ts";
-import { fromObservable } from "../fromObservable.ts";
 import type { FlowProcessor } from "./FlowProcessor.ts";
 import type { FlowPublisher } from "./FlowPublisher.ts";
-import { Pipeable } from "../pipeable/Pipeable.ts";
+import type { IterableLike } from "../IterableLike.ts";
+import type { Observable } from "../_rx.types.ts";
+
 import {
   CancellationIterableOptions,
   type CancellationIterableOptionsExtended,
 } from "../../cancellation/CancellationIterableOptions.ts";
 import { cancellableIterable } from "../../cancellation/cancellableIterable.ts";
 import { createObservable } from "../createObservable.ts";
-import * as p from "../pipeable/pipeable-funcs.ts";
+import { type EventOptions, fromEvent } from "../fromEvent.ts";
+import { fromIterableLike } from "../fromIterableLike.ts";
+import { fromObservable } from "../fromObservable.ts";
 import { Maybe } from "../../Maybe.ts";
+import { Pipeable } from "../pipeable/Pipeable.ts";
+import * as p from "../pipeable/pipeable-funcs.ts";
 
 type FromOptions<T> = {
   bufferStrategy?: BufferStrategyOptions<T>;
@@ -101,8 +102,8 @@ export type Flowable = {
  * Utility object for creating flow publishers/processors.
  */
 export const Flowable = Object.freeze({
-  single<T>(it: T | PromiseLike<T>) {
-    return __createFlowable<T>(async function* inner() {
+  single<T>(it: T | PromiseLike<T>): FlowPublisher<T> {
+    return createFlowPublisher<T>(async function* () {
       yield await it;
     });
   },
@@ -111,7 +112,7 @@ export const Flowable = Object.freeze({
     ...args: any[]
   ): unknown {
     if (args.length === 0) {
-      return __createConnectable<T>();
+      return createFlowProcessor<T>();
     }
 
     if (args.length > 1) {
@@ -123,20 +124,23 @@ export const Flowable = Object.freeze({
       throw new Error("Invalid iterable like input type");
     }
 
-    return __createFlowable<T>(() => fromIterableLike<T>(it));
+    return createFlowPublisher<T>(() => fromIterableLike<T>(it));
   },
   concat<T>(...sources: FlowPublisher<T>[]): FlowPublisher<T> {
-    return __createFlowable<T>(async function* inner() {
-      for (const item of sources) {
-        yield* item.toIterable();
+    return createFlowPublisher<T>(async function* () {
+      for (const source of sources) {
+        yield* source.toIterable();
       }
     });
   },
   fromGenerator<T>(generator: () => AsyncGenerator<T>): FlowPublisher<T> {
-    return __createFlowable(generator);
+    return createFlowPublisher(generator);
   },
-  fromObservable: <T>(o: Observable<T>, p?: FromOptions<T>) => {
-    return Flowable.of(fromObservable<T>(o, p));
+  fromObservable<T>(
+    observable: Observable<T>,
+    options?: FromOptions<T>,
+  ): FlowPublisher<T> {
+    return Flowable.of(fromObservable<T>(observable, options));
   },
   fromEvent<T extends Event>(
     // deno-lint-ignore no-explicit-any
@@ -146,50 +150,44 @@ export const Flowable = Object.freeze({
   },
 }) as Flowable;
 
-function __createConnectable<T>(): FlowProcessor<T, T> {
-  return __createConnectableWithParams();
-}
-
-function __createFlowable<T>(
+function createFlowPublisher<T>(
   generator: () => AsyncGenerator<T>,
   connectable?: FlowProcessor<T, T>,
 ): FlowPublisher<T> {
-  connectable ??= __createConnectable<T>();
+  connectable ??= createFlowProcessor<T>();
   const flowable: FlowPublisher<T> = {
     filter: (predicate) => {
       connectable.filter(predicate);
-      return __createFlowable(generator, connectable);
+      return createFlowPublisher(generator, connectable);
     },
-    map: (mapper) => {
+    map: <R>(mapper: (t: T, index: number) => Promise<R> | R): FlowPublisher<R> => {
       connectable.map(mapper);
-      // deno-lint-ignore no-explicit-any
-      return __createFlowable(generator, connectable) as FlowPublisher<any>;
+      return createFlowPublisher(generator, connectable) as unknown as FlowPublisher<R>;
     },
-    compose: (mapper) => {
+    compose: <R>( mapper: (t: T, index: number) => AsyncGenerator<R>): FlowPublisher<R> => {
       connectable.compose(mapper);
-      // deno-lint-ignore no-explicit-any
-      return __createFlowable(generator, connectable) as FlowPublisher<any>;
+      return createFlowPublisher(generator, connectable) as unknown as FlowPublisher<R>;
     },
     peek: (cb) => {
       connectable.peek(cb);
-      return __createFlowable(generator, connectable);
+      return createFlowPublisher(generator, connectable);
     },
     skipUntil: (predicate) => {
       connectable.skipUntil(predicate);
-      return __createFlowable(generator, connectable);
+      return createFlowPublisher(generator, connectable);
     },
     takeWhile: (predicate) => {
       connectable.takeWhile(predicate);
-      return __createFlowable(generator, connectable);
+      return createFlowPublisher(generator, connectable);
     },
     resumeOnError: (onError) => {
       connectable.resumeOnError(onError);
-      return __createFlowable(generator, connectable);
+      return createFlowPublisher(generator, connectable);
     },
     chunk: (size) => {
       connectable.chunk(size);
       // deno-lint-ignore no-explicit-any
-      return __createFlowable(generator, connectable) as FlowPublisher<any>;
+      return createFlowPublisher(generator, connectable) as FlowPublisher<any>;
     },
     pipe: (connectable) => {
       return Flowable.of(
@@ -237,49 +235,47 @@ function __createFlowable<T>(
   return flowable;
 }
 
-function __createConnectableWithParams<S, T = S>(
+function createFlowProcessor<S, T = S>(
   // deno-lint-ignore no-explicit-any
   pipeables = new Array<Pipeable<any>>(),
 ): FlowProcessor<S, T> {
-  if (pipeables.length > 0) {
-    pipeables = pipeables.slice(); //copy
-  }
+  const pipeablesCopy = pipeables.slice();
 
   const connectable: FlowProcessor<S, T> = {
     filter: (predicate) => {
-      pipeables.push(p.filter(predicate));
-      return __createConnectableWithParams(pipeables);
+      pipeablesCopy.push(p.filter(predicate));
+      return createFlowProcessor(pipeablesCopy);
     },
     map: <R>(mapper: (t: T, index: number) => Promise<R> | R) => {
-      pipeables.push(p.map(mapper));
-      return __createConnectableWithParams<S, R>(pipeables);
+      pipeablesCopy.push(p.map(mapper));
+      return createFlowProcessor<S, R>(pipeablesCopy);
     },
     compose: <R>(mapper: (t: T, index: number) => AsyncGenerator<R>) => {
-      pipeables.push(p.compose(mapper));
-      return __createConnectableWithParams<S, R>(pipeables);
+      pipeablesCopy.push(p.compose(mapper));
+      return createFlowProcessor<S, R>(pipeablesCopy);
     },
     peek: (cb) => {
-      pipeables.push(p.peek(cb));
-      return __createConnectableWithParams(pipeables);
+      pipeablesCopy.push(p.peek(cb));
+      return createFlowProcessor(pipeablesCopy);
     },
     skipUntil: (predicate) => {
-      pipeables.push(p.skipUntil(predicate));
-      return __createConnectableWithParams(pipeables);
+      pipeablesCopy.push(p.skipUntil(predicate));
+      return createFlowProcessor(pipeablesCopy);
     },
     takeWhile: (predicate) => {
-      pipeables.push(p.takeWhile(predicate));
-      return __createConnectableWithParams(pipeables);
+      pipeablesCopy.push(p.takeWhile(predicate));
+      return createFlowProcessor(pipeablesCopy);
     },
     resumeOnError: (onError) => {
-      pipeables.push(p.resumeOnError(onError));
-      return __createConnectableWithParams(pipeables);
+      pipeablesCopy.push(p.resumeOnError(onError));
+      return createFlowProcessor(pipeablesCopy);
     },
     chunk: (size) => {
-      pipeables.push(p.chunk(size));
-      return __createConnectableWithParams(pipeables);
+      pipeablesCopy.push(p.chunk(size));
+      return createFlowProcessor(pipeablesCopy);
     },
     toIterable(input, options) {
-      return __iter(input, pipeables, options);
+      return iterateWithPipelines(input, pipeablesCopy, options);
     },
     async toArray(
       input: IterableLike<S>,
@@ -287,7 +283,7 @@ function __createConnectableWithParams<S, T = S>(
     ): Promise<T[]> {
       const items: T[] = [];
       for await (
-        const item of __iter<S, T>(input, pipeables, options, {
+        const item of iterateWithPipelines<S, T>(input, pipeablesCopy, options, {
           throwOnCancellation: true,
         })
       ) {
@@ -297,7 +293,7 @@ function __createConnectableWithParams<S, T = S>(
     },
     async forEach(input: IterableLike<S>, cb, options) {
       for await (
-        const item of __iter(input, pipeables, options, {
+        const item of iterateWithPipelines(input, pipeablesCopy, options, {
           throwOnCancellation: true,
         })
       ) {
@@ -305,7 +301,7 @@ function __createConnectableWithParams<S, T = S>(
       }
     },
     async selectFirst(input, options) {
-      const gen = __iter(input, pipeables, options, {
+      const gen = iterateWithPipelines(input, pipeablesCopy, options, {
         throwOnCancellation: true,
       });
 
@@ -319,7 +315,7 @@ function __createConnectableWithParams<S, T = S>(
     async selectLast(input, options) {
       let lastItem: T | undefined;
       for await (
-        const item of __iter(input, pipeables, options, {
+        const item of iterateWithPipelines(input, pipeablesCopy, options, {
           throwOnCancellation: true,
         })
       ) {
@@ -331,7 +327,7 @@ function __createConnectableWithParams<S, T = S>(
       return createObservable<T>((subscriber) => {
         (async () => {
           try {
-            for await (const item of __iter(input, pipeables)) {
+            for await (const item of iterateWithPipelines(input, pipeablesCopy)) {
               if (subscriber.isCancelled) {
                 return;
               }
@@ -348,7 +344,7 @@ function __createConnectableWithParams<S, T = S>(
   return connectable;
 }
 
-function __iter<S, T = S>(
+function iterateWithPipelines<S, T = S>(
   input: IterableLike<S>,
   pipeables: Array<Pipeable<unknown>>,
   options?: CancellationIterableOptionsExtended,

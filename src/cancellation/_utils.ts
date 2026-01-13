@@ -21,14 +21,17 @@ export function __createToken(
         if (!signal.aborted) {
           return;
         }
-        return error = new CancellationError(cancellation, signal.reason);
+        error = new CancellationError(cancellation, signal.reason);
+        return error;
       }
 
       if (reason instanceof CancellationError) {
-        return error = reason;
+        error = reason;
+        return error;
       }
 
-      return error = new CancellationError(cancellation, reason);
+      error = new CancellationError(cancellation, reason);
+      return error;
     };
   })();
 
@@ -57,7 +60,7 @@ export function __createToken(
       return () => signal.removeEventListener("abort", cb);
     },
     [signalSym]: signal,
-    ...(token ?? {}),
+    ...token,
   } as unknown as CancellationToken;
 
   return cancellation;
@@ -85,7 +88,6 @@ export const __never = Object.freeze({
   [signalSym]: NEVER_SIGNAL,
   isCancelled: false,
   state: "none",
-  reason: undefined,
   throwIfCancelled: () => {},
   toAbortSignal: () => NEVER_SIGNAL,
   register: () => {

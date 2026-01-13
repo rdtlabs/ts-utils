@@ -1,13 +1,7 @@
-/// <reference no-default-lib="true" />
-/// <reference lib="dom" />
-/// <reference lib="dom.iterable" />
-/// <reference lib="dom.asynciterable" />
-/// <reference lib="deno.ns" />
-
+import { assertEquals } from "@std/assert";
 import { monitor } from "./Monitor.ts";
 import { WaitGroup } from "./WaitGroup.ts";
 import { delay } from "./delay.ts";
-import { assertEquals } from "https://deno.land/std@0.213.0/assert/assert_equals.ts";
 
 Deno.test("Monitor test", async () => {
   const wg = new WaitGroup(5);

@@ -8,8 +8,8 @@ let captureStackTrace = (Error as any).captureStackTrace ?? (() => {});
  * Represents an error that is thrown when an operation has been cancelled.
  */
 export class CancellationError extends Error {
-  readonly #token?: CancellationToken;
-  readonly #cause?: ErrorLike;
+  readonly #token: CancellationToken | undefined;
+  readonly #cause: ErrorLike | undefined;
 
   constructor(token?: CancellationToken, cause?: ErrorLike) {
     super(`Operation has been cancelled`);
@@ -45,7 +45,7 @@ export class CancellationError extends Error {
 function getCause(
   token?: CancellationToken,
   cause?: ErrorLike,
-): { cause?: ErrorLike; token?: CancellationToken } {
+): { cause?: ErrorLike | undefined; token?: CancellationToken | undefined } {
   if (token) {
     if (
       !(

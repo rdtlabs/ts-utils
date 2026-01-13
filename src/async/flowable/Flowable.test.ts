@@ -1,13 +1,12 @@
+import { assert, assertRejects } from "@std/assert";
 import { asyncQueue } from "../queue/asyncQueue.ts";
 import { Flowable } from "./Flowable.ts";
 import { CountingEvent } from "../fromEvent.test.ts";
 import { Cancellable } from "../../cancellation/Cancellable.ts";
 import { waitGroup } from "../WaitGroup.ts";
-import { assert } from "https://deno.land/std@0.213.0/assert/assert.ts";
 import { createObservable } from "../createObservable.ts";
 import { deferred } from "../Deferred.ts";
 import { CancellationError } from "../../cancellation/CancellationError.ts";
-import { assertRejects } from "https://deno.land/std@0.213.0/assert/assert_rejects.ts";
 
 Deno.test("flowable static array test", async () => {
   const arr = await Flowable

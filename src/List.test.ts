@@ -1,12 +1,5 @@
-/// <reference no-default-lib="true" />
-/// <reference lib="dom" />
-/// <reference lib="dom.iterable" />
-/// <reference lib="dom.asynciterable" />
-/// <reference lib="deno.ns" />
-
-import { assert, assertThrows } from "https://deno.land/std@0.213.0/assert/mod.ts";
+import { assert, assertThrows, assertEquals } from "@std/assert";
 import { List } from "./List.ts";
-import { assertEquals } from "https://deno.land/std@0.213.0/assert/assert_equals.ts";
 import { Deferred, deferred } from "./async/Deferred.ts";
 
 Deno.test("List groupBy function test", () => {

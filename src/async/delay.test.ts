@@ -1,11 +1,5 @@
-/// <reference no-default-lib="true" />
-/// <reference lib="dom" />
-/// <reference lib="dom.iterable" />
-/// <reference lib="dom.asynciterable" />
-/// <reference lib="deno.ns" />
-
 import { delay } from "./delay.ts";
-import { assertRejects } from "https://deno.land/std@0.213.0/assert/assert_rejects.ts";
+import { assertRejects } from "@std/assert";
 import { CancellationError } from "../cancellation/CancellationError.ts";
 import { Cancellable } from "../cancellation/Cancellable.ts";
 import { DisposedError } from "../DisposedError.ts";

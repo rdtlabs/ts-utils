@@ -1,13 +1,6 @@
-/// <reference no-default-lib="true" />
-/// <reference lib="dom" />
-/// <reference lib="dom.iterable" />
-/// <reference lib="dom.asynciterable" />
-/// <reference lib="deno.ns" />
-
-import { assert } from "https://deno.land/std@0.213.0/assert/assert.ts";
+import { assert, assertEquals } from "@std/assert";
 import { executors } from "./executors.ts";
 import { monitor } from "./Monitor.ts";
-import { assertEquals } from "https://deno.land/std@0.213.0/assert/assert_equals.ts";
 import { signal } from "./Signal.ts";
 import { delay } from "./delay.ts";
 import { chance } from "../chance.ts";

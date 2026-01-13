@@ -10,19 +10,19 @@ export interface Queue<T> {
   /** Adds an item to the end of the queue. */
   enqueue(item: T): void;
 
-  /** Removes and returns the item at the front of the queue. */
+  /** Removes and returns the item at the front of the queue, or undefined if empty. */
   dequeue(): T | undefined;
 
-  /** Returns the item at the front of the queue if exists else undefined is returned. */
+  /** Returns the item at the front of the queue without removing it, or undefined if empty. */
   peek(): T | undefined;
 
-  /** Removes and returns the item at the front of the queue. */
+  /** Removes all items from the queue. */
   clear(): void;
 
-  /** Returns a buffer wrapper around the queue */
+  /** Returns a buffer wrapper around the queue. */
   toBufferLike(): BufferLike<T>;
 
-  /** Converts the queue to an array and fully clears it. */
+  /** Converts the queue to an array and clears it. */
   toArray(): T[];
 }
 
@@ -32,15 +32,14 @@ export function createQueue<T>(): Queue<T> {
 }
 
 /** Creates a new queue. */
-export const Queue = function <T>(): {
-  new <T>(): Queue<T>;
-} {
+export const Queue = function <T>() {
   // deno-lint-ignore no-explicit-any
   return createQueue<T>() as any;
 } as unknown as {
   new <T>(): Queue<T>;
 };
 
+/** Queue constructor that creates a new queue instance. */
 class QueueImpl<T> {
   #head: Node<T> | undefined;
   #tail: Node<T> | undefined;
@@ -61,7 +60,11 @@ class QueueImpl<T> {
   }
 
   enqueue(value: T): void {
-    const node = { value } as Node<T>;
+    if (value === undefined) {
+      throw new TypeError("Cannot enqueue undefined value");
+    }
+
+    const node: Node<T> = { value };
     if (this.#tail) {
       this.#tail.next = node;
     }
@@ -72,27 +75,16 @@ class QueueImpl<T> {
     this.#size++;
   }
 
-  tryDequeue(): T | undefined {
+  dequeue(): T | undefined {
     if (!this.#head) {
       return undefined;
     }
-
     const value = this.#head.value;
     this.#head = this.#head.next;
-    this.#size--;
-
-    return value;
-  }
-
-  dequeue(): T {
     if (!this.#head) {
-      throw new Error("Queue is empty");
+      this.#tail = undefined;
     }
-
-    const value = this.#head.value;
-    this.#head = this.#head.next;
     this.#size--;
-
     return value;
   }
 
@@ -101,37 +93,45 @@ class QueueImpl<T> {
   }
 
   toBufferLike(): BufferLike<T> {
-    return Object.freeze(((queue: QueueImpl<T>) => {
-      return {
-        write: (value) => queue.enqueue(value),
-        read: () => queue.dequeue(),
-        peek: () => queue.peek(),
-        get isEmpty(): boolean {
-          return queue.isEmpty;
-        },
-        get isFull(): boolean {
-          return false;
-        },
-        get size(): number {
-          return queue.size;
-        },
-        clear: () => queue.clear(),
-        [Symbol.dispose]: () => queue.clear(),
-        *[Symbol.iterator]() {
-          while (!queue.isEmpty) {
-            yield queue.dequeue();
-          }
-        },
-      } as BufferLike<T>;
-    })(this));
+    const enqueue = this.enqueue.bind(this);
+    const dequeue = this.dequeue.bind(this);
+    const peek = this.peek.bind(this);
+    const clear = this.clear.bind(this);
+    const getIsEmpty = () => this.isEmpty;
+    const getSize = () => this.size;
+
+    return Object.freeze({
+      write: enqueue,
+      read: dequeue,
+      peek,
+      get isEmpty(): boolean {
+        return getIsEmpty();
+      },
+      get isFull(): boolean {
+        return false;
+      },
+      get size(): number {
+        return getSize();
+      },
+      clear,
+      [Symbol.dispose]: clear,
+      *[Symbol.iterator]() {
+        let item = dequeue();
+        while (item !== undefined) {
+          yield item;
+          item = dequeue();
+        }
+      },
+    } as BufferLike<T>);
   }
 
   toArray(): T[] {
     const array: T[] = [];
-    while (!this.isEmpty) {
-      array.push(this.dequeue());
+    let item = this.dequeue();
+    while (item !== undefined) {
+      array.push(item);
+      item = this.dequeue();
     }
-
     return array;
   }
 }
