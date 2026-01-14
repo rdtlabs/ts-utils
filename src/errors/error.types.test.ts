@@ -6,7 +6,7 @@ const isTransientError = Errors.isTransient;
 const getErrorForHttpCode = Errors.getErrorForHttpCode;
 
 Deno.test("isTransientError test", () => {
-  assert(isTransientError(new Error("test")));
+  assertFalse(isTransientError(new Error("test")));
   assert(isTransientError(429));
   assert(isTransientError("429"));
   assert(isTransientError(500));
@@ -55,5 +55,5 @@ Deno.test("isTransientError NonRetryableError test", () => {
 });
 
 Deno.test("isTransientError opaque error test", () => {
-  assert(isTransientError(new Error("test")));
+  assertFalse(isTransientError(new Error("test")));
 });

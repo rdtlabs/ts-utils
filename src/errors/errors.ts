@@ -95,7 +95,13 @@ function isTransientInternal(err: unknown, depth: number): boolean {
       error === "ECONNRESET" ||
       error === "ECONNREFUSED" ||
       error === "ECONNABORTED" ||
-      error === "ETIMEDOUT"
+      error === "ETIMEDOUT" ||
+      error === "EPIPE" ||
+      error === "ENOTFOUND" ||
+      error === "EAI_AGAIN" ||
+      error === "ENETUNREACH" ||
+      error === "EHOSTUNREACH" ||
+      error === "ENOTCONN"
     ) {
       return true;
     }
@@ -106,7 +112,12 @@ function isTransientInternal(err: unknown, depth: number): boolean {
   }
 
   if (typeof error === "number") {
-    return error === 429 || error === 500 || error === 503 || error === 504;
+    return error === 408 ||
+      error === 429 ||
+      error === 500 ||
+      error === 502 ||
+      error === 503 ||
+      error === 504;
   }
 
   return __getIsTransientFromObject(error, depth);
@@ -116,6 +127,25 @@ function isTransientInternal(err: unknown, depth: number): boolean {
 function __getIsTransientFromObject(error: any, depth: number): boolean {
   if (typeof error !== "object") {
     return false;
+  }
+
+  // Browser: TypeError from fetch API network failures
+  if (
+    error instanceof TypeError &&
+    typeof error.message === "string" &&
+    (error.message.includes("Failed to fetch") ||
+      error.message.includes("fetch failed") ||
+      error.message.includes("NetworkError"))
+  ) {
+    return true;
+  }
+
+  // Browser: DOMException for network/abort errors
+  if (
+    error.name === "NetworkError" ||
+    (error.name === "AbortError" && error instanceof DOMException)
+  ) {
+    return true;
   }
 
   if (typeof error.isTransientError === "boolean") {
@@ -132,8 +162,10 @@ function __getIsTransientFromObject(error: any, depth: number): boolean {
 
   const status = error.response?.status ?? error.request?.status;
   if (status === undefined || status === null) {
+    return false;
+    //logic error below
     // probably a network error if it was during the request (e.g., no response)
-    return error?.response === undefined || error?.response === null;
+    //return error.response === undefined || error.response === null;
   }
 
   return isTransientInternal(status, depth + 1);

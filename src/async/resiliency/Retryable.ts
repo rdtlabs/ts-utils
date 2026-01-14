@@ -178,12 +178,16 @@ export function retryable(settings?: RetryableSettings): Retryable {
           lastError = err;
 
           if (!errorHelper.isTransient(err as ErrorLike)) {
-            throw err;
+            break;
           }
 
           retries++;
         }
       } while (retries < maxRetries);
+
+      if (lastError instanceof NonRetryableError) {
+        throw lastError;
+      }
 
       throw new NonRetryableError(lastError);
     },

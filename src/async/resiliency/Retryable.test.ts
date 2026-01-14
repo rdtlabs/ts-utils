@@ -35,7 +35,7 @@ Deno.test("retryable retries on transient error", async () => {
   const result = await retry.execute(() => {
     callCount++;
     if (callCount < 2) {
-      throw new Error("transient error");
+      throw new RetryableError("transient error");
     }
     return "success";
   });
@@ -52,7 +52,7 @@ Deno.test("retryable throws NonRetryableError after max retries", async () => {
     () =>
       retry.execute(() => {
         callCount++;
-        throw new Error("always fails");
+        throw new RetryableError("always fails");
       }),
     NonRetryableError,
   );
@@ -93,9 +93,9 @@ Deno.test("retryable uses custom error helper", async () => {
     () =>
       retry.execute(() => {
         callCount++;
-        throw new Error("do not retry me");
+        throw new NonRetryableError("do not retry me");
       }),
-    Error,
+    NonRetryableError,
     "do not retry me",
   );
 
@@ -119,7 +119,7 @@ Deno.test("retryable uses custom delay calculation", async () => {
     () =>
       retry.execute(() => {
         callCount++;
-        throw new Error("always fails");
+        throw new RetryableError("always fails");
       }),
     NonRetryableError,
   );
