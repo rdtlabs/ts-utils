@@ -1,6 +1,6 @@
+import { CancellationError } from "../cancellation/CancellationError.ts";
 import type { CancellationToken } from "../cancellation/CancellationToken.ts";
 import { Errors } from "../errors/errors.ts";
-import type { ErrorLike } from "../index.ts";
 
 /**
  * A collection of utility functions for working with Promises.
@@ -146,18 +146,15 @@ function createCancellablePromise<T>(
   }
 
   if (cancellation.isCancelled === true) {
-    return { error: cancellation.reason };
+    return {
+      error: cancellation.reason ?? new CancellationError(cancellation),
+    };
   }
 
-  let cancel!: () => void;
+  let cancel!: (token: CancellationToken) => void;
   const cancellable = new Promise<never>((_, reject) => {
-    cancel = () => {
-      const reason = cancellation.reason as unknown as ErrorLike;
-      reject(
-        reason instanceof Error
-          ? reason
-          : new Error("Operation cancelled", { cause: reason }),
-      );
+    cancel = (token) => {
+      reject(token.reason ?? new CancellationError(token));
     };
   });
 
@@ -168,10 +165,10 @@ function createCancellablePromise<T>(
   };
 }
 
-type Maybe<T> = {
+type Maybe<T, E extends Error = Error> = {
   cancellable: Promise<never>;
   unregister: () => void;
 } | {
   cancellable?: undefined;
-  error: ErrorLike;
+  error: E;
 };

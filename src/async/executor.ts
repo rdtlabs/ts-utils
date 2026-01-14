@@ -1,5 +1,5 @@
 import type { Callable } from "../types.ts";
-import type { CancellationToken } from "../cancellation/CancellationToken.ts";
+import type { CancellationInput } from "../cancellation/cancellationInput.ts";
 
 /**
  * An abstraction for executing tasks.
@@ -12,7 +12,7 @@ export interface Executor {
    */
   execute: <T>(
     callable: Callable<T | PromiseLike<T>>,
-    deadline?: CancellationToken,
+    deadline?: CancellationInput,
   ) => Promise<T>;
 }
 

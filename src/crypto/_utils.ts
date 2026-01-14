@@ -61,15 +61,15 @@ export function __stringToCryptoKey(
   keyUsages?: KeyUsage[],
   extractable?: boolean,
 ): Promise<CryptoKey> {
-    algorithm ??= { name: "AES-GCM" };
-    keyUsages ??= ["encrypt", "decrypt"];
-    extractable ??= true;
+  algorithm ??= { name: "AES-GCM" };
+  keyUsages ??= ["encrypt", "decrypt"];
+  extractable ??= true;
 
-    if (algorithm === "HMAC" && !keyUsages.includes("sign")) {
-      keyUsages.push("sign");
-    }
+  if (algorithm === "HMAC" && !keyUsages.includes("sign")) {
+    keyUsages.push("sign");
+  }
 
-    const ensure64CharKeyFromKey = (key: string): string => {
+  const ensure64CharKeyFromKey = (key: string): string => {
     if (key.length === __keyLength) {
       return key;
     }

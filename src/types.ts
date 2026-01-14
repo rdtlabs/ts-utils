@@ -38,6 +38,10 @@ export type TimeoutInput = number | Date | Deadline;
  */
 export const TimeoutInput: {
   deriveTimeout(timeout: TimeoutInput): number;
+  min(a: TimeoutInput, b?: TimeoutInput): TimeoutInput;
+  max(a: TimeoutInput, b?: TimeoutInput): TimeoutInput;
+  maxMs(a: TimeoutInput, b?: TimeoutInput): number;
+  minMs(a: TimeoutInput, b?: TimeoutInput): number;
 } = {
   deriveTimeout(timeout: TimeoutInput): number {
     if (timeout instanceof Date) {
@@ -53,5 +57,37 @@ export const TimeoutInput: {
     }
 
     throw new TypeError("Invalid timeout");
+  },
+  max(a: TimeoutInput, b?: TimeoutInput): TimeoutInput {
+    const aMillis = this.deriveTimeout(a);
+    if (b === undefined) {
+      return a;
+    }
+    const bMillis = this.deriveTimeout(b);
+    return aMillis >= bMillis ? a : b;
+  },
+  min(a: TimeoutInput, b?: TimeoutInput): TimeoutInput {
+    const aMillis = this.deriveTimeout(a);
+    if (b === undefined) {
+      return a;
+    }
+    const bMillis = this.deriveTimeout(b);
+    return aMillis <= bMillis ? a : b;
+  },
+  maxMs(a: TimeoutInput, b?: TimeoutInput): number {
+    const aMillis = this.deriveTimeout(a);
+    if (b === undefined) {
+      return aMillis;
+    }
+    const bMillis = this.deriveTimeout(b);
+    return Math.max(aMillis, bMillis);
+  },
+  minMs(a: TimeoutInput, b?: TimeoutInput): number {
+    const aMillis = this.deriveTimeout(a);
+    if (b === undefined) {
+      return aMillis;
+    }
+    const bMillis = this.deriveTimeout(b);
+    return Math.min(aMillis, bMillis);
   },
 };

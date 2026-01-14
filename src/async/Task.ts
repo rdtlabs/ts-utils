@@ -1,5 +1,5 @@
 import type { CancellationToken } from "../cancellation/CancellationToken.ts";
-import type { Callable, TimeoutInput } from "../types.ts";
+import { type Callable, TimeoutInput } from "../types.ts";
 import { delay } from "./delay.ts";
 import type { Executor } from "./executor.ts";
 import { executors } from "./executors.ts";
@@ -41,7 +41,7 @@ export const Task: __TaskStatic = Object.freeze({
     timeoutInput: TimeoutInput,
     cancellation?: CancellationToken,
   ): Promise<T> & Disposable {
-    const timer = delay(timeoutInput, cancellation);
+    const timer = delay(TimeoutInput.deriveTimeout(timeoutInput), cancellation);
     const promise = timer.then(task);
     return Object.defineProperty(promise, Symbol.dispose, {
       value: () => {
@@ -60,7 +60,7 @@ export const Task: __TaskStatic = Object.freeze({
     timeoutInput: TimeoutInput,
     cancellation?: CancellationToken,
   ): Promise<void> & Disposable {
-    return delay(timeoutInput, cancellation);
+    return delay(TimeoutInput.deriveTimeout(timeoutInput), cancellation);
   },
 });
 

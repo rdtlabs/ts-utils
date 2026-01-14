@@ -1,5 +1,6 @@
 import type { Callable, ErrorLike } from "../types.ts";
 import type { CancellationToken } from "../cancellation/CancellationToken.ts";
+import { CancellationInput } from "../cancellation/cancellationInput.ts";
 import { JobPool } from "./JobPool.ts";
 import { Promises } from "./Promises.ts";
 import type { ConcurrentExecutor, Executor } from "./executor.ts";
@@ -78,7 +79,7 @@ export const executors = Object.freeze({
   macro: <Executor> {
     execute: <T>(
       callable: Callable<T | PromiseLike<T>>,
-      cancellation?: CancellationToken,
+      cancellation?: CancellationInput,
     ) => {
       return new Promise<T>((resolve, reject) => {
         setTimeout(
@@ -92,7 +93,7 @@ export const executors = Object.freeze({
   micro: <Executor> {
     execute: <T>(
       callable: Callable<T | PromiseLike<T>>,
-      cancellation?: CancellationToken,
+      cancellation?: CancellationInput,
     ) => {
       return new Promise<T>((resolve, reject) => {
         queueMicrotask(() => __invoke(callable, resolve, reject, cancellation));
@@ -100,11 +101,19 @@ export const executors = Object.freeze({
     },
   },
 
-  invoke: (callable, cancellation) => {
+  invoke: (callable, cancellationInput) => {
+    const token = CancellationInput.of(cancellationInput);
+    if (token?.isCancelled === true) {
+      return Promises.reject(Errors.resolve(token.reason));
+    }
+
     try {
       return Promises.cancellable(
-        Promise.resolve(callable()),
-        cancellation,
+        () => {
+          const value = callable();
+          return value instanceof Promise ? value : Promise.resolve(value);
+        },
+        CancellationInput.of(cancellationInput),
       );
     } catch (error) {
       return Promises.reject(error);
@@ -138,25 +147,25 @@ export const executors = Object.freeze({
   /**
    * @returns An executor that is synchronous.
    */
-  immediate: Executor;
+  readonly immediate: Executor;
 
   /**
    * @returns An executor that uses `setTimeout(fn, 0)` to schedule tasks.
    */
-  macro: Executor;
+  readonly macro: Executor;
 
   /**
    * @returns An executor that uses `queueMicrotask` to schedule tasks.
    * @see https://developer.mozilla.org/en-US/docs/Web/API/WindowOrWorkerGlobalScope/queueMicrotask
    */
-  micro: Executor;
+  readonly micro: Executor;
 
   /**
    * @returns A promise that resolves with the result of the callable or rejects with an error.
    */
   invoke: <T>(
     callable: Callable<T | PromiseLike<T>>,
-    cancellation?: CancellationToken,
+    cancellationInput?: CancellationInput,
   ) => Promise<T>;
 
   /**
@@ -165,15 +174,15 @@ export const executors = Object.freeze({
   invokeOn: <T>(
     callable: Callable<T | PromiseLike<T>>,
     executor?: Executor,
-    deadline?: CancellationToken,
+    cancellationInput?: CancellationInput,
   ) => Promise<T>;
 };
 
-const __invoke = <T = void>(
+const __invokeWithCancellation = <T = void>(
   callable: Callable<T | PromiseLike<T>>,
   resolve: (value: T | PromiseLike<T>) => void,
   reject: (reason: ErrorLike) => void,
-  deadline?: CancellationToken,
+  cancellationToken?: CancellationToken,
 ): void => {
   try {
     const result = callable();
@@ -185,7 +194,7 @@ const __invoke = <T = void>(
 
     // Handle the promise resolution - no need to return since we're using callbacks
     Promises
-      .cancellable(promise, deadline)
+      .cancellable(promise, cancellationToken)
       .then(resolve, (error) => {
         // Use second parameter of then() instead of catch() to avoid creating another microtask
         reject(Errors.resolve(error));
@@ -195,15 +204,43 @@ const __invoke = <T = void>(
   }
 };
 
-function __invokeOn<T>(
+function __invokeOnWithCancellation<T>(
   callable: Callable<T | PromiseLike<T>>,
   executor: Executor,
-  cancellation?: CancellationToken,
+  cancellationToken?: CancellationToken,
 ): Promise<T> {
   // Execute the callable on the executor and return its promise directly
   // The executor.execute() already handles the promise resolution/rejection
   return executor.execute(
-    () => executors.invoke(callable, cancellation),
-    cancellation,
+    () => executors.invoke(callable, cancellationToken),
+    cancellationToken,
+  );
+}
+
+const __invoke = <T = void>(
+  callable: Callable<T | PromiseLike<T>>,
+  resolve: (value: T | PromiseLike<T>) => void,
+  reject: (reason: ErrorLike) => void,
+  cancellationInput?: CancellationInput,
+): void => {
+  return __invokeWithCancellation(
+    callable,
+    resolve,
+    reject,
+    CancellationInput.of(cancellationInput),
+  );
+};
+
+function __invokeOn<T>(
+  callable: Callable<T | PromiseLike<T>>,
+  executor: Executor,
+  deadline?: CancellationInput,
+): Promise<T> {
+  // Execute the callable on the executor and return its promise directly
+  // The executor.execute() already handles the promise resolution/rejection
+  return __invokeOnWithCancellation(
+    callable,
+    executor,
+    CancellationInput.of(deadline),
   );
 }

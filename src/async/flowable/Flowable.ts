@@ -160,13 +160,23 @@ function createFlowPublisher<T>(
       connectable.filter(predicate);
       return createFlowPublisher(generator, connectable);
     },
-    map: <R>(mapper: (t: T, index: number) => Promise<R> | R): FlowPublisher<R> => {
+    map: <R>(
+      mapper: (t: T, index: number) => Promise<R> | R,
+    ): FlowPublisher<R> => {
       connectable.map(mapper);
-      return createFlowPublisher(generator, connectable) as unknown as FlowPublisher<R>;
+      return createFlowPublisher(
+        generator,
+        connectable,
+      ) as unknown as FlowPublisher<R>;
     },
-    compose: <R>( mapper: (t: T, index: number) => AsyncGenerator<R>): FlowPublisher<R> => {
+    compose: <R>(
+      mapper: (t: T, index: number) => AsyncGenerator<R>,
+    ): FlowPublisher<R> => {
       connectable.compose(mapper);
-      return createFlowPublisher(generator, connectable) as unknown as FlowPublisher<R>;
+      return createFlowPublisher(
+        generator,
+        connectable,
+      ) as unknown as FlowPublisher<R>;
     },
     peek: (cb) => {
       connectable.peek(cb);
@@ -283,9 +293,14 @@ function createFlowProcessor<S, T = S>(
     ): Promise<T[]> {
       const items: T[] = [];
       for await (
-        const item of iterateWithPipelines<S, T>(input, pipeablesCopy, options, {
-          throwOnCancellation: true,
-        })
+        const item of iterateWithPipelines<S, T>(
+          input,
+          pipeablesCopy,
+          options,
+          {
+            throwOnCancellation: true,
+          },
+        )
       ) {
         items.push(item);
       }
@@ -327,7 +342,9 @@ function createFlowProcessor<S, T = S>(
       return createObservable<T>((subscriber) => {
         (async () => {
           try {
-            for await (const item of iterateWithPipelines(input, pipeablesCopy)) {
+            for await (
+              const item of iterateWithPipelines(input, pipeablesCopy)
+            ) {
               if (subscriber.isCancelled) {
                 return;
               }

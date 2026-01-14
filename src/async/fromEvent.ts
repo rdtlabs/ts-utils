@@ -46,7 +46,7 @@ export function fromEvent<T extends Event>(
 
   return fromObservable<T>({
     subscribe(subscriber: { next: (value: T) => void }): () => void {
-      const notOnce = (options as {once: boolean})?.once !== true;
+      const notOnce = (options as { once: boolean })?.once !== true;
       const next = notOnce
         // deno-lint-ignore no-explicit-any
         ? (ev: any) => subscriber.next(ev)

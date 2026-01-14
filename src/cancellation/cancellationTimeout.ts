@@ -2,6 +2,7 @@ import type { CancellationToken } from "./CancellationToken.ts";
 import { __createToken } from "./_utils.ts";
 import { TimeoutInput } from "../types.ts";
 import { DisposedError } from "../DisposedError.ts";
+import type { Deadline } from "../deadline.ts";
 
 const timeoutSym: unique symbol = Symbol("Symbol.CancellationTimeout");
 
@@ -21,6 +22,14 @@ export function cancellationTimeout(timeoutMillis: number): CancellationToken & 
  * @returns A cancellation token that can be cancelled or disposed.
  */
 export function cancellationTimeout(date: Date): CancellationToken & Disposable; // deno-fmt-ignore
+
+/**
+ * Creates a cancellation token with a timeout.
+ *
+ * @param deadline - The deadline when the timeout will occur.
+ * @returns A cancellation token that can be cancelled or disposed.
+ */
+export function cancellationTimeout(deadline: Deadline): CancellationToken & Disposable; // deno-fmt-ignore
 
 /**
  * Creates a cancellation token with a timeout.

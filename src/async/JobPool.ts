@@ -3,6 +3,7 @@ import { WorkerPool } from "./workerpool/WorkerPool.ts";
 import { deferred } from "./Deferred.ts";
 import type { CancellationToken } from "../cancellation/CancellationToken.ts";
 import { Promises } from "./Promises.ts";
+import { CancellationInput } from "../cancellation/cancellationInput.ts";
 
 /**
  * Represents a job that can be executed asynchronously.
@@ -16,10 +17,10 @@ export interface JobPool {
   /**
    * Submits a job to the pool for execution.
    * @param job The job to be executed.
-   * @param cancellation An optional cancellation token to cancel the job.
+   * @param cancellation An optional CancellationInput to cancel the job.
    * @returns A promise that resolves to the result of the job execution.
    */
-  submit<T = void>(job: Job<T>, cancellation?: CancellationToken): Promise<T>;
+  submit<T = void>(job: Job<T>, cancellation?: CancellationInput): Promise<T>;
 
   /**
    * Initiates the shutdown of the job pool.
@@ -107,7 +108,12 @@ export function jobPool(options?: {
     get isFull() {
       return pool.isFull;
     },
-    submit: <T>(job: Job<T>, cancellation?: CancellationToken) => {
+    submit: <T>(job: Job<T>, cancellationInput?: CancellationInput) => {
+      const cancellation = CancellationInput.of(cancellationInput);
+      if (cancellation?.isCancelled === true) {
+        return Promise.reject(cancellation.reason);
+      }
+
       const controller = deferred<T>();
       const wrapped = wrap(job, cancellation);
       pool.submit(
@@ -130,6 +136,14 @@ export function jobPool(options?: {
 }
 
 function wrap<T>(
+  job: Job<T>,
+  cancellationInput?: CancellationInput,
+): Job<T> {
+  const cancellation = CancellationInput.of(cancellationInput);
+  return wrapToken(job, cancellation);
+}
+
+function wrapToken<T>(
   job: Job<T>,
   cancellation?: CancellationToken,
 ): Job<T> {
