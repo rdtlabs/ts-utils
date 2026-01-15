@@ -10,6 +10,7 @@ import type { CancellationToken } from "../../cancellation/CancellationToken.ts"
 import type { BufferLike } from "../../buffer/BufferLike.ts";
 import { Buffer } from "../../buffer/Buffer.ts";
 import { createQueue } from "../../Queue.ts";
+import { Schedulers } from "../scheduler.ts";
 
 type QueueState = "rw" | "r" | "-rw";
 
@@ -412,7 +413,7 @@ class EventListeners<T> {
       if (listener.once) {
         this.#listeners.splice(i, 1);
       }
-      queueMicrotask(() => listener.cb(item));
+      Schedulers.microtask(() => listener.cb(item));
     }
 
     return item;

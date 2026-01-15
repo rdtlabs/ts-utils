@@ -1,5 +1,6 @@
 import { deferred } from "../async/Deferred.ts";
 import { Promises } from "../async/Promises.ts";
+import { Schedulers } from "../async/scheduler.ts";
 import type { CancellationError } from "./CancellationError.ts";
 import type { CancellationToken } from "./CancellationToken.ts";
 import { CancellationInput } from "./cancellationInput.ts";
@@ -29,7 +30,7 @@ export function cancellationRace<T>(
   const token = CancellationInput.of(cancellation);
   if (token.isCancelled) {
     if (onCancel) {
-      queueMicrotask(() => onCancel(token.reason as CancellationError));
+      Schedulers.microtask(() => onCancel(token.reason as CancellationError));
     }
     return Promises.reject(token.reason);
   }
@@ -46,7 +47,7 @@ export function cancellationRace<T>(
   const def = deferred();
   const cancel = (tk: CancellationToken) => {
     if (onCancel) {
-      queueMicrotask(() => onCancel(tk.reason as CancellationError));
+      Schedulers.microtask(() => onCancel(tk.reason as CancellationError));
     }
     def.reject(tk.reason);
   };

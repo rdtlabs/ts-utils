@@ -5,6 +5,7 @@ import {
   CancellationOptions,
   type CancellationOptionsExtended,
 } from "./CancellationOptions.ts";
+import { Schedulers } from "../async/scheduler.ts";
 
 // overload declarations
 /**
@@ -49,7 +50,7 @@ export async function cancellablePromise<T>(
   } catch (e) {
     if (e instanceof CancellationError) {
       if (onCancel) {
-        queueMicrotask(() => onCancel(e));
+        Schedulers.microtask(() => onCancel(e));
       }
 
       if (defaultValueOnCancel) {

@@ -4,8 +4,6 @@ import { RateLimit, RateLimitExceeded } from "./rate.limit.ts";
 import { DeadlineExceededError } from "../../deadline.ts";
 import { Cancellable } from "../../cancellation/Cancellable.ts";
 import { delay } from "../delay.ts";
-import { WaitGroup } from "../WaitGroup.ts";
-import { List } from "../../List.ts";
 
 Deno.test("rateLimiter executes callable within rate limit", async () => {
   const limiter = rateLimiter({

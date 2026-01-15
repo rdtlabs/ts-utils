@@ -1,5 +1,5 @@
-import type { ErrorLike } from "../types.ts";
 import type { Observable, Subscriber, Unsubscribe } from "./_rx.types.ts";
+import { Schedulers, type Scheduler } from "./scheduler.ts";
 
 type SchedulerType = "micro" | "macro" | "sync";
 
@@ -25,155 +25,95 @@ export function createObservable<T>(
     completionScheduler: SchedulerType;
   },
 ): Observable<T> {
-  let scheduler: Scheduler<T>;
-  let completionScheduler: CompletionScheduler<T>;
+  if (!onSubscribed || typeof onSubscribed !== "function") {
+    throw new TypeError("Invalid argument");
+  }
+
+  let scheduler: Scheduler;
+  let completionScheduler: Scheduler;
 
   if (!options) {
     scheduler = getScheduler("sync");
-    completionScheduler = getCompletionScheduler("macro");
+    completionScheduler = getScheduler("macro");
   } else if (typeof options === "string") {
     scheduler = getScheduler(options);
-    completionScheduler = getCompletionScheduler(options);
+    completionScheduler = getScheduler(options);
   } else {
     scheduler = getScheduler(options.scheduler ?? "sync");
-    completionScheduler = getCompletionScheduler(
+    completionScheduler = getScheduler(
       options.completionScheduler ?? "macro",
     );
   }
 
-  return new ObservableImpl(onSubscribed, scheduler, completionScheduler);
-}
+  let isSubscribed = false;
+  return {
+    subscribe(subscriber: Subscriber<T>): Unsubscribe {
+      if (!subscriber || typeof subscriber !== "object") {
+        throw new TypeError("Invalid argument");
+      }
 
-class ObservableImpl<T> {
-  readonly #scheduler: Scheduler<T>;
-  readonly #completionScheduler: CompletionScheduler<T>;
-  readonly #onSubscribed: (
-    subscriber: Required<Subscriber<T>> & { isCancelled: boolean },
-  ) => void;
+      if (isSubscribed) {
+        throw new Error("Already subscribed");
+      }
 
-  #isSubscribed = false;
-
-  constructor(
-    onSubscribed: (
-      subscriber: Required<Subscriber<T>> & { isCancelled: boolean },
-    ) => void,
-    scheduler: Scheduler<T>,
-    completionScheduler: CompletionScheduler<T>,
-  ) {
-    if (typeof onSubscribed !== "function") {
-      throw new TypeError("Invalid argument");
-    }
-
-    this.#onSubscribed = onSubscribed;
-    this.#scheduler = scheduler;
-    this.#completionScheduler = completionScheduler;
-  }
-
-  subscribe(subscriber: Subscriber<T>): Unsubscribe {
-    if (!subscriber || typeof subscriber !== "object") {
-      throw new TypeError("Invalid argument");
-    }
-
-    if (this.#isSubscribed) {
-      throw new Error("Already subscribed");
-    }
-
-    const subRef = { current: subscriber };
-    // deno-lint-ignore no-this-alias
-    const self = this;
-
-    try {
-      self.#isSubscribed = true;
-      const subscription = {
-        get isCancelled(): boolean {
-          return !self.#isSubscribed;
-        },
-        next: (value: T): void => {
-          if (self.#isSubscribed) {
-            self.#scheduler(subRef, value);
-          }
-        },
-        error: (error: unknown): void => {
-          if (self.#isSubscribed) {
-            self.#isSubscribed = false;
-            if (subscriber.error) {
-              self.#completionScheduler(subRef, error);
-            }
-          }
-        },
-        complete: (): void => {
-          if (self.#isSubscribed) {
-            self.#isSubscribed = false;
-            if (subscriber.complete) {
-              self.#completionScheduler(subRef);
-            }
-          }
-        },
+      const unsubscribe = () => {
+        isSubscribed = false;
+        subscriber = null as unknown as Subscriber<T>;
       };
 
-      self.#onSubscribed(subscription);
-    } catch (e: unknown) {
-      self.#isSubscribed = false;
-      // deno-lint-ignore no-explicit-any
-      subscriber = null as any;
-      throw e;
+      const onComplete = (fn: (sub: Subscriber<T>) => void) => {
+        try {
+          const sub = subscriber;
+          completionScheduler(() => fn(sub));
+        } finally {
+          unsubscribe();
+        }
+      };
+      try {
+        onSubscribed({
+            get isCancelled(): boolean {
+              return subscriber === null;
+            },
+            next: (value: T): void => {
+              if (subscriber?.next) {
+                const sub = subscriber;
+                scheduler(() => sub.next!(value));
+              }
+            },
+            error: (error: unknown): void => {
+              if (subscriber?.error) {
+                onComplete((sub) => sub.error?.(error as Error));
+              }
+            },
+            complete: (): void => {
+              if (subscriber?.complete) {
+                onComplete((sub) => sub.complete?.());
+              }
+            }
+          });
+
+          isSubscribed = true;
+      } catch (e: unknown) {
+        unsubscribe();
+        throw e;
+      }
+
+      return unsubscribe;
     }
-
-    return () => {
-      // deno-lint-ignore no-explicit-any
-      subscriber = null as any;
-      self.#isSubscribed = false;
-    };
-  }
+  };
 }
 
-type SubRef<T> = { current: Subscriber<T> };
-type Scheduler<T> = (ref: SubRef<T>, value: T) => void;
-type CompletionScheduler<T> = (ref: SubRef<T>, e?: unknown) => void;
-
-function getScheduler<T>(type: SchedulerType): Scheduler<T> {
+function getScheduler<T>(type: SchedulerType): Scheduler {
   if (type === "sync") {
-    return (ref, value) => {
-      ref.current?.next?.(value);
-    };
+    return Schedulers.immediate;
   }
 
   if (type === "micro") {
-    return (ref, value) => {
-      queueMicrotask(() => ref.current?.next?.(value));
-    };
+    return Schedulers.microtask;
   }
 
   if (type === "macro") {
-    return (ref, value) => {
-      setTimeout(() => ref.current?.next?.(value), 0);
-    };
-  }
-
-  throw new TypeError("Invalid argument");
-}
-
-function setRef<T>(ref: SubRef<T>, e: unknown): void {
-  if (e) {
-    ref.current.error?.(e as ErrorLike);
-  } else {
-    ref.current.complete?.();
-  }
-}
-
-function getCompletionScheduler<T>(
-  type: SchedulerType,
-): CompletionScheduler<T> {
-  if (type === "sync") {
-    return setRef;
-  }
-
-  if (type === "micro") {
-    return (ref, e) => queueMicrotask(() => setRef(ref, e));
-  }
-
-  if (type === "macro") {
-    return (ref, e) => setTimeout(() => setRef(ref, e), 0);
+    return Schedulers.macrotask;
   }
 
   throw new TypeError("Invalid argument");

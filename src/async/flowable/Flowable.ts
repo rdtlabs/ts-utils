@@ -338,7 +338,7 @@ function createFlowProcessor<S, T = S>(
       }
       return Maybe.of(lastItem);
     },
-    toObservable: (input) => {
+    toObservable: (input): Observable<T> => {
       return createObservable<T>((subscriber) => {
         (async () => {
           try {
