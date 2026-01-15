@@ -104,3 +104,4 @@ src/npm
 .__ignore*
 
 tmpclaude*
+.claude/*local*
