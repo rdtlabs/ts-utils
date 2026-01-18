@@ -1,3 +1,9 @@
+import type { WaitHandle } from "./WaitHandle.ts";
+import { Promises } from "./Promises.ts";
+import { CancellationInput } from "../cancellation/cancellationInput.ts";
+import type { CancellationToken } from "../cancellation/CancellationToken.ts";
+import type { TimeoutInput } from "../types.ts";
+
 /**
  * Represents a signal that can be used for synchronization between asynchronous operations.
  * Implements the `WaitHandle` interface.
@@ -43,18 +49,6 @@ type Signaled = true;
  * Represents the unsignaled state of a signal.
  */
 type Unsignaled = false;
-
-/**
- * Creates a new `Signal` instance with the specified initial state.
- * @param initialState - The initial state of the signal.
- * Defaults to `false` (unsignaled) if not provided.
- * @returns A new `Signal` instance.
- */
-import type { WaitHandle } from "./WaitHandle.ts";
-import { Promises } from "./Promises.ts";
-import { CancellationInput } from "../cancellation/cancellationInput.ts";
-import type { CancellationToken } from "../cancellation/CancellationToken.ts";
-import type { TimeoutInput } from "../types.ts";
 
 /**
  * Creates a new `Signal` instance with the specified initial state.

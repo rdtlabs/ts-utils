@@ -5,6 +5,7 @@ import { JobPool } from "./JobPool.ts";
 import { Promises } from "./Promises.ts";
 import type { ConcurrentExecutor, Executor } from "./executor.ts";
 import { Errors } from "../errors/errors.ts";
+import { Schedulers } from "./scheduler.ts";
 
 /**
  * A collection of utility functions for working with executors.
@@ -76,15 +77,14 @@ export const executors = Object.freeze({
     },
   },
 
-  macro: <Executor> {
+  task: <Executor> {
     execute: <T>(
       callable: Callable<T | PromiseLike<T>>,
       cancellation?: CancellationInput,
     ) => {
       return new Promise<T>((resolve, reject) => {
-        setTimeout(
+        Schedulers.task(
           () => __invoke(callable, resolve, reject, cancellation),
-          0,
         );
       });
     },
@@ -96,7 +96,9 @@ export const executors = Object.freeze({
       cancellation?: CancellationInput,
     ) => {
       return new Promise<T>((resolve, reject) => {
-        queueMicrotask(() => __invoke(callable, resolve, reject, cancellation));
+        Schedulers.microtask(
+          () => __invoke(callable, resolve, reject, cancellation),
+        );
       });
     },
   },
@@ -152,7 +154,7 @@ export const executors = Object.freeze({
   /**
    * @returns An executor that uses `setTimeout(fn, 0)` to schedule tasks.
    */
-  readonly macro: Executor;
+  readonly task: Executor;
 
   /**
    * @returns An executor that uses `queueMicrotask` to schedule tasks.

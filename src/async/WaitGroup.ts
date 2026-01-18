@@ -4,6 +4,26 @@ import type { WaitHandle } from "./WaitHandle.ts";
 /**
  * Represents a synchronization primitive that waits for a collection of asynchronous operations to complete.
  * It allows you to add and track the completion of multiple tasks.
+ *
+ * @example
+ * ```ts
+ * const wg = WaitGroup();
+ *
+ * wg.add(2); // Add two tasks to the WaitGroup
+ *
+ * asyncOperation1().then(() => {
+ *   wg.done(); // Signal completion of the first task
+ * });
+ *
+ * asyncOperation2().then(() => {
+ *   wg.done(); // Signal completion of the second task
+ * });
+ *
+ * await wg.wait(); // Wait for all tasks to complete
+ * console.log("All operations completed");
+ * ```
+ *
+ * @see {@link waitGroup} for a factory function to create a WaitGroup.
  */
 export interface WaitGroup extends WaitHandle {
   /**

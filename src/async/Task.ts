@@ -15,14 +15,14 @@ export const Task: __TaskStatic = Object.freeze({
    * @param {Callable<T | PromiseLike<T>>} task - The task to be executed.
    * @param {Object} [options] - Optional parameters for task execution.
    * @param {CancellationToken} [options.cancellation] - A cancellation token that can be used to cancel the task.
-   * @param {("micro" | "macro" | "sync" | Executor)} [options.scheduler] - The scheduler to be used for task execution.
+   * @param {("micro" | "task" | "sync" | Executor)} [options.scheduler] - The scheduler to be used for task execution.
    * @returns {Promise<T>} - A promise that resolves to the result of the task.
    */
   run<T = void>(
     task: Callable<T | PromiseLike<T>>,
     options?: {
       cancellation?: CancellationToken;
-      scheduler?: "micro" | "macro" | "sync" | Executor;
+      scheduler?: "micro" | "task" | "sync" | Executor;
     },
   ): Promise<T> {
     const scheduler = getScheduler(options?.scheduler);
@@ -65,7 +65,7 @@ export const Task: __TaskStatic = Object.freeze({
 });
 
 function getScheduler(
-  scheduler: "micro" | "macro" | "sync" | Executor | undefined,
+  scheduler: "micro" | "task" | "sync" | Executor | undefined,
 ): Executor {
   if (!scheduler || scheduler === "sync") {
     return executors.immediate;
@@ -75,8 +75,8 @@ function getScheduler(
     return executors.micro;
   }
 
-  if (scheduler === "macro") {
-    return executors.macro;
+  if (scheduler === "task") {
+    return executors.task;
   }
 
   if (typeof scheduler === "object") {
@@ -92,7 +92,7 @@ type __TaskStatic = {
     task: Callable<T | PromiseLike<T>>,
     options?: {
       cancellation?: CancellationToken;
-      scheduler?: "micro" | "macro" | "sync" | Executor;
+      scheduler?: "micro" | "task" | "sync" | Executor;
     },
   ) => Promise<T>;
   runAfter: <T>(

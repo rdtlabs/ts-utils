@@ -12,6 +12,6 @@ export const Schedulers = {
   immediate: ((fn) => fn()) as Scheduler,
   /** Executes callback on the microtask queue */
   microtask: queueMicrotask as Scheduler,
-  /** Executes callback on the macrotask queue */
-  macrotask: ((fn) => setTimeout(fn, 0)) as Scheduler,
+  /** Executes callback on the task queue */
+  task: ((fn) => setTimeout(fn, 0)) as Scheduler,
 } as const;

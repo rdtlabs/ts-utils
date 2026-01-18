@@ -105,3 +105,5 @@ src/npm
 
 tmpclaude*
 .claude/*local*
+
+**/_wip/**

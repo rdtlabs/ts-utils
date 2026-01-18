@@ -2,8 +2,8 @@ import { QueueClosedError, QueueFullError, QueueReadOnlyError } from "./errors.t
 import { assert, assertThrows, assertRejects } from "@std/assert";
 import { asyncQueue } from './asyncQueue.ts';
 import { waitGroup } from "../WaitGroup.ts";
-import { Cancellable } from "../../index.ts";
 import { CancellationError } from "../../cancellation/index.ts";
+import { Cancellable } from "../../cancellation/Cancellable.ts";
 
 Deno.test("AsyncQueue on dequeue test", async () => {
   let dequeued = 0;
@@ -322,7 +322,7 @@ Deno.test("AsyncQueue isEmpty test", async () => {
   queue.dequeue();
   // getting strange typescript warning regarding the isEmpty being true
   // (as if it thinks the previous check implies the isEmpty property does not change)
-  assert((queue as {isEmpty: boolean}).isEmpty === true);
+  assert((queue as { isEmpty: boolean }).isEmpty === true);
 
   queue.close();
 
@@ -340,7 +340,7 @@ Deno.test("AsyncQueue isFull test", async () => {
 
   // getting strange typescript warning regarding the isFull being true
   // (as if it thinks the previous check implies the isFull property does not change)
-  assert((queue as {isFull: boolean}).isFull === true);
+  assert((queue as { isFull: boolean }).isFull === true);
 
   queue.dequeue();
   assert(queue.isFull === false);

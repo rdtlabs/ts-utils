@@ -1,7 +1,7 @@
 import type { Observable, Subscriber, Unsubscribe } from "./_rx.types.ts";
-import { Schedulers, type Scheduler } from "./scheduler.ts";
+import { type Scheduler, Schedulers } from "./scheduler.ts";
 
-type SchedulerType = "micro" | "macro" | "sync";
+type SchedulerType = "micro" | "task" | "sync";
 
 /**
  * Creates an observable that can be subscribed to.
@@ -34,14 +34,14 @@ export function createObservable<T>(
 
   if (!options) {
     scheduler = getScheduler("sync");
-    completionScheduler = getScheduler("macro");
+    completionScheduler = getScheduler("task");
   } else if (typeof options === "string") {
     scheduler = getScheduler(options);
     completionScheduler = getScheduler(options);
   } else {
     scheduler = getScheduler(options.scheduler ?? "sync");
     completionScheduler = getScheduler(
-      options.completionScheduler ?? "macro",
+      options.completionScheduler ?? "task",
     );
   }
 
@@ -71,35 +71,35 @@ export function createObservable<T>(
       };
       try {
         onSubscribed({
-            get isCancelled(): boolean {
-              return subscriber === null;
-            },
-            next: (value: T): void => {
-              if (subscriber?.next) {
-                const sub = subscriber;
-                scheduler(() => sub.next!(value));
-              }
-            },
-            error: (error: unknown): void => {
-              if (subscriber?.error) {
-                onComplete((sub) => sub.error?.(error as Error));
-              }
-            },
-            complete: (): void => {
-              if (subscriber?.complete) {
-                onComplete((sub) => sub.complete?.());
-              }
+          get isCancelled(): boolean {
+            return subscriber === null;
+          },
+          next: (value: T): void => {
+            if (subscriber?.next) {
+              const sub = subscriber;
+              scheduler(() => sub.next!(value));
             }
-          });
+          },
+          error: (error: unknown): void => {
+            if (subscriber?.error) {
+              onComplete((sub) => sub.error?.(error as Error));
+            }
+          },
+          complete: (): void => {
+            if (subscriber?.complete) {
+              onComplete((sub) => sub.complete?.());
+            }
+          },
+        });
 
-          isSubscribed = true;
+        isSubscribed = true;
       } catch (e: unknown) {
         unsubscribe();
         throw e;
       }
 
       return unsubscribe;
-    }
+    },
   };
 }
 
@@ -112,8 +112,8 @@ function getScheduler<T>(type: SchedulerType): Scheduler {
     return Schedulers.microtask;
   }
 
-  if (type === "macro") {
-    return Schedulers.macrotask;
+  if (type === "task") {
+    return Schedulers.task;
   }
 
   throw new TypeError("Invalid argument");
