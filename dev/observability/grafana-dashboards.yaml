@@ -1,0 +1,16 @@
+# Grafana dashboard provisioning
+# Auto-loads dashboard JSON files from /var/lib/grafana/dashboards on startup
+
+apiVersion: 1
+
+providers:
+  - name: "default"
+    orgId: 1
+    folder: ""
+    type: file
+    disableDeletion: false
+    updateIntervalSeconds: 30
+    allowUiUpdates: true
+    options:
+      path: /var/lib/grafana/dashboards
+      foldersFromFilesStructure: false

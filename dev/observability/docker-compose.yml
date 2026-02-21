@@ -1,0 +1,130 @@
+# OpenTelemetry Observability Stack for Claude Code
+# Usage: docker compose up -d
+# Docs:  dev/observability/README.md
+
+services:
+  otel-collector:
+    image: otel/opentelemetry-collector-contrib:0.97.0
+    container_name: ts-utils-otel-collector
+    command: ["--config=/etc/otelcol/config.yaml"]
+    volumes:
+      - ./otelcol-config.yaml:/etc/otelcol/config.yaml:ro
+    ports:
+      - "4317:4317"   # OTLP gRPC
+      - "4318:4318"   # OTLP HTTP
+      - "8889:8889"   # Prometheus metrics export
+      - "13133:13133" # Health check
+    networks:
+      - ts-utils-observability-net
+    # Note: distroless image has no wget/curl, so we rely on the
+    # built-in health_check extension (:13133) and restart policy.
+    restart: unless-stopped
+
+  prometheus:
+    image: prom/prometheus:v2.51.0
+    container_name: ts-utils-prometheus
+    command:
+      - "--config.file=/etc/prometheus/prometheus.yml"
+      - "--storage.tsdb.path=/prometheus"
+      - "--storage.tsdb.retention.time=30d"
+      - "--web.enable-lifecycle"
+      - "--web.enable-remote-write-receiver"
+      - "--enable-feature=exemplar-storage"
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - ts-utils-prometheus-data:/prometheus
+    ports:
+      - "9090:9090"
+    networks:
+      - ts-utils-observability-net
+    depends_on:
+      otel-collector:
+        condition: service_started
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://localhost:9090/-/healthy"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+    restart: unless-stopped
+
+  loki:
+    image: grafana/loki:2.9.6
+    container_name: ts-utils-loki
+    command: ["-config.file=/etc/loki/config.yaml"]
+    volumes:
+      - ./loki-config.yaml:/etc/loki/config.yaml:ro
+      - ts-utils-loki-data:/loki
+    ports:
+      - "3100:3100"
+    networks:
+      - ts-utils-observability-net
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://localhost:3100/ready"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 15s
+    restart: unless-stopped
+
+  tempo:
+    image: grafana/tempo:2.7.2
+    container_name: ts-utils-tempo
+    command: ["-config.file=/etc/tempo.yaml"]
+    volumes:
+      - ./tempo-config.yaml:/etc/tempo.yaml:ro
+      - ts-utils-tempo-data:/var/tempo
+    ports:
+      - "3200:3200"   # Tempo HTTP API
+    networks:
+      - ts-utils-observability-net
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://localhost:3200/ready"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 15s
+    restart: unless-stopped
+
+  grafana:
+    image: grafana/grafana:10.4.1
+    container_name: ts-utils-grafana
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+      - GF_AUTH_ANONYMOUS_ENABLED=true
+      - GF_AUTH_ANONYMOUS_ORG_ROLE=Viewer
+      - GF_FEATURE_TOGGLES_ENABLE=traceqlEditor
+    volumes:
+      - ./grafana-datasources.yaml:/etc/grafana/provisioning/datasources/datasources.yaml:ro
+      - ./grafana-dashboards.yaml:/etc/grafana/provisioning/dashboards/dashboards.yaml:ro
+      - ./claude-dashboard.json:/var/lib/grafana/dashboards/claude-dashboard.json:ro
+      - ts-utils-grafana-data:/var/lib/grafana
+    ports:
+      - "3000:3000"
+    networks:
+      - ts-utils-observability-net
+    depends_on:
+      prometheus:
+        condition: service_healthy
+      loki:
+        condition: service_healthy
+      tempo:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://localhost:3000/api/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 15s
+    restart: unless-stopped
+
+volumes:
+  ts-utils-prometheus-data:
+  ts-utils-loki-data:
+  ts-utils-tempo-data:
+  ts-utils-grafana-data:
+
+networks:
+  ts-utils-observability-net:
+    name: ts-utils-observability-net

@@ -107,3 +107,7 @@ tmpclaude*
 .claude/*local*
 
 **/_wip/**
+
+# Observability stack local data
+dev/observability/data/
+dev/observability/**/*.log
