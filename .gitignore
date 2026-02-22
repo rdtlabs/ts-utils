@@ -111,3 +111,11 @@ tmpclaude*
 # Observability stack local data
 dev/observability/data/
 dev/observability/**/*.log
+
+.env.local
+**/.env.local
+
+.claude/data
+logs
+__pycache__
+**/__pycache__/**

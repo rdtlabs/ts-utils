@@ -1,0 +1,193 @@
+{
+  "env": {
+    "CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS": "1",
+    "CLAUDE_CODE_ENABLE_TELEMETRY": "1",
+    "OTEL_EXPORTER_OTLP_ENDPOINT": "http://localhost:4317",
+    "OTEL_EXPORTER_OTLP_PROTOCOL": "grpc",
+    "OTEL_METRICS_EXPORTER": "otlp",
+    "OTEL_LOGS_EXPORTER": "otlp",
+    "OTEL_EXPORTER_OTLP_METRICS_TEMPORALITY_PREFERENCE": "cumulative",
+    "OTEL_RESOURCE_ATTRIBUTES": "service.name=claude-code,repo=ts-utils"
+  },
+  "teammateMode": "in-process",
+  "statusLine": {
+    "type": "command",
+    "command": "uv run .claude/status_lines/status_line_v6.py",
+    "padding": 0
+  },
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "uv run .claude/hooks/pre_tool_use.py"
+          },
+          {
+            "type": "command",
+            "command": "uv run .claude/hooks/send_event.py --source-app sc-enterprise --event-type PreToolUse --summarize"
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "uv run .claude/hooks/post_tool_use.py"
+          },
+          {
+            "type": "command",
+            "command": "uv run .claude/hooks/send_event.py --source-app sc-enterprise --event-type PostToolUse --summarize"
+          }
+        ]
+      }
+    ],
+    "Notification": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "uv run .claude/hooks/notification.py"
+          },
+          {
+            "type": "command",
+            "command": "uv run .claude/hooks/send_event.py --source-app sc-enterprise --event-type Notification --summarize"
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "uv run .claude/hooks/stop.py --chat"
+          },
+          {
+            "type": "command",
+            "command": "uv run .claude/hooks/send_event.py --source-app sc-enterprise --event-type Stop --add-chat"
+          }
+        ]
+      }
+    ],
+    "SubagentStop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "uv run .claude/hooks/subagent_stop.py"
+          },
+          {
+            "type": "command",
+            "command": "uv run .claude/hooks/send_event.py --source-app sc-enterprise --event-type SubagentStop"
+          }
+        ]
+      }
+    ],
+    "PreCompact": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "uv run .claude/hooks/pre_compact.py"
+          },
+          {
+            "type": "command",
+            "command": "uv run .claude/hooks/send_event.py --source-app sc-enterprise --event-type PreCompact"
+          }
+        ]
+      }
+    ],
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "uv run .claude/hooks/user_prompt_submit.py --log-only --store-last-prompt --name-agent"
+          },
+          {
+            "type": "command",
+            "command": "uv run .claude/hooks/send_event.py --source-app sc-enterprise --event-type UserPromptSubmit --summarize"
+          }
+        ]
+      }
+    ],
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "uv run .claude/hooks/session_start.py"
+          },
+          {
+            "type": "command",
+            "command": "uv run .claude/hooks/send_event.py --source-app sc-enterprise --event-type SessionStart"
+          }
+        ]
+      }
+    ],
+    "SessionEnd": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "uv run .claude/hooks/session_end.py"
+          },
+          {
+            "type": "command",
+            "command": "uv run .claude/hooks/send_event.py --source-app sc-enterprise --event-type SessionEnd"
+          }
+        ]
+      }
+    ],
+    "PermissionRequest": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "uv run .claude/hooks/permission_request.py"
+          },
+          {
+            "type": "command",
+            "command": "uv run .claude/hooks/send_event.py --source-app sc-enterprise --event-type PermissionRequest --summarize"
+          }
+        ]
+      }
+    ],
+    "PostToolUseFailure": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "uv run .claude/hooks/post_tool_use_failure.py"
+          },
+          {
+            "type": "command",
+            "command": "uv run .claude/hooks/send_event.py --source-app sc-enterprise --event-type PostToolUseFailure --summarize"
+          }
+        ]
+      }
+    ],
+    "SubagentStart": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "uv run .claude/hooks/subagent_start.py"
+          },
+          {
+            "type": "command",
+            "command": "uv run .claude/hooks/send_event.py --source-app sc-enterprise --event-type SubagentStart"
+          }
+        ]
+      }
+    ]
+  }
+}
