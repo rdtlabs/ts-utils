@@ -26,7 +26,7 @@
           },
           {
             "type": "command",
-            "command": "uv run .claude/hooks/send_event.py --source-app sc-enterprise --event-type PreToolUse --summarize"
+            "command": "uv run .claude/hooks/send_event.py --source-app ts-utils --event-type PreToolUse --summarize"
           }
         ]
       }
@@ -41,7 +41,7 @@
           },
           {
             "type": "command",
-            "command": "uv run .claude/hooks/send_event.py --source-app sc-enterprise --event-type PostToolUse --summarize"
+            "command": "uv run .claude/hooks/send_event.py --source-app ts-utils --event-type PostToolUse --summarize"
           }
         ]
       }
@@ -55,7 +55,7 @@
           },
           {
             "type": "command",
-            "command": "uv run .claude/hooks/send_event.py --source-app sc-enterprise --event-type Notification --summarize"
+            "command": "uv run .claude/hooks/send_event.py --source-app ts-utils --event-type Notification --summarize"
           }
         ]
       }
@@ -69,7 +69,7 @@
           },
           {
             "type": "command",
-            "command": "uv run .claude/hooks/send_event.py --source-app sc-enterprise --event-type Stop --add-chat"
+            "command": "uv run .claude/hooks/send_event.py --source-app ts-utils --event-type Stop --add-chat"
           }
         ]
       }
@@ -83,7 +83,7 @@
           },
           {
             "type": "command",
-            "command": "uv run .claude/hooks/send_event.py --source-app sc-enterprise --event-type SubagentStop"
+            "command": "uv run .claude/hooks/send_event.py --source-app ts-utils --event-type SubagentStop"
           }
         ]
       }
@@ -97,7 +97,7 @@
           },
           {
             "type": "command",
-            "command": "uv run .claude/hooks/send_event.py --source-app sc-enterprise --event-type PreCompact"
+            "command": "uv run .claude/hooks/send_event.py --source-app ts-utils --event-type PreCompact"
           }
         ]
       }
@@ -111,7 +111,7 @@
           },
           {
             "type": "command",
-            "command": "uv run .claude/hooks/send_event.py --source-app sc-enterprise --event-type UserPromptSubmit --summarize"
+            "command": "uv run .claude/hooks/send_event.py --source-app ts-utils --event-type UserPromptSubmit --summarize"
           }
         ]
       }
@@ -125,7 +125,7 @@
           },
           {
             "type": "command",
-            "command": "uv run .claude/hooks/send_event.py --source-app sc-enterprise --event-type SessionStart"
+            "command": "uv run .claude/hooks/send_event.py --source-app ts-utils --event-type SessionStart"
           }
         ]
       }
@@ -139,7 +139,7 @@
           },
           {
             "type": "command",
-            "command": "uv run .claude/hooks/send_event.py --source-app sc-enterprise --event-type SessionEnd"
+            "command": "uv run .claude/hooks/send_event.py --source-app ts-utils --event-type SessionEnd"
           }
         ]
       }
@@ -154,7 +154,7 @@
           },
           {
             "type": "command",
-            "command": "uv run .claude/hooks/send_event.py --source-app sc-enterprise --event-type PermissionRequest --summarize"
+            "command": "uv run .claude/hooks/send_event.py --source-app ts-utils --event-type PermissionRequest --summarize"
           }
         ]
       }
@@ -169,7 +169,7 @@
           },
           {
             "type": "command",
-            "command": "uv run .claude/hooks/send_event.py --source-app sc-enterprise --event-type PostToolUseFailure --summarize"
+            "command": "uv run .claude/hooks/send_event.py --source-app ts-utils --event-type PostToolUseFailure --summarize"
           }
         ]
       }
@@ -184,7 +184,7 @@
           },
           {
             "type": "command",
-            "command": "uv run .claude/hooks/send_event.py --source-app sc-enterprise --event-type SubagentStart"
+            "command": "uv run .claude/hooks/send_event.py --source-app ts-utils --event-type SubagentStart"
           }
         ]
       }
