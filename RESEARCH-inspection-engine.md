@@ -1,0 +1,678 @@
+# Inspection Engine for Manufacturing Control Points: Technology Landscape & Architecture Research
+
+**Date:** March 2026
+**Scope:** Evaluate existing open-source libraries, platforms, and architectural approaches for building a rule-based inspection engine that processes manufacturing control point data (from SCADA/Ignition integrations or manual human observation) and evaluates pass/fail outcomes, derived calculations, and watchful expressions — with a UI layer for rule authoring.
+
+---
+
+## Table of Contents
+
+1. [Problem Statement](#1-problem-statement)
+2. [Architecture Decomposition](#2-architecture-decomposition)
+3. [JavaScript/TypeScript Rule Engines](#3-javascripttypescript-rule-engines)
+4. [Expression Evaluation Libraries](#4-expression-evaluation-libraries)
+5. [Decision Engines with Visual Editors](#5-decision-engines-with-visual-editors)
+6. [Enterprise Rule Platforms (JVM-based)](#6-enterprise-rule-platforms-jvm-based)
+7. [SCADA & Manufacturing Integration](#7-scada--manufacturing-integration)
+8. [Open Source Quality/SPC Systems](#8-open-source-qualityspc-systems)
+9. [Visual Rule Builder UI Components](#9-visual-rule-builder-ui-components)
+10. [Apache Ecosystem Beyond NiFi](#10-apache-ecosystem-beyond-nifi)
+11. [Approach Comparison: Code-First vs. Low-Code vs. No-Code](#11-approach-comparison-code-first-vs-low-code-vs-no-code)
+12. [Recommendation & Proposed Architecture](#12-recommendation--proposed-architecture)
+
+---
+
+## 1. Problem Statement
+
+Manufacturing inspection requires evaluating incoming data from control points against configurable rule sets. These inputs arrive via two paths:
+
+1. **Automated integration** — SCADA systems (e.g., Ignition via OPC-UA), PLCs, sensors, IoT devices
+2. **Manual observation** — Human inspectors recording visual or tactile measurements
+
+Once captured, the system must:
+
+- **Evaluate rules** — Run configurable pass/fail checks against captured inputs
+- **Compute derived values** — Calculations that produce secondary metrics from raw inputs (e.g., Cpk, moving averages, tolerances)
+- **Support watchful expressions** — Intuitive formulas or conditional expressions authored by domain experts
+- **Present a UI** — Allow non-developers to model, configure, and maintain inspection rules
+- **Support auditability** — Manufacturing requires traceability of what was checked, when, and by whom
+
+The question: **What existing projects or libraries provide the best foundation — or does it make more sense to let people write TypeScript directly?**
+
+---
+
+## 2. Architecture Decomposition
+
+Before evaluating solutions, it helps to decompose the problem into layers:
+
+```
++----------------------------------------------------------+
+|                     UI Layer                              |
+|  Rule authoring, decision tables, expression editors      |
++----------------------------------------------------------+
+|                  Rule Engine Core                         |
+|  Condition evaluation, fact matching, rule chaining       |
++----------------------------------------------------------+
+|              Expression Evaluator                         |
+|  Math formulas, comparisons, derived calculations         |
++----------------------------------------------------------+
+|                 Data Ingress                              |
+|  OPC-UA adapters, manual entry forms, event streams       |
++----------------------------------------------------------+
+|              Persistence & Audit                          |
+|  Rule versioning, execution logs, traceability            |
++----------------------------------------------------------+
+```
+
+Each layer has different candidate technologies. The best overall solution likely composes libraries across layers rather than adopting a single monolithic platform.
+
+---
+
+## 3. JavaScript/TypeScript Rule Engines
+
+### 3.1 json-rules-engine
+
+| Attribute | Value |
+|-----------|-------|
+| GitHub | [CacheControl/json-rules-engine](https://github.com/CacheControl/json-rules-engine) |
+| Stars | ~3,000+ |
+| Weekly Downloads | ~311,000 |
+| License | ISC |
+| Language | JavaScript (TypeScript types available) |
+| Last Active | Actively maintained |
+
+**What it does:** Rules are defined as JSON structures with conditions (all/any nesting), operators, and event-based outcomes. Facts are resolved dynamically (supports async fact resolution). Conditions reference fact paths and apply operators like `greaterThan`, `equal`, `lessThan`, `contains`, etc.
+
+**Architecture:** Forward-chaining engine. Rules fire events when conditions are met. Supports priority-based ordering and caching for performance.
+
+**Example rule:**
+```json
+{
+  "conditions": {
+    "all": [
+      { "fact": "temperature", "operator": "greaterThan", "value": 150 },
+      { "fact": "pressure", "operator": "lessThan", "value": 30 }
+    ]
+  },
+  "event": { "type": "inspection-fail", "params": { "reason": "temperature/pressure out of spec" } }
+}
+```
+
+**Relevance to inspection engine:** HIGH. JSON-serializable rules are perfect for persistence, versioning, and UI-driven authoring. The fact-resolution pattern maps well to control point data. Custom operators can extend pass/fail logic. The event model fits inspection outcomes.
+
+**Limitations:** No built-in UI. No expression language for derived calculations (you'd pair it with an expression evaluator). No decision table support.
+
+---
+
+### 3.2 Nools
+
+| Attribute | Value |
+|-----------|-------|
+| GitHub | [noolsjs/nools](https://github.com/noolsjs/nools) |
+| Stars | ~954 |
+| License | MIT |
+| Algorithm | Full RETE |
+
+**What it does:** A Rete-based engine (JS port of Drools concepts). Supports its own DSL syntax, sessions, fact assertion/retraction, and agenda groups.
+
+**Assessment:** Largely **unmaintained** (stuck at 0.4.4). The DSL is non-standard. Not recommended for new projects.
+
+---
+
+### 3.3 Rools
+
+| Attribute | Value |
+|-----------|-------|
+| GitHub | [frankthelen/rools](https://github.com/frankthelen/rools) |
+| License | MIT |
+| Language | JavaScript with TypeScript types |
+
+**What it does:** Rules defined as plain JS objects with `when`/`then` functions. Supports priority, final rules, and async actions. RETE-like optimization.
+
+**Example:**
+```javascript
+{ name: 'temperature-check',
+  priority: 10,
+  when: (facts) => facts.temperature > 150,
+  then: (facts) => { facts.result = 'FAIL'; } }
+```
+
+**Assessment:** Clean API, but rules are code — not JSON-serializable. Harder to persist or edit via UI. Better suited for code-first approaches.
+
+---
+
+### 3.4 rules-engine-ts
+
+| Attribute | Value |
+|-----------|-------|
+| GitHub | [andrewvo89/rules-engine-ts](https://github.com/andrewvo89/rules-engine-ts) |
+| Language | TypeScript-first |
+
+**What it does:** Strongly typed rules using TypeScript discriminated unions. Uses Zod for validation. Supports deeply nested decision trees.
+
+**Assessment:** Excellent TypeScript ergonomics. Small community. Rules are code objects — not easily serializable for UI editing. Good for code-first TypeScript teams.
+
+---
+
+### 3.5 Trool
+
+| Attribute | Value |
+|-----------|-------|
+| GitHub | [seanpmaxwell/Trool](https://github.com/seanpmaxwell/Trool) |
+| Language | TypeScript |
+
+**What it does:** Rules defined in spreadsheet format (CSV). Non-engineers can edit business rules in a spreadsheet tool. Inspired by Java's KnowledgeBase.
+
+**Assessment:** Interesting concept for manufacturing — operators are already comfortable with spreadsheet-like interfaces. However, limited expressiveness and small community.
+
+---
+
+### Summary Table: JS/TS Rule Engines
+
+| Engine | Serializable Rules | TypeScript | Active | UI Possible | Expression Support | Best For |
+|--------|-------------------|------------|--------|-------------|-------------------|----------|
+| json-rules-engine | JSON | Types available | Yes | Yes (build your own) | No (pair with evaluator) | Production rule evaluation |
+| Nools | DSL files | No | No | No | Limited | Legacy only |
+| Rools | Code only | Types available | Yes | Difficult | Via functions | Code-first |
+| rules-engine-ts | Code only | Native | Yes | Difficult | Via TypeScript | Type-safe code-first |
+| Trool | Spreadsheet/CSV | Native | Low | Spreadsheet IS the UI | Limited | Non-technical authoring |
+
+---
+
+## 4. Expression Evaluation Libraries
+
+For derived calculations and "watchful expressions," you need a safe expression evaluator — something that lets domain experts write formulas like `(temperature - baseline) / stddev > 3` without writing TypeScript.
+
+### 4.1 expr-eval
+
+| Attribute | Value |
+|-----------|-------|
+| GitHub | [silentmatt/expr-eval](https://github.com/silentmatt/expr-eval) |
+| npm | [expr-eval](https://www.npmjs.com/package/expr-eval) |
+| License | MIT |
+
+**What it does:** Parses and evaluates mathematical expressions safely (no `eval()`). Supports variables, custom functions, and operator toggling.
+
+**Example:**
+```javascript
+const parser = new Parser();
+const expr = parser.parse('(temperature - baseline) / stddev');
+const result = expr.evaluate({ temperature: 162, baseline: 150, stddev: 4 }); // 3.0
+```
+
+**Relevance:** HIGH. Perfect for user-authored expressions where variables are control point values. Can compile expressions to native JS functions for performance. Configurable operator set prevents abuse.
+
+---
+
+### 4.2 math.js
+
+| Attribute | Value |
+|-----------|-------|
+| Website | [mathjs.org](https://mathjs.org/docs/expressions/parsing.html) |
+| npm | mathjs |
+
+**What it does:** Full-featured math library with expression parsing, evaluation, and a symbol table (scope). Supports units, matrices, complex numbers, and 200+ functions.
+
+**Assessment:** More powerful than expr-eval but significantly larger bundle size. The expression parser is excellent — supports `math.evaluate('mean([t1, t2, t3])', scope)` which is useful for SPC calculations. Overkill if you only need simple comparisons, but valuable if you need statistical functions (mean, std, percentiles).
+
+---
+
+### 4.3 hot-formula-parser
+
+| Attribute | Value |
+|-----------|-------|
+| GitHub | [handsontable/formula-parser](https://github.com/handsontable/formula-parser) |
+| License | MIT |
+
+**What it does:** Parses Excel-style formulas. Supports string operations, custom functions, and dynamic variable resolution via events.
+
+**Assessment:** MEDIUM relevance. The Excel formula syntax is familiar to manufacturing engineers who use spreadsheets. The `callVariable` event hook allows dynamic binding to control point values. However, the library is Excel-focused and may not map perfectly to inspection semantics.
+
+---
+
+### 4.4 Filtrex
+
+**What it does:** Compiles user-provided expressions to JavaScript functions without `eval()`. Designed for safe filtering/evaluation of user input.
+
+**Assessment:** Lightweight and safe. Good for simple boolean conditions. Less suitable for complex derived calculations.
+
+---
+
+### 4.5 fparser
+
+| Attribute | Value |
+|-----------|-------|
+| GitHub | [bylexus/fparse](https://github.com/bylexus/fparse) |
+
+**What it does:** Parses mathematical formula strings (e.g., `x*sin(PI*x/2)`) into evaluable objects. Supports custom functions and variables.
+
+**Assessment:** Clean, lightweight. Good middle ground between expr-eval and math.js.
+
+---
+
+### Recommendation for Expression Layer
+
+**Primary:** `expr-eval` — lightweight, safe, configurable, compiles to functions.
+**If statistical functions needed:** `math.js` — heavier but includes mean, std, percentile, etc.
+**If Excel familiarity desired:** `hot-formula-parser` — Excel syntax operators already know.
+
+These pair naturally with json-rules-engine: use the rule engine for condition orchestration and the expression evaluator for computed values within those conditions.
+
+---
+
+## 5. Decision Engines with Visual Editors
+
+This category is the most directly relevant to the stated need — engines that ship with or support visual rule modeling.
+
+### 5.1 GoRules ZEN Engine
+
+| Attribute | Value |
+|-----------|-------|
+| GitHub | [gorules/zen](https://github.com/gorules/zen) |
+| Website | [gorules.io](https://gorules.io/) |
+| Core Language | Rust (with NodeJS, Python, Go, Java, C#, Kotlin, Swift bindings) |
+| License | MIT |
+| UI | Yes — JDM Editor (React-based) |
+
+**What it does:** A cross-platform decision engine that evaluates JSON Decision Models (JDM). Models consist of:
+
+- **Decision Tables** — Rows of input conditions mapped to output values (classic decision table semantics)
+- **Expression Nodes** — Custom ZEN Expression Language for conditions and calculations
+- **Rule Graphs** — Visual directed graphs connecting decision nodes
+
+**Key features:**
+- Sub-millisecond evaluation latency (Rust core)
+- Visual canvas editor — drag components, connect them, watch data flow
+- Rules stored as portable JSON files
+- AI copilot for rule generation
+- Embeddable — runs inside your application (no separate server)
+- React-based JDM Editor component available open source
+
+**ZEN Expression Language supports:** equality, numeric comparisons, boolean logic, date/time functions, array functions, and more.
+
+**Relevance to inspection engine:** **VERY HIGH.** This is the closest existing solution to what's described:
+- Decision tables map directly to inspection rule sets
+- Expression nodes handle derived calculations
+- The visual editor provides the UI layer
+- JSON portability enables versioning and audit
+- The Rust core with Node bindings fits a TypeScript architecture
+- Embeddable means it runs alongside your application, not as a separate service
+
+**This is the strongest candidate for a foundation to build on or fork.**
+
+---
+
+### 5.2 Camunda (DMN)
+
+| Attribute | Value |
+|-----------|-------|
+| Website | [camunda.com](https://camunda.com/) |
+| License | Community Edition (Apache 2.0), Enterprise (commercial) |
+| Language | Java (JVM) |
+
+**What it does:** Full process automation platform with BPMN workflow engine and DMN decision engine. DMN (Decision Model and Notation) is an OMG standard for modeling decisions as tables.
+
+**Assessment:** Very powerful but **heavy**. Requires JVM deployment. The DMN standard itself is interesting — it's an industry-standard way to represent decision tables. Camunda's modeler is excellent for visual rule authoring. However, integrating Camunda into a TypeScript stack adds significant operational complexity. Better suited if you already have a Java backend.
+
+---
+
+### 5.3 DMN-js (by bpmn.io / Camunda)
+
+| Attribute | Value |
+|-----------|-------|
+| GitHub | Part of [bpmn-io](https://github.com/bpmn-io) ecosystem |
+| Language | JavaScript |
+| License | Custom (check bpmn.io) |
+
+**What it does:** A JavaScript library for rendering and editing DMN decision tables in the browser. This is the frontend component that Camunda uses.
+
+**Assessment:** If you want DMN-standard decision tables without the full Camunda platform, dmn-js gives you the editor component. You'd need to build your own evaluation engine or use a lightweight DMN evaluator.
+
+---
+
+## 6. Enterprise Rule Platforms (JVM-based)
+
+These are included for completeness. They represent the mature end of the spectrum but require JVM infrastructure.
+
+### 6.1 Drools
+
+| Attribute | Value |
+|-----------|-------|
+| GitHub | [apache/incubator-kie-drools](https://github.com/apache/incubator-kie-drools) |
+| License | Apache 2.0 |
+| Language | Java |
+| Stars | ~5,000+ |
+
+**What it does:** The gold standard for open-source rule engines. Full BRMS with RETE/PHREAK algorithm, DRL rule language, DMN Conformance Level 3, complex event processing (CEP), and Drools Workbench for visual authoring.
+
+**Assessment:** If you were building in Java, Drools would be the obvious choice. For a TypeScript stack, it's not practical to embed. Could be used as a microservice behind an API, but that adds latency and operational complexity.
+
+### 6.2 Easy Rules
+
+| Attribute | Value |
+|-----------|-------|
+| Language | Java |
+| License | MIT |
+
+**What it does:** Lightweight Java rule engine. Rules are simple POJOs with conditions and actions.
+
+**Assessment:** Too simple for this use case and wrong language ecosystem.
+
+### 6.3 OpenRules
+
+| Attribute | Value |
+|-----------|-------|
+| License | Open source + commercial |
+| Language | Java |
+
+**What it does:** Decision modeling via Excel spreadsheets with a Java execution engine.
+
+**Assessment:** The spreadsheet approach is interesting for manufacturing, but locked to JVM.
+
+---
+
+## 7. SCADA & Manufacturing Integration
+
+### 7.1 node-opcua
+
+| Attribute | Value |
+|-----------|-------|
+| GitHub | [node-opcua/node-opcua](https://github.com/node-opcua/node-opcua) |
+| Website | [node-opcua.github.io](https://node-opcua.github.io/) |
+| License | MIT |
+| Language | TypeScript |
+| Testing | 3,500+ unit tests, 93% code coverage |
+| Release Cadence | New version every ~2 weeks |
+
+**What it does:** Full OPC-UA stack for Node.js and browser. Provides both client and server implementations. Can subscribe to data changes and events from SCADA systems.
+
+**Key capabilities:**
+- Connect to Ignition, Siemens, Allen-Bradley, and any OPC-UA compliant system
+- Subscribe to real-time data changes (push model)
+- Browse server address spaces to discover available tags
+- Full security support (certificates, encryption, authentication)
+- PubSub support over MQTT (Part 14)
+- ISA-95 extension available
+
+**Relevance:** CRITICAL for the automated data ingress path. This is how you'd receive control point data from Ignition or other SCADA systems. The subscription model means control point values push into your inspection engine in real-time.
+
+**Integration pattern:**
+```
+Ignition/PLC → OPC-UA Server → node-opcua client → Inspection Engine → Pass/Fail
+```
+
+### 7.2 Node-RED
+
+| Attribute | Value |
+|-----------|-------|
+| Website | [nodered.org](https://nodered.org/) |
+| License | Apache 2.0 |
+
+**What it does:** Flow-based programming tool for wiring together hardware devices, APIs, and online services. Visual browser-based editor. Has OPC-UA nodes available.
+
+**Assessment:** Conceptually similar to Apache NiFi but lighter weight. Could serve as the data ingress orchestration layer. However, embedding rule evaluation logic in Node-RED flows mixes concerns. Better as a complement to (not replacement for) a dedicated inspection engine.
+
+---
+
+## 8. Open Source Quality/SPC Systems
+
+### 8.1 Existing QMS Platforms
+
+| Platform | Focus | Stack | Assessment |
+|----------|-------|-------|------------|
+| **QDMS** | Document management, audits, compliance | Various | Too focused on document control, not real-time inspection |
+| **OpenQuality** | Issue tracking, nonconformity logging | Node.js + MongoDB | Early-stage, lightweight. Could complement but not replace inspection engine |
+| **Senaite (Bika LIMS)** | Laboratory information management | Python/Plone | Lab-focused, not manufacturing floor inspection |
+| **qmsWrapper** | Medical device QMS | Commercial core | Too specialized for medical device compliance |
+
+**Assessment:** No existing open-source QMS provides the real-time rule evaluation engine needed. These systems focus on document control, audit management, and compliance tracking — not on evaluating live sensor data against configurable rule sets.
+
+### 8.2 SPC Libraries
+
+Most SPC libraries are Python-based:
+
+- **PySpc** — 18 chart types, pandas/numpy integration
+- **spcchart** — Pure Python, Plotly web charts, Flask interface, automatic violation detection
+- **pyshewhart** — Western Electric rules implementation
+- **statprocon** — Lightweight, minimal dependencies
+
+**For JavaScript/TypeScript**, the SPC landscape is sparse. You would likely need to implement control chart logic (X-bar, R, S, Cpk, Nelson rules) yourself or use math.js for the statistical primitives.
+
+**FlowFuse + Node-RED** offers a guide for building real-time SPC dashboards, but it's a tutorial approach, not a library.
+
+---
+
+## 9. Visual Rule Builder UI Components
+
+### 9.1 GoRules JDM Editor
+
+The most complete open-source option. A React component that provides:
+- Decision table editor (rows/columns for conditions/outputs)
+- Expression node editor
+- Graph-based rule flow visualization
+- Import/export of JSON Decision Models
+
+### 9.2 react-querybuilder
+
+A React component for building query/filter UIs. Useful for constructing condition trees (AND/OR nesting). Could be adapted to build rule conditions.
+
+### 9.3 React Flow
+
+A library for building node-based editors and interactive diagrams. Could be used to build custom rule flow editors. Used by many low-code platforms internally.
+
+### 9.4 react-jsonschema-form / Formio
+
+For the **input capture** side (manual observation forms), these provide dynamic form generation from JSON schemas. Formio in particular offers a visual form builder.
+
+### 9.5 dmn-js
+
+The Camunda-originated DMN table editor for the browser. Standards-compliant decision table UI.
+
+---
+
+## 10. Apache Ecosystem Beyond NiFi
+
+Since you mentioned NiFi as a reference point:
+
+| Project | Relevance | Assessment |
+|---------|-----------|------------|
+| **Apache NiFi** | Data ingress orchestration | Already in use. Good for routing data from devices to the inspection engine. Not a rule engine itself. |
+| **Apache Kafka / Kafka Streams** | Event streaming + stream processing | Good for high-throughput inspection data pipelines. Kafka Streams could evaluate simple rules in-stream. Adds infrastructure complexity. |
+| **Apache Flink** | Complex Event Processing (CEP) | Flink CEP can detect patterns across time windows — useful for "3 consecutive out-of-spec readings" type rules. Heavy infrastructure. |
+| **Apache Camel** | Integration framework | Could replace NiFi for lighter-weight routing. Supports OPC-UA via components. |
+| **Apache Druid** | Real-time analytics | Good for dashboarding and historical analysis of inspection data. Not a rule engine. |
+
+**Assessment:** These are complementary infrastructure, not alternatives to the inspection engine itself. NiFi/Camel handle data routing. Kafka handles event streaming. Flink handles complex temporal patterns. Druid handles analytics. None of them solve the core rule authoring + evaluation problem.
+
+---
+
+## 11. Approach Comparison: Code-First vs. Low-Code vs. No-Code
+
+### Option A: "Just Write TypeScript"
+
+**How it works:** Inspection rules are TypeScript functions. Engineers write and deploy code.
+
+```typescript
+function checkTemperature(input: ControlPoint): InspectionResult {
+  if (input.temperature > 150) return { status: 'FAIL', reason: 'Over temp limit' };
+  if (input.temperature > 140) return { status: 'WARN', reason: 'Approaching limit' };
+  return { status: 'PASS' };
+}
+```
+
+| Pro | Con |
+|-----|-----|
+| Maximum flexibility | Every rule change requires a code deploy |
+| Full TypeScript tooling (types, tests, IDE) | Only developers can author/modify rules |
+| No new abstractions to learn | Rules buried in application code |
+| Easy to debug | Hard to audit what rules were active at a point in time |
+| Zero dependency overhead | No visual representation for non-technical stakeholders |
+
+**Best when:** Small team, all technical, rules rarely change, < 50 rules.
+
+---
+
+### Option B: JSON Rule Engine (json-rules-engine + expr-eval)
+
+**How it works:** Rules defined as JSON. Expression evaluator handles formulas. Custom UI for authoring.
+
+| Pro | Con |
+|-----|-----|
+| Rules are data — persist, version, audit easily | Must build your own authoring UI |
+| Non-developers can author (with UI) | JSON can become verbose for complex rules |
+| No deploy needed for rule changes | Two libraries to integrate and maintain |
+| Well-tested, production-proven libraries | Custom operators need code for complex logic |
+
+**Best when:** Medium complexity, need to separate rules from code, willing to invest in UI.
+
+---
+
+### Option C: GoRules ZEN Engine
+
+**How it works:** Rules modeled as JSON Decision Models. Visual editor provided. Expression language built in.
+
+| Pro | Con |
+|-----|-----|
+| Visual editor included (React component) | Newer project, smaller community |
+| Decision tables + expressions + rule graphs | Rust core may complicate debugging |
+| Sub-millisecond performance | ZEN Expression Language is proprietary (not TypeScript) |
+| Embeddable — no separate service | Customizing the editor requires understanding their React component |
+| JSON-portable rules with versioning | |
+
+**Best when:** Need visual authoring. Decision table model fits your inspection patterns. Want a complete solution with less custom development.
+
+---
+
+### Option D: Hybrid — TypeScript Core + Expression Engine + UI Shell
+
+**How it works:** Build a thin inspection engine in TypeScript that:
+1. Loads rule definitions from JSON/DB
+2. Uses expr-eval or math.js for expression evaluation
+3. Provides a React UI for rule authoring (using react-querybuilder or custom)
+4. Exposes an API for integration with NiFi/OPC-UA data ingress
+
+| Pro | Con |
+|-----|-----|
+| Full control over every layer | Most development effort |
+| TypeScript throughout (your team's strength) | Must design the rule model yourself |
+| Can evolve expression language over time | UI development is significant effort |
+| Integrates perfectly with ts-utils ecosystem | |
+
+**Best when:** Your domain has unique requirements that don't fit standard decision table models. You want maximum control and have the team to build it.
+
+---
+
+## 12. Recommendation & Proposed Architecture
+
+### Short Answer
+
+**GoRules ZEN Engine is the strongest existing foundation** for this use case. It provides the three critical pieces — rule engine, expression language, and visual editor — in a single coherent package with Node.js bindings.
+
+### If GoRules doesn't fit
+
+The next best approach is **Option B/D Hybrid:**
+- **json-rules-engine** for condition evaluation
+- **expr-eval** (or math.js if you need statistics) for expressions and derived calculations
+- **react-querybuilder** or custom React UI for rule authoring
+- **node-opcua** for SCADA/Ignition integration
+- **Your own thin orchestration layer** in TypeScript connecting these pieces
+
+### Proposed Architecture (Hybrid)
+
+```
+                         +---------------------------+
+                         |      React Frontend       |
+                         |  GoRules JDM Editor  OR   |
+                         |  Custom Rule Builder UI   |
+                         +---------------------------+
+                                     |
+                              Rule Definitions (JSON)
+                                     |
+                         +---------------------------+
+                         |   Inspection Engine API   |
+                         |      (TypeScript/Deno)    |
+                         +---------------------------+
+                          /            |            \
+              +-----------+  +---------+--------+  +------------+
+              | Rule       |  | Expression      |  | SPC /      |
+              | Evaluator  |  | Evaluator       |  | Statistics |
+              | (ZEN or    |  | (expr-eval or   |  | (math.js   |
+              |  json-     |  |  ZEN expr)      |  |  or custom)|
+              |  rules)    |  |                 |  |            |
+              +-----------+  +-----------------+  +------------+
+                                     |
+                         +---------------------------+
+                         |     Data Ingress Layer    |
+                         +---------------------------+
+                        /                             \
+           +-----------+---+                  +-------+--------+
+           | node-opcua    |                  | Manual Entry   |
+           | OPC-UA Client |                  | REST API /     |
+           | (Ignition,    |                  | Forms (Formio  |
+           |  PLCs, etc.)  |                  |  or custom)    |
+           +---------------+                  +----------------+
+```
+
+### Key Design Decisions
+
+1. **Rule storage:** JSON in a database with version history. Every rule change is a new version. Auditors can query "what rules were active on date X."
+
+2. **Expression language:** Start with expr-eval for simplicity. If you need Excel-style familiarity, switch to hot-formula-parser. If you need statistics, add math.js.
+
+3. **Rule evaluation model:** Event-driven. When a control point value arrives (via OPC-UA subscription or manual entry), the engine:
+   - Resolves which rules apply to that control point
+   - Evaluates expressions to compute derived values
+   - Runs rule conditions against raw + derived values
+   - Emits pass/fail/warn events
+   - Logs everything for audit
+
+4. **UI strategy:** If adopting GoRules, use their JDM Editor React component. If building custom, use react-querybuilder for conditions + a custom expression editor with syntax highlighting (CodeMirror or Monaco with a custom language mode).
+
+5. **Integration with ts-utils:** The existing `Flowable` reactive streams system could serve as the backbone for the data pipeline — control point values flow through a `FlowPublisher`, get transformed by rule evaluation processors, and produce inspection results downstream.
+
+### What NOT to do
+
+- **Don't deploy Drools/Camunda** just for the rule engine — the JVM operational overhead isn't worth it when good JS/TS alternatives exist
+- **Don't build a rule engine from scratch** when json-rules-engine or ZEN engine already solve the core evaluation problem
+- **Don't conflate NiFi's role with the rule engine** — NiFi routes data, it doesn't evaluate inspection rules
+- **Don't let users write raw TypeScript** as rules unless your user base is exclusively developers — the deployment and safety implications aren't worth it for manufacturing operations
+
+---
+
+## Appendix: Key Project Links
+
+### Rule Engines
+- [json-rules-engine](https://github.com/CacheControl/json-rules-engine) — JSON-based rule engine for Node.js
+- [GoRules ZEN Engine](https://github.com/gorules/zen) — Cross-platform decision engine with visual editor
+- [Rools](https://github.com/frankthelen/rools) — ES6 rule engine for Node.js
+- [rules-engine-ts](https://github.com/andrewvo89/rules-engine-ts) — Strongly typed TypeScript rule engine
+- [Trool](https://github.com/seanpmaxwell/Trool) — Spreadsheet-based rule engine for Node.js
+- [Node-Rules](https://github.com/mithunsatheesh/node-rules) — Forward chaining rule engine
+
+### Expression Evaluators
+- [expr-eval](https://github.com/silentmatt/expr-eval) — Safe mathematical expression evaluator
+- [math.js](https://mathjs.org/) — Extensive math library with expression parsing
+- [hot-formula-parser](https://github.com/handsontable/formula-parser) — Excel formula parser
+- [fparser](https://github.com/bylexus/fparse) — Mathematical formula parser
+
+### Decision Engines
+- [GoRules](https://gorules.io/) — Open source business rules engine (Rust + bindings)
+- [Drools](https://github.com/apache/incubator-kie-drools) — Enterprise BRMS (Java)
+- [Camunda](https://camunda.com/) — Process and decision automation
+
+### Manufacturing Integration
+- [node-opcua](https://github.com/node-opcua/node-opcua) — OPC-UA stack for Node.js/TypeScript
+- [Node-RED](https://nodered.org/) — Flow-based programming for IoT
+- [Apache NiFi](https://nifi.apache.org/) — Data routing and transformation
+
+### UI Components
+- [GoRules JDM Editor](https://github.com/gorules/zen) — React-based decision model editor
+- [react-querybuilder](https://github.com/react-querybuilder/react-querybuilder) — React query/filter builder
+- [React Flow](https://reactflow.dev/) — Node-based graph editor
+- [dmn-js](https://github.com/bpmn-io/dmn-js) — DMN decision table editor
+- [Formio](https://github.com/formio/formio) — Dynamic form builder
+
+### SPC / Quality
+- [PySpc](https://github.com/carlosqsilva/pyspc) — Python SPC charts
+- [spcchart](https://github.com/bwghughes/spc) — Python SPC with Plotly/Flask
+- [pyshewhart](https://github.com/huft-jonathan/pyshewhart) — Western Electric rules implementation
