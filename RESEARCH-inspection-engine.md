@@ -516,7 +516,12 @@ Most SPC libraries are Python-based:
 - **pyshewhart** — Western Electric rules implementation
 - **statprocon** — Lightweight, minimal dependencies
 
-**For JavaScript/TypeScript**, the SPC landscape is sparse. You would likely need to implement control chart logic (X-bar, R, S, Cpk, Nelson rules) yourself or use math.js for the statistical primitives.
+**For JavaScript/TypeScript**, the landscape is thinner but viable options exist:
+
+- **QCSPCChart** ([quinn-curtis.com](http://quinn-curtis.com/index.php/qcspcchartjsts/)) — The most comprehensive JS/TS SPC library. Supports X-Bar R, X-Bar Sigma, Individual Range, Median Range, EWMA, MA, CuSum, p, np, c, u, DPMO charts. Built-in rule sets: WECO, Nelson, Juran, Hughes, Gitlow, AAIG, Westgard, Duncan (all customizable, mix-and-match). Process capability (Cp, Cpl, Cpu, Cpk, Cpm) and process performance (Pp, Ppl, Ppu, Ppk). Zero dependencies. **Commercial license.**
+- **nelsonrules-js** ([michiel/nelsonrules-js](https://github.com/michiel/nelsonrules-js)) — Open-source implementation of all 8 Nelson rules for detecting special-cause variation. Computation-only (no charts). Pair with Plotly.js or D3 for visualization.
+- **Plotly.js** ([plotly.com/javascript/spc-control-charts/](https://plotly.com/javascript/spc-control-charts/)) — General charting library with SPC control chart examples including control limits, zones, annotations. Interactive. MIT license. You'd implement rule detection (Nelson, WECO) separately.
+- **process-control-charts** (npm) — Methods for p/np/c/u chart calculations. Unmaintained — reference only.
 
 **FlowFuse + Node-RED** offers a guide for building real-time SPC dashboards, but it's a tutorial approach, not a library.
 
@@ -534,19 +539,63 @@ The most complete open-source option. A React component that provides:
 
 ### 9.2 react-querybuilder
 
-A React component for building query/filter UIs. Useful for constructing condition trees (AND/OR nesting). Could be adapted to build rule conditions.
+| Attribute | Value |
+|-----------|-------|
+| GitHub | [react-querybuilder/react-querybuilder](https://github.com/react-querybuilder/react-querybuilder) |
+| npm | react-querybuilder (v8.14.0) |
+| License | MIT |
 
-### 9.3 React Flow
+Mature, well-documented query/rule builder. Supports drag-and-drop, nested boolean logic (AND/OR), export to SQL/MongoDB/JsonLogic/CEL/SpEL/JSONata. Has a dedicated `@react-querybuilder/rules-engine` package for if-then-else logic. Compatible with Ant Design, Material UI, Bootstrap, Fluent UI. 66 dependent npm packages.
 
-A library for building node-based editors and interactive diagrams. Could be used to build custom rule flow editors. Used by many low-code platforms internally.
+**Manufacturing relevance:** Ideal for building condition editors — e.g., "IF temperature > 150 AND pressure < 30 THEN reject". Export formats allow rules to be stored and evaluated server-side.
 
-### 9.4 react-jsonschema-form / Formio
+### 9.3 react-awesome-query-builder
 
-For the **input capture** side (manual observation forms), these provide dynamic form generation from JSON schemas. Formio in particular offers a visual form builder.
+| Attribute | Value |
+|-----------|-------|
+| GitHub | [ukrbublik/react-awesome-query-builder](https://github.com/ukrbublik/react-awesome-query-builder) |
+| Stars | ~2,200 |
+| Weekly Downloads | ~22,000 |
+| License | MIT |
 
-### 9.5 dmn-js
+Highly configurable query builder supporting complex types (structs, arrays), aggregation, proximity operators, custom functions. Exports to MongoDB, SQL, JsonLogic, ElasticSearch. Supports Ant Design, Material UI, Bootstrap, Fluent UI.
 
-The Camunda-originated DMN table editor for the browser. Standards-compliant decision table UI.
+**Manufacturing relevance:** Strong for rules referencing complex nested data structures from sensors or measurement systems.
+
+### 9.4 React Flow
+
+| Attribute | Value |
+|-----------|-------|
+| GitHub | [xyflow/xyflow](https://github.com/xyflow/xyflow) |
+| License | MIT |
+
+The most popular React library for building node-based editors and interactive diagrams. Supports custom nodes, edges, drag-and-drop, minimap, controls. Not a rule engine itself — it's the canvas for building one. Also available for Svelte.
+
+### 9.5 Flume
+
+| Attribute | Value |
+|-----------|-------|
+| Website | [flume.dev](https://flume.dev/) |
+| GitHub | [chrisjpatty/flume](https://github.com/chrisjpatty/flume) (original); [Seiko-Labs/flume](https://github.com/Seiko-Labs/flume) (maintained fork) |
+
+**What it does:** Purpose-built node editor for modeling AND executing business logic. Key differentiator: **ships with a runtime engine** that executes the visual logic graphs as JSON. Designed to be end-user friendly, not just developer-facing. Logic graphs are portable JSON, executable in browser or server.
+
+**Manufacturing relevance:** Directly applicable — inspection rules could be modeled as node graphs (e.g., "read sensor" -> "check threshold" -> "flag defect" -> "route to rework"). Non-technical quality engineers could author inspection flows. JSON portability means the same logic runs on edge devices or servers.
+
+### 9.6 react-jsonschema-form (RJSF) / Form.io
+
+For the **input capture** side (manual observation forms):
+
+- **RJSF** ([react-jsonschema-form](https://github.com/rjsf-team/react-jsonschema-form)) — Generates React forms from JSON Schema. Supports conditional fields, validation via AJV, custom widgets. Theme support for Material UI, Ant Design, Chakra, Bootstrap. The most popular React form-from-schema library.
+- **React JSON Schema Form Builder** ([ginkgobioworks](https://github.com/ginkgobioworks/react-json-schema-form-builder)) — Visual drag-and-drop editor for creating the JSON Schemas that RJSF consumes. Enables quality managers to design inspection forms without developers.
+- **Form.io** ([formio/formio](https://github.com/formio/formio)) — Combined form builder + API platform. Drag-and-drop builder creates JSON schemas with conditional field visibility, calculations, dynamic branching, file uploads. Self-hostable via Docker. **File upload supports photo documentation of defects.**
+
+### 9.7 dmn-js + dmn-eval-js
+
+- **dmn-js** ([bpmn.io](https://bpmn.io/toolkit/dmn-js/)) — The Camunda-originated DMN table editor for the browser. Standards-compliant DMN 1.3 editor/viewer. Embeddable. Note: editor only, not execution engine.
+- **dmn-eval-js** ([HBTGmbH/dmn-eval-js](https://github.com/HBTGmbH/dmn-eval-js)) — Evaluates DMN 1.1 decision tables from XML using S-FEEL expressions. Supports hit policies: FIRST, UNIQUE, RULE ORDER, COLLECT. Pair with dmn-js for a complete author-and-evaluate DMN solution in JavaScript.
+
+**Assessment:** The dmn-js + dmn-eval-js combination gives you a standards-compliant (OMG DMN) inspection rule authoring and evaluation stack in pure JavaScript. Valuable in regulated environments where standards compliance matters for audit.
 
 ---
 
@@ -554,13 +603,43 @@ The Camunda-originated DMN table editor for the browser. Standards-compliant dec
 
 Since you mentioned NiFi as a reference point:
 
-| Project | Relevance | Assessment |
-|---------|-----------|------------|
-| **Apache NiFi** | Data ingress orchestration | Already in use. Good for routing data from devices to the inspection engine. Not a rule engine itself. |
-| **Apache Kafka / Kafka Streams** | Event streaming + stream processing | Good for high-throughput inspection data pipelines. Kafka Streams could evaluate simple rules in-stream. Adds infrastructure complexity. |
-| **Apache Flink** | Complex Event Processing (CEP) | Flink CEP can detect patterns across time windows — useful for "3 consecutive out-of-spec readings" type rules. Heavy infrastructure. |
-| **Apache Camel** | Integration framework | Could replace NiFi for lighter-weight routing. Supports OPC-UA via components. |
-| **Apache Druid** | Real-time analytics | Good for dashboarding and historical analysis of inspection data. Not a rule engine. |
+### 10.1 Apache NiFi
+Already in use on your team. Good for routing data from devices to the inspection engine. Not a rule engine itself — it's the plumbing.
+
+### 10.2 Apache Kafka / Kafka Streams
+
+Event streaming platform + stream processing library. **Documented manufacturing pattern:** sensor ID as key, sensor reading as value, aggregated via Processor API with state stores, Punctuator checks thresholds periodically and emits alerts. Can integrate with Drools for rule evaluation — the CEP engine reads from Kafka streams and gets rules from Drools Workbench, separating rule authoring from stream processing infrastructure.
+
+A [Kafka Streams CEP library](https://github.com/fhussonnois/kafkastreams-cep) adds a Pattern API for defining complex event sequences on top of Kafka Streams.
+
+**Assessment:** The backbone for high-throughput inspection data pipelines. Adds significant infrastructure complexity. Best when you need to process millions of inspection events/second or integrate with other Kafka-based systems.
+
+### 10.3 Apache Flink (FlinkCEP)
+
+True streaming engine with the **FlinkCEP library** — a Pattern API for detecting complex event sequences in real-time streams. Supports:
+- Strict/relaxed contiguity (must events be consecutive?)
+- Temporal constraints (e.g., "pattern must occur within 10 seconds")
+- Quantifiers and conditions
+- Dynamic rule updates without restarting the pipeline
+
+**Manufacturing examples:**
+- Detecting 3 consecutive readings above upper control limit within 60 seconds
+- Correlating defect events across multiple production stations within a time window
+- Predicting equipment failure from degradation patterns
+
+**Assessment:** Superior to Kafka Streams for **complex temporal pattern detection**. The temporal constraint features map directly to manufacturing inspection scenarios. Heavy infrastructure, but if you need real-time multi-station correlation or time-windowed pattern detection, Flink CEP is the right tool.
+
+### 10.4 Apache Camel
+
+Integration framework with 300+ connectors. Implements Enterprise Integration Patterns (routing, transformation, mediation, filtering). Has a Karavan visual designer for YAML-based route definitions.
+
+**Assessment:** Could replace NiFi for lighter-weight routing. Excels at connecting inspection stations, MES, ERP, and quality databases. Not a rule engine.
+
+### 10.5 Apache Druid
+
+Real-time OLAP database with sub-second query latency on billions of rows. Ingests millions of events/second from Kafka. Column-oriented storage with automatic data rollup.
+
+**Assessment:** The analytics layer for inspection data — trending defect rates, identifying shifts with anomalous quality metrics, drill-down by product/line/station/shift. Not a rule engine, but the right tool for historical inspection analytics dashboards.
 
 **Assessment:** These are complementary infrastructure, not alternatives to the inspection engine itself. NiFi/Camel handle data routing. Kafka handles event streaming. Flink handles complex temporal patterns. Druid handles analytics. None of them solve the core rule authoring + evaluation problem.
 
@@ -757,12 +836,20 @@ The next best approach is **Option B/D Hybrid:**
 
 ### UI Components
 - [GoRules JDM Editor](https://github.com/gorules/zen) — React-based decision model editor
-- [react-querybuilder](https://github.com/react-querybuilder/react-querybuilder) — React query/filter builder
-- [React Flow](https://reactflow.dev/) — Node-based graph editor
-- [dmn-js](https://github.com/bpmn-io/dmn-js) — DMN decision table editor
-- [Formio](https://github.com/formio/formio) — Dynamic form builder
+- [react-querybuilder](https://github.com/react-querybuilder/react-querybuilder) — React query/filter builder (v8.14, MIT)
+- [react-awesome-query-builder](https://github.com/ukrbublik/react-awesome-query-builder) — Advanced query builder (~2.2K stars)
+- [React Flow](https://reactflow.dev/) — Node-based graph editor (xyflow)
+- [Flume](https://flume.dev/) — Node editor with built-in runtime execution engine
+- [dmn-js](https://github.com/bpmn-io/dmn-js) — DMN decision table editor (Camunda/bpmn.io)
+- [dmn-eval-js](https://github.com/HBTGmbH/dmn-eval-js) — DMN 1.1 decision table evaluator for JS
+- [react-jsonschema-form](https://github.com/rjsf-team/react-jsonschema-form) — Forms from JSON Schema
+- [React JSON Schema Form Builder](https://github.com/ginkgobioworks/react-json-schema-form-builder) — Visual form schema designer
+- [Formio](https://github.com/formio/formio) — Dynamic form builder + API platform
 
 ### SPC / Quality
-- [PySpc](https://github.com/carlosqsilva/pyspc) — Python SPC charts
+- [QCSPCChart](http://quinn-curtis.com/index.php/qcspcchartjsts/) — Comprehensive JS/TS SPC charts (commercial)
+- [nelsonrules-js](https://github.com/michiel/nelsonrules-js) — All 8 Nelson rules in JavaScript (open source)
+- [Plotly.js SPC Charts](https://plotly.com/javascript/spc-control-charts/) — Interactive SPC control charts (MIT)
+- [PySpc](https://github.com/carlosqsilva/pyspc) — Python SPC charts (reference)
 - [spcchart](https://github.com/bwghughes/spc) — Python SPC with Plotly/Flask
 - [pyshewhart](https://github.com/huft-jonathan/pyshewhart) — Western Electric rules implementation
