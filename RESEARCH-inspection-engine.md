@@ -167,11 +167,56 @@ Each layer has different candidate technologies. The best overall solution likel
 
 ---
 
+### 3.6 json-logic-js
+
+| Attribute | Value |
+|-----------|-------|
+| GitHub | [jwadhams/json-logic-js](https://github.com/jwadhams/json-logic-js) |
+| License | MIT |
+| Language | JavaScript |
+
+**What it does:** Serializes logic rules as JSON — share between front-end and back-end regardless of language. Supports `var`, `if`, comparison, arithmetic, array, string, and logic operators. Language-agnostic spec at JsonLogic.com.
+
+**Example:**
+```json
+{ "and": [
+  { ">": [{ "var": "temperature" }, 150] },
+  { "<": [{ "var": "pressure" }, 30] }
+]}
+```
+
+**Notable variant:** [json-logic-engine](https://github.com/json-logic/json-logic-engine) — modern alternative with ~5x faster evaluation, logic compilation for 12.5-20x improvement, first-class async support.
+
+**Assessment:** More primitive than json-rules-engine (no events, priorities, or fact resolution) but the JSON format is extremely portable and there are implementations in 15+ languages. Good if you need cross-platform rule evaluation (e.g., rules evaluated on both server and in-browser). The compilation-based variant is very fast.
+
+---
+
+### 3.7 JEXL (JavaScript Expression Language)
+
+| Attribute | Value |
+|-----------|-------|
+| GitHub | [TomFrost/Jexl](https://github.com/TomFrost/Jexl) |
+| npm | jexl (v2.3.0) |
+| License | MIT |
+
+**What it does:** Context-based expression parser with transforms (piped functions), custom binary/unary operators, sync and async evaluation. Used by Mozilla in SHIELD/Normandy.
+
+**Example:**
+```javascript
+jexl.eval('temperature > 150 && pressure|classify == "critical"', context)
+```
+
+**Assessment:** Bridges the gap between a pure math evaluator and a full rule engine. The transform pipe syntax (`value|transform`) is intuitive for manufacturing — e.g., `reading|movingAverage > threshold`. Async evaluation is valuable for fetching reference data during rule evaluation. Worth considering as the expression layer if you want more than math.
+
+---
+
 ### Summary Table: JS/TS Rule Engines
 
 | Engine | Serializable Rules | TypeScript | Active | UI Possible | Expression Support | Best For |
 |--------|-------------------|------------|--------|-------------|-------------------|----------|
 | json-rules-engine | JSON | Types available | Yes | Yes (build your own) | No (pair with evaluator) | Production rule evaluation |
+| json-logic-js | JSON | No (JS) | Yes | Yes (JSON format) | Built-in operators | Cross-platform portable rules |
+| JEXL | String expressions | No (JS) | Yes | Possible | Rich expression lang | Expression-centric rules |
 | Nools | DSL files | No | No | No | Limited | Legacy only |
 | Rools | Code only | Types available | Yes | Difficult | Via functions | Code-first |
 | rules-engine-ts | Code only | Native | Yes | Difficult | Via TypeScript | Type-safe code-first |
@@ -232,9 +277,15 @@ const result = expr.evaluate({ temperature: 162, baseline: 150, stddev: 4 }); //
 
 ### 4.4 Filtrex
 
-**What it does:** Compiles user-provided expressions to JavaScript functions without `eval()`. Designed for safe filtering/evaluation of user input.
+| Attribute | Value |
+|-----------|-------|
+| GitHub | [joewalnes/filtrex](https://github.com/joewalnes/filtrex) (original, ~1,100 stars); [cshaa/filtrex](https://github.com/cshaa/filtrex) (active fork) |
+| Weekly Downloads | ~319,400 |
+| License | MIT |
 
-**Assessment:** Lightweight and safe. Good for simple boolean conditions. Less suitable for complex derived calculations.
+**What it does:** Compiles user-provided expressions to JavaScript functions without `eval()`. Sandboxed — developer controls accessible data and callable functions. No loops or recursion possible (predictable execution time). Uses Jison parser. Spreadsheet-like expression syntax. Never throws during execution (returns errors instead).
+
+**Assessment:** Surprisingly popular (~319K weekly downloads). The safety guarantees are valuable for manufacturing — expressions can't hang or access unauthorized data. The spreadsheet-like syntax is familiar to quality engineers. The "never throws" behavior is ideal for production rule evaluation. Strong contender for the expression layer if safety is a priority.
 
 ---
 
@@ -365,9 +416,22 @@ These are included for completeness. They represent the mature end of the spectr
 | License | Open source + commercial |
 | Language | Java |
 
-**What it does:** Decision modeling via Excel spreadsheets with a Java execution engine.
+**What it does:** Decision modeling via Excel spreadsheets with a Java execution engine. Decision intelligence platform combining business rules + ML + optimization. Deploys as REST services, serverless, or containers.
 
 **Assessment:** The spreadsheet approach is interesting for manufacturing, but locked to JVM.
+
+### 6.4 OpenL Tablets
+
+| Attribute | Value |
+|-----------|-------|
+| GitHub | [openl-tablets/openl-tablets](https://github.com/openl-tablets/openl-tablets) |
+| Stars | ~190 |
+| License | LGPL |
+| Language | Java |
+
+**What it does:** Excel-based rule authoring with WebStudio for web-based editing. Deploys as REST/Kafka services. Compile-time validation and AI-assisted integration.
+
+**Assessment:** Similar to OpenRules — Excel as the rule authoring interface. The Kafka integration is notable for stream-based rule evaluation. JVM dependency is the blocker for TypeScript stacks.
 
 ---
 
@@ -406,26 +470,42 @@ Ignition/PLC → OPC-UA Server → node-opcua client → Inspection Engine → P
 | Attribute | Value |
 |-----------|-------|
 | Website | [nodered.org](https://nodered.org/) |
+| GitHub Stars | ~20,000+ |
 | License | Apache 2.0 |
 
-**What it does:** Flow-based programming tool for wiring together hardware devices, APIs, and online services. Visual browser-based editor. Has OPC-UA nodes available.
+**What it does:** Flow-based programming tool for wiring together hardware devices, APIs, and online services. Visual browser-based editor. 4,000+ community nodes including Modbus, OPC-UA, Siemens S7, MQTT, BACnet. Central component of the MING stack.
 
 **Assessment:** Conceptually similar to Apache NiFi but lighter weight. Could serve as the data ingress orchestration layer. However, embedding rule evaluation logic in Node-RED flows mixes concerns. Better as a complement to (not replacement for) a dedicated inspection engine.
+
+### 7.3 MING Stack (MQTT + InfluxDB + Node-RED + Grafana)
+
+An emerging open-source reference architecture for manufacturing data pipelines:
+
+- **MQTT** (via MQTT.js or Mosquitto) — Lightweight pub-sub messaging from devices
+- **InfluxDB** — Time-series storage for sensor/control point data
+- **Node-RED** — Data routing, transformation, protocol bridging
+- **Grafana** — Dashboarding, alerting, visualization
+
+**Assessment:** Proven pattern for IIoT data collection and monitoring. The inspection engine would sit between the ingress layer (Node-RED/MQTT) and the storage/visualization layer (InfluxDB/Grafana), consuming control point data and producing pass/fail results that flow downstream into dashboards and alerts.
 
 ---
 
 ## 8. Open Source Quality/SPC Systems
 
-### 8.1 Existing QMS Platforms
+### 8.1 Existing QMS & MES Platforms
 
 | Platform | Focus | Stack | Assessment |
 |----------|-------|-------|------------|
-| **QDMS** | Document management, audits, compliance | Various | Too focused on document control, not real-time inspection |
-| **OpenQuality** | Issue tracking, nonconformity logging | Node.js + MongoDB | Early-stage, lightweight. Could complement but not replace inspection engine |
+| **Carbon** ([crbnos/carbon](https://github.com/crbnos/carbon)) | Combined ERP + MES + QMS | TypeScript / Supabase (AGPL) | Most interesting for TypeScript teams. Targets complex assembly, contract mfg, configure-to-order. Extensible via API. Web UI included. |
+| **Open EQMS** ([dromation/open-eqms](https://github.com/dromation/open-eqms)) | Full quality system | Web-based | Includes SPC, measurement system analysis, calibration, CAPA, training. Most comprehensive open-source QMS found. |
+| **OpenQMS.net** ([C-realize/OpenQMS](https://github.com/C-realize/OpenQMS)) | Life science QMS | AGPL + commercial | Cloud-native, GxP/Part 11 compliant. Lightweight. Niche for regulated industries. |
+| **Libre MES** ([Spruik/Libre](https://github.com/Spruik/Libre)) | MES + performance monitoring | Grafana + InfluxDB + Postgres | Good for OEE dashboarding. Built on proven time-series infrastructure. |
+| **FlinkISO** ([flinkiso.com](https://www.flinkiso.com/)) | ISO compliance QMS | LAMP stack | Document control, approval workflows. ISO 9001/14001/45001/13485. |
+| **QDMS** | Document management, audits | Various | Too focused on document control, not real-time inspection |
 | **Senaite (Bika LIMS)** | Laboratory information management | Python/Plone | Lab-focused, not manufacturing floor inspection |
 | **qmsWrapper** | Medical device QMS | Commercial core | Too specialized for medical device compliance |
 
-**Assessment:** No existing open-source QMS provides the real-time rule evaluation engine needed. These systems focus on document control, audit management, and compliance tracking — not on evaluating live sensor data against configurable rule sets.
+**Assessment:** **Carbon** is the most notable find — it's a TypeScript-based combined ERP/MES/QMS built on Supabase. While it doesn't provide a configurable rule engine, its data model and UI patterns for manufacturing operations could inform or accelerate the inspection engine's UI layer. **Open EQMS** is the most feature-complete QMS and includes SPC, but its rule evaluation is not externally configurable. No existing open-source QMS provides the real-time, configurable rule evaluation engine needed — they focus on document control, audit management, and compliance tracking.
 
 ### 8.2 SPC Libraries
 
@@ -642,8 +722,11 @@ The next best approach is **Option B/D Hybrid:**
 ## Appendix: Key Project Links
 
 ### Rule Engines
-- [json-rules-engine](https://github.com/CacheControl/json-rules-engine) — JSON-based rule engine for Node.js
-- [GoRules ZEN Engine](https://github.com/gorules/zen) — Cross-platform decision engine with visual editor
+- [json-rules-engine](https://github.com/CacheControl/json-rules-engine) — JSON-based rule engine for Node.js (~3K stars, ~311K weekly downloads)
+- [GoRules ZEN Engine](https://github.com/gorules/zen) — Cross-platform decision engine with visual editor (Rust + Node.js bindings)
+- [json-logic-js](https://github.com/jwadhams/json-logic-js) — Language-agnostic JSON logic rules
+- [json-logic-engine](https://github.com/json-logic/json-logic-engine) — Modern json-logic with 5-20x faster compilation
+- [JEXL](https://github.com/TomFrost/Jexl) — JavaScript Expression Language with transforms (used by Mozilla)
 - [Rools](https://github.com/frankthelen/rools) — ES6 rule engine for Node.js
 - [rules-engine-ts](https://github.com/andrewvo89/rules-engine-ts) — Strongly typed TypeScript rule engine
 - [Trool](https://github.com/seanpmaxwell/Trool) — Spreadsheet-based rule engine for Node.js
@@ -651,7 +734,8 @@ The next best approach is **Option B/D Hybrid:**
 
 ### Expression Evaluators
 - [expr-eval](https://github.com/silentmatt/expr-eval) — Safe mathematical expression evaluator
-- [math.js](https://mathjs.org/) — Extensive math library with expression parsing
+- [Filtrex](https://github.com/cshaa/filtrex) — Sandboxed expression compiler (~319K weekly downloads)
+- [math.js](https://mathjs.org/) — Extensive math library with expression parsing (~15K stars, ~2.3M weekly downloads)
 - [hot-formula-parser](https://github.com/handsontable/formula-parser) — Excel formula parser
 - [fparser](https://github.com/bylexus/fparse) — Mathematical formula parser
 
@@ -659,11 +743,17 @@ The next best approach is **Option B/D Hybrid:**
 - [GoRules](https://gorules.io/) — Open source business rules engine (Rust + bindings)
 - [Drools](https://github.com/apache/incubator-kie-drools) — Enterprise BRMS (Java)
 - [Camunda](https://camunda.com/) — Process and decision automation
+- [OpenL Tablets](https://github.com/openl-tablets/openl-tablets) — Excel-based rules with web studio (Java)
 
 ### Manufacturing Integration
-- [node-opcua](https://github.com/node-opcua/node-opcua) — OPC-UA stack for Node.js/TypeScript
-- [Node-RED](https://nodered.org/) — Flow-based programming for IoT
+- [node-opcua](https://github.com/node-opcua/node-opcua) — OPC-UA stack for Node.js/TypeScript (~1.6K stars)
+- [Node-RED](https://nodered.org/) — Flow-based programming for IoT (~20K stars)
 - [Apache NiFi](https://nifi.apache.org/) — Data routing and transformation
+
+### Manufacturing QMS/MES
+- [Carbon](https://github.com/crbnos/carbon) — TypeScript ERP/MES/QMS on Supabase (AGPL)
+- [Open EQMS](https://github.com/dromation/open-eqms) — Full QMS with SPC, calibration, CAPA
+- [Libre MES](https://github.com/Spruik/Libre) — MES on Grafana + InfluxDB + Postgres
 
 ### UI Components
 - [GoRules JDM Editor](https://github.com/gorules/zen) — React-based decision model editor
