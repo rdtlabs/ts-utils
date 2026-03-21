@@ -100,7 +100,11 @@ export function calculateExponentialDelay(
   const minDelay = delay - jitterValue;
   const maxDelayWithJitter = delay + jitterValue;
 
+  const randomBuffer = new Uint32Array(1);
+  crypto.getRandomValues(randomBuffer);
+  const randomFraction = randomBuffer[0] / (0xFFFFFFFF + 1);
+
   return Math.floor(
-    Math.random() * (maxDelayWithJitter - minDelay + 1) + minDelay,
+    randomFraction * (maxDelayWithJitter - minDelay + 1) + minDelay,
   );
 }
