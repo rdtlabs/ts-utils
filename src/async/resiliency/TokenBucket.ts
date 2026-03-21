@@ -47,6 +47,15 @@ export interface TokenBucket {
   getTimeUntilConsumable(tokens: number): number;
 }
 
+type TokenBucketEx = {
+  new (): TokenBucket;
+} & {
+  /** A TokenBucket that always allows consumption (unlimited rate) */
+  UNLIMITED: TokenBucket;
+  /** A TokenBucket that always throws NonRetryableError (blocked) */
+  NON_RETRYABLE: TokenBucket;
+};
+
 /**
  * Creates a new TokenBucket instance with the specified capacity and replenishment rate.
  *
@@ -67,14 +76,7 @@ export interface TokenBucket {
 export const TokenBucket = function (
   maxTokenBalance: number,
   replenishInterval = 1000,
-) : {{
-  new (): TokenBucket;
-} & {
-  /** A TokenBucket that always allows consumption (unlimited rate) */
-  UNLIMITED: TokenBucket;
-  /** A TokenBucket that always throws NonRetryableError (blocked) */
-  NON_RETRYABLE: TokenBucket;
-}}
+) : TokenBucketEx {
   return tokenBucket(maxTokenBalance, replenishInterval});
 } as unknown as {
   new (): TokenBucket;
