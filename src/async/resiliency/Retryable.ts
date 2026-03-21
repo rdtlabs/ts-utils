@@ -60,7 +60,9 @@ export type Retryable = {
  * const result = await Retryable.NONE.execute(myFn);
  * ```
  */
-export const Retryable = function () {
+export const Retryable = function (): {
+  new (): Retryable;
+}
   // deno-lint-ignore no-explicit-any
   return retryable() as any;
 } as unknown as {
