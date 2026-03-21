@@ -67,8 +67,15 @@ export interface TokenBucket {
 export const TokenBucket = function (
   maxTokenBalance: number,
   replenishInterval = 1000,
-) {
-  return tokenBucket(maxTokenBalance, replenishInterval);
+) : {{
+  new (): TokenBucket;
+} & {
+  /** A TokenBucket that always allows consumption (unlimited rate) */
+  UNLIMITED: TokenBucket;
+  /** A TokenBucket that always throws NonRetryableError (blocked) */
+  NON_RETRYABLE: TokenBucket;
+}}
+  return tokenBucket(maxTokenBalance, replenishInterval});
 } as unknown as {
   new (): TokenBucket;
 } & {
