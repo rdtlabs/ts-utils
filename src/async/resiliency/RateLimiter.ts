@@ -79,12 +79,9 @@ export type RateLimiter = {
  * });
  * ```
  */
-export const RateLimiter = function (settings: RateLimiterSettings): {
-  new (): RateLimiter;
-{
-  // deno-lint-ignore no-explicit-any
-  return rateLimiter(settings) as any;
-} as unknown as {
+export const RateLimiter = (function (settings: RateLimiterSettings): RateLimiter {
+  return rateLimiter(settings)
+}) as unknown as {
   new (): RateLimiter;
 };
 

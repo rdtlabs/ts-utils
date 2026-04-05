@@ -3,8 +3,8 @@
  * timeouts and cancellations.
  */
 export interface Deadline {
-  readonly remainingMillis: number;
-  readonly isExpired: boolean;
+  get remainingMillis(): number;
+  get isExpired(): boolean;
 }
 
 /**

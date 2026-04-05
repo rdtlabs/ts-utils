@@ -73,12 +73,12 @@ type TokenBucketEx = {
  * const blocked = TokenBucket.NON_RETRYABLE; // Always throws
  * ```
  */
-export const TokenBucket = function (
+export const TokenBucket = (function (
   maxTokenBalance: number,
   replenishInterval = 1000,
-) : TokenBucketEx {
-  return tokenBucket(maxTokenBalance, replenishInterval});
-} as unknown as {
+): TokenBucket {
+  return tokenBucket(maxTokenBalance, replenishInterval);
+}) as unknown as{
   new (): TokenBucket;
 } & {
   /** A TokenBucket that always allows consumption (unlimited rate) */

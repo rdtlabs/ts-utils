@@ -76,11 +76,11 @@ export const Maybe: __MaybeStatic = Object.freeze({
   /**
    * Creates a Promise<Maybe> instance from the provided value or promise.
    */
-  ofAsync<T>(value?: T | Promise<T>): Promise<Maybe<T>> {
+  async ofAsync<T>(value?: T | Promise<T>): Promise<Maybe<T>> {
     if (value instanceof Promise) {
-      return value.then(maybe);
+      return await value.then(maybe);
     }
-    return Promise.resolve(maybe(value));
+    return maybe(value);
   },
 });
 
