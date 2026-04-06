@@ -1,12 +1,17 @@
-import { assertEquals } from "https://deno.land/std@0.213.0/assert/assert_equals.ts";
-import { applyBrand, readBrand } from "./_internal.ts";
+import { assertEquals, assertThrows } from "@std/assert";
 import {
+  compositeValueObjectFromJSON,
+  createCompositeValueObject,
+  createValueMap,
+  createValueObject,
+  createValueSet,
   getValueKind,
   isBrandedValue,
   isCompositeValueObject,
   isFlatValueObject,
   isValueObject,
-} from "./guards.ts";
+  valueObjectFromJSON,
+} from "./index.ts";
 import type {
   Branded,
   CompositeValueObject,
@@ -89,7 +94,6 @@ type WithAllCollections = CompositeValueObject<{
 }>;
 
 // --- Negative tests (these should NOT compile) ---
-// Uncomment any of these to verify they produce compile errors:
 
 // @ts-expect-error — plain object is not a ValuePrimitive
 type _Bad1 = ValueObject<{ nested: { foo: string } }>;
@@ -106,32 +110,231 @@ type _Bad4 = CompositeValueObject<{
   data: { foo: string };
 }>;
 
-// Note: string[] is structurally compatible with ReadonlyArray<string>,
-// so it passes the constraint. Readonly<T> on ValueObject makes the
-// property itself readonly. Deep array immutability is enforced at runtime.
+// Suppress unused type warnings
+const _useTypes: [
+  Address?,
+  Money?,
+  TaggedItem?,
+  WithOptional?,
+  WithNull?,
+  Person?,
+  WithValueMap?,
+  WithValueSet?,
+  WithAllCollections?,
+  _Bad1?,
+  _Bad2?,
+  _Bad3?,
+  _Bad4?,
+] = [];
+void _useTypes;
 
 // =============================================================================
-// Runtime tests — verify guards and branding
+// Factory tests — createValueObject
 // =============================================================================
 
-Deno.test("applyBrand sets non-enumerable, non-writable brand", () => {
-  const obj = applyBrand({ name: "test" }, "flat");
+Deno.test("createValueObject produces a frozen, branded flat object", () => {
+  const addr = createValueObject({
+    street: "123 Main",
+    city: "NYC",
+    state: "NY",
+    zip: "10001",
+  });
 
-  assertEquals(getValueKind(obj), "flat");
-  assertEquals(Object.keys(obj).includes("ValueObject"), false);
-
-  const descriptor = Object.getOwnPropertyDescriptors(obj);
-  // The brand is symbol-keyed so won't appear in string-keyed descriptors
-  assertEquals("name" in descriptor, true);
+  assertEquals(addr.street, "123 Main");
+  assertEquals(addr.city, "NYC");
+  assertEquals(Object.isFrozen(addr), true);
+  assertEquals(isFlatValueObject(addr), true);
+  assertEquals(getValueKind(addr), "flat");
 });
 
-Deno.test("isValueObject returns true for branded objects", () => {
-  const flat = Object.freeze(applyBrand({ street: "123 Main" }, "flat"));
-  const composite = Object.freeze(applyBrand({ name: "Alice" }, "composite"));
+Deno.test("createValueObject freezes nested arrays", () => {
+  const tagged = createValueObject({
+    name: "item",
+    tags: ["a", "b", "c"],
+  });
 
-  assertEquals(isValueObject(flat), true);
-  assertEquals(isValueObject(composite), true);
+  assertEquals(Object.isFrozen(tagged.tags), true);
+  assertEquals(tagged.tags.length, 3);
 });
+
+Deno.test("createValueObject allows Date values", () => {
+  const obj = createValueObject({
+    name: "test",
+    createdAt: new Date("2024-01-01"),
+  });
+
+  assertEquals(obj.createdAt instanceof Date, true);
+  assertEquals(Object.isFrozen(obj), true);
+});
+
+Deno.test("createValueObject allows null values", () => {
+  const obj = createValueObject({
+    name: "test",
+    deletedAt: null,
+  });
+
+  assertEquals(obj.deletedAt, null);
+});
+
+Deno.test("createValueObject rejects nested objects at runtime", () => {
+  assertThrows(
+    () =>
+      createValueObject({
+        name: "bad",
+        nested: { foo: "bar" },
+      } as Record<string, unknown> as Parameters<typeof createValueObject>[0]),
+    TypeError,
+    "must be a primitive",
+  );
+});
+
+// =============================================================================
+// Factory tests — createCompositeValueObject
+// =============================================================================
+
+Deno.test("createCompositeValueObject with pre-branded nested value objects", () => {
+  const addr = createValueObject({
+    street: "123 Main",
+    city: "NYC",
+    state: "NY",
+    zip: "10001",
+  });
+
+  const person = createCompositeValueObject({
+    name: "Alice",
+    age: 30,
+    address: addr,
+  });
+
+  assertEquals(person.name, "Alice");
+  assertEquals(person.address.street, "123 Main");
+  assertEquals(Object.isFrozen(person), true);
+  assertEquals(isCompositeValueObject(person), true);
+  assertEquals(getValueKind(person), "composite");
+  // Nested object was already branded — should still be
+  assertEquals(isFlatValueObject(person.address), true);
+});
+
+Deno.test("createCompositeValueObject auto-materializes plain nested objects", () => {
+  const person = createCompositeValueObject({
+    name: "Bob",
+    address: { street: "456 Oak", city: "LA", state: "CA", zip: "90001" },
+  } as Parameters<typeof createCompositeValueObject>[0]);
+
+  assertEquals(Object.isFrozen(person), true);
+  assertEquals(isCompositeValueObject(person), true);
+  // The nested plain object should now be branded as flat
+  assertEquals(isFlatValueObject(person.address), true);
+  assertEquals(Object.isFrozen(person.address), true);
+});
+
+Deno.test("createCompositeValueObject auto-materializes objects in arrays", () => {
+  const addr1 = createValueObject({
+    street: "1st",
+    city: "A",
+    state: "NY",
+    zip: "00001",
+  });
+
+  const person = createCompositeValueObject({
+    name: "Carol",
+    addresses: [
+      addr1,
+      { street: "2nd", city: "B", state: "CA", zip: "00002" },
+    ],
+  } as Parameters<typeof createCompositeValueObject>[0]);
+
+  assertEquals(Object.isFrozen(person.addresses), true);
+  assertEquals(isFlatValueObject(person.addresses[0]), true);
+  assertEquals(isFlatValueObject(person.addresses[1]), true);
+});
+
+Deno.test("createCompositeValueObject short-circuits already-branded objects", () => {
+  const addr = createValueObject({
+    street: "123 Main",
+    city: "NYC",
+    state: "NY",
+    zip: "10001",
+  });
+
+  // The address is already branded+frozen — should not be re-processed
+  const person = createCompositeValueObject({
+    name: "Dave",
+    address: addr,
+  });
+
+  // Same reference since it was short-circuited (spread copies the ref)
+  assertEquals(person.address.street, "123 Main");
+  assertEquals(isFlatValueObject(person.address), true);
+});
+
+// =============================================================================
+// Factory tests — createValueMap / createValueSet
+// =============================================================================
+
+Deno.test("createValueMap creates a branded map with frozen values", () => {
+  const addr = createValueObject({
+    street: "123",
+    city: "NYC",
+    state: "NY",
+    zip: "10001",
+  });
+
+  const map = createValueMap([["home", addr]]);
+
+  assertEquals(isBrandedValue(map), true);
+  assertEquals(getValueKind(map), "map");
+  assertEquals(map.get("home")?.street, "123");
+});
+
+Deno.test("createValueSet creates a branded set with frozen values", () => {
+  const addr = createValueObject({
+    street: "123",
+    city: "NYC",
+    state: "NY",
+    zip: "10001",
+  });
+
+  const set = createValueSet([addr]);
+
+  assertEquals(isBrandedValue(set), true);
+  assertEquals(getValueKind(set), "set");
+  assertEquals(set.size, 1);
+});
+
+// =============================================================================
+// Factory tests — fromJSON
+// =============================================================================
+
+Deno.test("valueObjectFromJSON materializes from JSON string", () => {
+  const json = '{"street":"789 Pine","city":"CHI","state":"IL","zip":"60601"}';
+  const addr = valueObjectFromJSON<{
+    street: string;
+    city: string;
+    state: string;
+    zip: string;
+  }>(json);
+
+  assertEquals(addr.street, "789 Pine");
+  assertEquals(Object.isFrozen(addr), true);
+  assertEquals(isFlatValueObject(addr), true);
+});
+
+Deno.test("compositeValueObjectFromJSON materializes nested objects", () => {
+  const json =
+    '{"name":"Eve","address":{"street":"321 Elm","city":"SF","state":"CA","zip":"94101"}}';
+  // No explicit type param — defaults to any. Runtime validation is the safety net.
+  const person = compositeValueObjectFromJSON(json);
+
+  assertEquals(person.name, "Eve");
+  assertEquals(Object.isFrozen(person), true);
+  assertEquals(isCompositeValueObject(person), true);
+  assertEquals(isFlatValueObject(person.address), true);
+});
+
+// =============================================================================
+// Guard tests
+// =============================================================================
 
 Deno.test("isValueObject returns false for plain objects", () => {
   assertEquals(isValueObject({ name: "test" }), false);
@@ -141,54 +344,8 @@ Deno.test("isValueObject returns false for plain objects", () => {
   assertEquals(isValueObject("string"), false);
 });
 
-Deno.test("isBrandedValue detects all brand kinds", () => {
-  const flat = applyBrand({}, "flat");
-  const composite = applyBrand({}, "composite");
-  const map = applyBrand(new Map(), "map");
-  const set = applyBrand(new Set(), "set");
-
-  assertEquals(isBrandedValue(flat), true);
-  assertEquals(isBrandedValue(composite), true);
-  assertEquals(isBrandedValue(map), true);
-  assertEquals(isBrandedValue(set), true);
-});
-
-Deno.test("getValueKind returns correct kind", () => {
-  assertEquals(getValueKind(applyBrand({}, "flat")), "flat");
-  assertEquals(getValueKind(applyBrand({}, "composite")), "composite");
-  assertEquals(getValueKind(applyBrand(new Map(), "map")), "map");
-  assertEquals(getValueKind(applyBrand(new Set(), "set")), "set");
-});
-
-Deno.test("getValueKind returns undefined for unbranded objects", () => {
-  assertEquals(getValueKind({}), undefined);
-  assertEquals(getValueKind(new Map()), undefined);
-});
-
-Deno.test("isFlatValueObject and isCompositeValueObject", () => {
-  const flat = applyBrand({}, "flat");
-  const composite = applyBrand({}, "composite");
-
-  assertEquals(isFlatValueObject(flat), true);
-  assertEquals(isFlatValueObject(composite), false);
-  assertEquals(isCompositeValueObject(composite), true);
-  assertEquals(isCompositeValueObject(flat), false);
-});
-
-Deno.test("brand cannot be overwritten on frozen object", () => {
-  const obj = Object.freeze(applyBrand({ name: "immutable" }, "flat"));
-
-  // Attempting to modify the brand should fail silently (frozen + non-configurable)
-  try {
-    (obj as Record<string, unknown>)["name"] = "changed";
-  } catch {
-    // Expected in strict mode
-  }
-  assertEquals((obj as Record<string, unknown>)["name"], "immutable");
-});
-
 Deno.test("brand is not visible via Object.keys or JSON.stringify", () => {
-  const obj = applyBrand({ name: "test", age: 30 }, "flat");
+  const obj = createValueObject({ name: "test", age: 30 });
 
   assertEquals(Object.keys(obj), ["name", "age"]);
   assertEquals(JSON.stringify(obj), '{"name":"test","age":30}');
@@ -199,4 +356,15 @@ Deno.test("spoofed symbol does not match runtime brand", () => {
 
   assertEquals(isValueObject(fake), false);
   assertEquals(getValueKind(fake), undefined);
+});
+
+Deno.test("brand cannot be overwritten on frozen value object", () => {
+  const obj = createValueObject({ name: "immutable" });
+
+  try {
+    (obj as Record<string, unknown>)["name"] = "changed";
+  } catch {
+    // Expected in strict mode
+  }
+  assertEquals(obj.name, "immutable");
 });

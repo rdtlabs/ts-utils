@@ -15,6 +15,9 @@
 
 declare const VALUE_OBJECT_BRAND: unique symbol;
 
+/** Type-only export of the phantom brand symbol. No runtime value exists. */
+export type VALUE_OBJECT_BRAND = typeof VALUE_OBJECT_BRAND;
+
 // -----------------------------------------------------------------------------
 // Primitives
 // -----------------------------------------------------------------------------
@@ -131,6 +134,9 @@ export type ValueMap<
 export type ValueSet<
   V extends { readonly [VALUE_OBJECT_BRAND]: "flat" },
 > = ReadonlySet<V> & { readonly [VALUE_OBJECT_BRAND]: "set" };
+
+/** Constraint type: matches any flat-branded value object. */
+export type FlatBranded = { readonly [VALUE_OBJECT_BRAND]: "flat" };
 
 // -----------------------------------------------------------------------------
 // Union / base types

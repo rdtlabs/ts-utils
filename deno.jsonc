@@ -8,7 +8,8 @@
     "./cancellation": "./src/cancellation/index.ts",
     "./crypto": "./src/crypto/index.ts",
     "./encoding": "./src/encoding/index.ts",
-    "./errors": "./src/errors/index.ts"
+    "./errors": "./src/errors/index.ts",
+    "./value": "./src/value/index.ts"
   },
   "publish": {
     "include": [
