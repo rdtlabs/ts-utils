@@ -95,6 +95,26 @@ function isPrimitiveOrDate(value: unknown): boolean {
   return isPrimitive(value) || value instanceof Date;
 }
 
+function throwFrozen(kind: string): never {
+  throw new TypeError(`Cannot modify a frozen ${kind}`);
+}
+
+/** Seals a Map so mutation methods throw, then freezes the object. */
+function freezeMap(map: Map<unknown, unknown>): void {
+  map.set = () => throwFrozen("ValueMap");
+  map.delete = () => throwFrozen("ValueMap");
+  map.clear = () => throwFrozen("ValueMap");
+  Object.freeze(map);
+}
+
+/** Seals a Set so mutation methods throw, then freezes the object. */
+function freezeSet(set: Set<unknown>): void {
+  set.add = () => throwFrozen("ValueSet");
+  set.delete = () => throwFrozen("ValueSet");
+  set.clear = () => throwFrozen("ValueSet");
+  Object.freeze(set);
+}
+
 function deepFreezeArray(arr: readonly unknown[]): void {
   for (const item of arr) {
     if (typeof item === "object" && item !== null && !Object.isFrozen(item)) {
@@ -290,6 +310,7 @@ export function createValueMap<
     map.set(k, materialized as V);
   }
   applyBrand(map, "map");
+  freezeMap(map as Map<unknown, unknown>);
   return map as unknown as ValueMap<K, V>;
 }
 
@@ -310,6 +331,7 @@ export function createValueSet<
     set.add(materialized as V);
   }
   applyBrand(set, "set");
+  freezeSet(set as Set<unknown>);
   return set as unknown as ValueSet<V>;
 }
 

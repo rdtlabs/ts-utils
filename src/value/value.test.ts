@@ -287,6 +287,15 @@ Deno.test("createValueMap creates a branded map with frozen values", () => {
   assertEquals(map.get("home")?.street, "123");
 });
 
+Deno.test("createValueMap throws on mutation", () => {
+  const addr = createValueObject({ street: "1", city: "A", state: "B", zip: "0" });
+  const map = createValueMap([["home", addr]]);
+
+  assertThrows(() => (map as unknown as Map<string, unknown>).set("work", addr), TypeError, "frozen");
+  assertThrows(() => (map as unknown as Map<string, unknown>).delete("home"), TypeError, "frozen");
+  assertThrows(() => (map as unknown as Map<string, unknown>).clear(), TypeError, "frozen");
+});
+
 Deno.test("createValueSet creates a branded set with frozen values", () => {
   const addr = createValueObject({
     street: "123",
@@ -300,6 +309,15 @@ Deno.test("createValueSet creates a branded set with frozen values", () => {
   assertEquals(isBrandedValue(set), true);
   assertEquals(getValueKind(set), "set");
   assertEquals(set.size, 1);
+});
+
+Deno.test("createValueSet throws on mutation", () => {
+  const addr = createValueObject({ street: "1", city: "A", state: "B", zip: "0" });
+  const set = createValueSet([addr]);
+
+  assertThrows(() => (set as unknown as Set<unknown>).add(addr), TypeError, "frozen");
+  assertThrows(() => (set as unknown as Set<unknown>).delete(addr), TypeError, "frozen");
+  assertThrows(() => (set as unknown as Set<unknown>).clear(), TypeError, "frozen");
 });
 
 // =============================================================================
