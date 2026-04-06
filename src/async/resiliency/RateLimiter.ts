@@ -79,11 +79,12 @@ export type RateLimiter = {
  * });
  * ```
  */
-export const RateLimiter = (function (settings: RateLimiterSettings): RateLimiter {
-  return rateLimiter(settings)
-}) as unknown as {
-  new (): RateLimiter;
-};
+export const RateLimiter =
+  (function (settings: RateLimiterSettings): RateLimiter {
+    return rateLimiter(settings);
+  }) as unknown as {
+    new (): RateLimiter;
+  };
 
 /**
  * Creates a RateLimiter with the specified settings.

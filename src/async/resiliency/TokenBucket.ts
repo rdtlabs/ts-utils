@@ -78,7 +78,7 @@ export const TokenBucket = (function (
   replenishInterval = 1000,
 ): TokenBucket {
   return tokenBucket(maxTokenBalance, replenishInterval);
-}) as unknown as{
+}) as unknown as {
   new (): TokenBucket;
 } & {
   /** A TokenBucket that always allows consumption (unlimited rate) */

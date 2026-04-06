@@ -62,7 +62,7 @@ export type Retryable = {
  */
 export const Retryable = (function (): Retryable {
   return retryable();
-}) as unknown as{
+}) as unknown as {
   new (): Retryable;
 } & {
   /** A Retryable that performs no retries - executes once and throws on any error */

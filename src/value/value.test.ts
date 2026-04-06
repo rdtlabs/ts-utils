@@ -11,7 +11,8 @@ import {
   isFlatValueObject,
   isValueObject,
   valueObjectFromJSON,
-} from "./index.ts";
+} from "./value.ts";
+
 import type {
   Branded,
   CompositeValueObject,

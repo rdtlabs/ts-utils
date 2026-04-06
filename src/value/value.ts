@@ -13,11 +13,185 @@ import type {
   ValueObjectKind,
 } from "./types.ts";
 
+import { ImmutableMap } from "../collections/ImmutableMap.ts";
+import { ImmutableSet } from "../collections/ImmutableSet.ts";
+
 // -----------------------------------------------------------------------------
 // Private brand symbol — closure-scoped, unreachable from outside this module
 // -----------------------------------------------------------------------------
 
 const _brand: unique symbol = Symbol("ValueObject");
+
+// -----------------------------------------------------------------------------
+// Exported guards
+// -----------------------------------------------------------------------------
+
+/** Returns true if the object is a branded value object (flat or composite). */
+export function isValueObject(obj: unknown): obj is AnyValueObject {
+  const kind = tryReadBrand(obj);
+  return kind === "flat" || kind === "composite";
+}
+
+/** Returns true if the object is any branded value type (including map/set). */
+export function isBrandedValue(obj: unknown): obj is AnyBrandedValue {
+  return hasBrand(obj);
+}
+
+/** Returns the brand kind of a branded value, or undefined if not branded. */
+export function getValueKind(obj: object): ValueObjectKind | undefined {
+  return readBrand(obj);
+}
+
+/** Returns true if the object is a flat (primitive-only) value object. */
+export function isFlatValueObject(obj: unknown): boolean {
+  return tryReadBrand(obj) === "flat";
+}
+
+/** Returns true if the object is a composite value object. */
+export function isCompositeValueObject(obj: unknown): boolean {
+  return tryReadBrand(obj) === "composite";
+}
+
+// -----------------------------------------------------------------------------
+// Factory functions — the ONLY way to create branded value objects
+// -----------------------------------------------------------------------------
+
+import type {
+  CompositeValueObject,
+  ValidCompositeProps,
+  ValidFlatProps,
+  ValueMap,
+  ValueObject,
+  ValuePrimitive,
+  ValueSet,
+} from "./types.ts";
+
+/**
+ * Creates an immutable, branded flat ValueObject from the given properties.
+ * All properties must be primitives or readonly arrays of primitives.
+ * The returned object is deeply frozen and branded.
+ */
+export function createValueObject<T extends ValidFlatProps<T>>(
+  props: T,
+): ValueObject<T> {
+  const obj = { ...props } as Record<string, unknown>;
+  deepFreezeValues(obj);
+  applyBrand(obj, "flat");
+  Object.freeze(obj);
+  return obj as unknown as ValueObject<T>;
+}
+
+/**
+ * Creates an immutable, branded CompositeValueObject from the given properties.
+ * Properties can be primitives, flat ValueObjects (auto-materialized if plain),
+ * ValueMaps, ValueSets, or readonly arrays thereof.
+ * Already-branded nested objects are short-circuited (not re-frozen).
+ */
+export function createCompositeValueObject<T extends ValidCompositeProps<T>>(
+  props: T,
+): CompositeValueObject<T> {
+  const obj = { ...props } as Record<string, unknown>;
+  validateAndFreezeCompositeProps(obj);
+  applyBrand(obj, "composite");
+  Object.freeze(obj);
+  return obj as unknown as CompositeValueObject<T>;
+}
+
+/**
+ * Creates an immutable, branded ValueMap from an iterable of entries.
+ * Values that are plain objects are auto-materialized as flat ValueObjects.
+ */
+export function createValueMap<
+  K extends ValuePrimitive,
+  V extends FlatBranded,
+>(
+  entries: Iterable<[K, V]>,
+): ValueMap<K, V> {
+  if (entries instanceof ImmutableMap) {
+    entries.forEach((v) => {
+      if (typeof v === "object" && v !== null && !hasBrand(v)) {
+        materializeNestedValueObject(v as Record<string, unknown>);
+      }
+    });
+    applyBrand(entries, "map");
+    return entries as unknown as ValueMap<K, V>;
+  }
+
+  const map = new Map<K, V>();
+  for (const [k, v] of entries) {
+    const materialized = typeof v === "object" && v !== null && !hasBrand(v)
+      ? materializeNestedValueObject(v as Record<string, unknown>)
+      : v;
+    map.set(k, materialized as V);
+  }
+  applyBrand(map, "map");
+  freezeMap(map as Map<unknown, unknown>);
+  return map as unknown as ValueMap<K, V>;
+}
+
+/**
+ * Creates an immutable, branded ValueMap from an iterable of entries.
+ * Values that are plain objects are auto-materialized as flat ValueObjects.
+ */
+export function createValueSet<
+  V extends FlatBranded,
+>(
+  items: Iterable<V>,
+): ValueSet<V> {
+  if (items instanceof ImmutableSet) {
+    items.forEach((v) => {
+      if (typeof v === "object" && v !== null && !hasBrand(v)) {
+        materializeNestedValueObject(v as Record<string, unknown>);
+      }
+    });
+    applyBrand(items, "set");
+    return items as unknown as ValueSet<V>;
+  }
+
+  const set = new Set<V>();
+  for (const v of items) {
+    const materialized = typeof v === "object" && v !== null && !hasBrand(v)
+      ? materializeNestedValueObject(v as Record<string, unknown>)
+      : v;
+    set.add(materialized as V);
+  }
+  applyBrand(set, "set");
+  freezeSet(set as Set<unknown>);
+  return set as unknown as ValueSet<V>;
+}
+
+/**
+ * Parses a JSON string and materializes it as a flat ValueObject.
+ * The type parameter T is user-asserted (same semantics as JSON.parse).
+ * Runtime validation ensures the shape is correct.
+ */
+export function valueObjectFromJSON<T extends ValidFlatProps<T>>(
+  json: string,
+): ValueObject<T> {
+  // deno-lint-ignore no-explicit-any
+  return createValueObject(JSON.parse(json) as any) as unknown as ValueObject<T>;
+}
+
+/**
+ * Parses a JSON string and materializes it as a CompositeValueObject.
+ * Nested plain objects are auto-materialized as flat ValueObjects at runtime.
+ * The type parameter T is user-asserted (same semantics as JSON.parse).
+ * Defaults to `any` when no type parameter is provided.
+ */
+export function compositeValueObjectFromJSON<
+  // deno-lint-ignore no-explicit-any
+  T extends ValidCompositeProps<T> = any,
+>(
+  json: string,
+): CompositeValueObject<T> {
+  // deno-lint-ignore no-explicit-any
+  const parsed = JSON.parse(json) as any;
+  const obj = { ...parsed } as Record<string, unknown>;
+  validateAndFreezeCompositeProps(obj);
+  applyBrand(obj, "composite");
+  Object.freeze(obj);
+  return obj as unknown as CompositeValueObject<T>;
+}
 
 // -----------------------------------------------------------------------------
 // Internal helpers (not exported)
@@ -49,36 +223,6 @@ function tryReadBrand(obj: unknown): ValueObjectKind | undefined {
 
 function hasBrand(obj: unknown): boolean {
   return typeof obj === "object" && obj !== null && _brand in obj;
-}
-
-// -----------------------------------------------------------------------------
-// Exported guards
-// -----------------------------------------------------------------------------
-
-/** Returns true if the object is a branded value object (flat or composite). */
-export function isValueObject(obj: unknown): obj is AnyValueObject {
-  const kind = tryReadBrand(obj);
-  return kind === "flat" || kind === "composite";
-}
-
-/** Returns true if the object is any branded value type (including map/set). */
-export function isBrandedValue(obj: unknown): obj is AnyBrandedValue {
-  return hasBrand(obj);
-}
-
-/** Returns the brand kind of a branded value, or undefined if not branded. */
-export function getValueKind(obj: object): ValueObjectKind | undefined {
-  return readBrand(obj);
-}
-
-/** Returns true if the object is a flat (primitive-only) value object. */
-export function isFlatValueObject(obj: unknown): boolean {
-  return tryReadBrand(obj) === "flat";
-}
-
-/** Returns true if the object is a composite value object. */
-export function isCompositeValueObject(obj: unknown): boolean {
-  return tryReadBrand(obj) === "composite";
 }
 
 // -----------------------------------------------------------------------------
@@ -208,7 +352,7 @@ function validateAndFreezeCompositeProps(
     }
 
     // Map
-    if (value instanceof Map) {
+    if (value instanceof Map || value instanceof ImmutableMap) {
       for (const [mk, mv] of (value as Map<unknown, unknown>).entries()) {
         if (!isPrimitiveOrDate(mk)) {
           throw new TypeError(
@@ -224,7 +368,7 @@ function validateAndFreezeCompositeProps(
     }
 
     // Set
-    if (value instanceof Set) {
+    if (value instanceof Set || value instanceof ImmutableSet) {
       for (const sv of value as Set<unknown>) {
         if (typeof sv === "object" && sv !== null && !hasBrand(sv)) {
           materializeNestedValueObject(sv as Record<string, unknown>);
@@ -245,125 +389,4 @@ function validateAndFreezeCompositeProps(
       `CompositeValueObject property "${key}" has an invalid type: ${typeof value}`,
     );
   }
-}
-
-// -----------------------------------------------------------------------------
-// Factory functions — the ONLY way to create branded value objects
-// -----------------------------------------------------------------------------
-
-import type {
-  CompositeValueObject,
-  ValidCompositeProps,
-  ValidFlatProps,
-  ValueMap,
-  ValueObject,
-  ValuePrimitive,
-  ValueSet,
-} from "./types.ts";
-
-/**
- * Creates an immutable, branded flat ValueObject from the given properties.
- * All properties must be primitives or readonly arrays of primitives.
- * The returned object is deeply frozen and branded.
- */
-export function createValueObject<T extends ValidFlatProps<T>>(
-  props: T,
-): ValueObject<T> {
-  const obj = { ...props } as Record<string, unknown>;
-  deepFreezeValues(obj);
-  applyBrand(obj, "flat");
-  Object.freeze(obj);
-  return obj as unknown as ValueObject<T>;
-}
-
-/**
- * Creates an immutable, branded CompositeValueObject from the given properties.
- * Properties can be primitives, flat ValueObjects (auto-materialized if plain),
- * ValueMaps, ValueSets, or readonly arrays thereof.
- * Already-branded nested objects are short-circuited (not re-frozen).
- */
-export function createCompositeValueObject<T extends ValidCompositeProps<T>>(
-  props: T,
-): CompositeValueObject<T> {
-  const obj = { ...props } as Record<string, unknown>;
-  validateAndFreezeCompositeProps(obj);
-  applyBrand(obj, "composite");
-  Object.freeze(obj);
-  return obj as unknown as CompositeValueObject<T>;
-}
-
-/**
- * Creates an immutable, branded ValueMap from an iterable of entries.
- * Values that are plain objects are auto-materialized as flat ValueObjects.
- */
-export function createValueMap<
-  K extends ValuePrimitive,
-  V extends FlatBranded,
->(
-  entries: Iterable<[K, V]>,
-): ValueMap<K, V> {
-  const map = new Map<K, V>();
-  for (const [k, v] of entries) {
-    const materialized = typeof v === "object" && v !== null && !hasBrand(v)
-      ? materializeNestedValueObject(v as Record<string, unknown>)
-      : v;
-    map.set(k, materialized as V);
-  }
-  applyBrand(map, "map");
-  freezeMap(map as Map<unknown, unknown>);
-  return map as unknown as ValueMap<K, V>;
-}
-
-/**
- * Creates an immutable, branded ValueSet from an iterable of values.
- * Values that are plain objects are auto-materialized as flat ValueObjects.
- */
-export function createValueSet<
-  V extends FlatBranded,
->(
-  items: Iterable<V>,
-): ValueSet<V> {
-  const set = new Set<V>();
-  for (const v of items) {
-    const materialized = typeof v === "object" && v !== null && !hasBrand(v)
-      ? materializeNestedValueObject(v as Record<string, unknown>)
-      : v;
-    set.add(materialized as V);
-  }
-  applyBrand(set, "set");
-  freezeSet(set as Set<unknown>);
-  return set as unknown as ValueSet<V>;
-}
-
-/**
- * Parses a JSON string and materializes it as a flat ValueObject.
- * The type parameter T is user-asserted (same semantics as JSON.parse).
- * Runtime validation ensures the shape is correct.
- */
-export function valueObjectFromJSON<T extends ValidFlatProps<T>>(
-  json: string,
-): ValueObject<T> {
-  // deno-lint-ignore no-explicit-any
-  return createValueObject(JSON.parse(json) as any) as unknown as ValueObject<T>;
-}
-
-/**
- * Parses a JSON string and materializes it as a CompositeValueObject.
- * Nested plain objects are auto-materialized as flat ValueObjects at runtime.
- * The type parameter T is user-asserted (same semantics as JSON.parse).
- * Defaults to `any` when no type parameter is provided.
- */
-export function compositeValueObjectFromJSON<
-  // deno-lint-ignore no-explicit-any
-  T extends ValidCompositeProps<T> = any,
->(
-  json: string,
-): CompositeValueObject<T> {
-  // deno-lint-ignore no-explicit-any
-  const parsed = JSON.parse(json) as any;
-  const obj = { ...parsed } as Record<string, unknown>;
-  validateAndFreezeCompositeProps(obj);
-  applyBrand(obj, "composite");
-  Object.freeze(obj);
-  return obj as unknown as CompositeValueObject<T>;
 }

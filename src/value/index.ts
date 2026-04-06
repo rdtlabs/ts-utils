@@ -1,32 +1,4 @@
 // Public API — types from types.ts, runtime from value.ts.
 // No _internal.ts exists. The brand symbol is closure-scoped in value.ts.
 
-export type {
-  AnyBrandedValue,
-  AnyValueObject,
-  Branded,
-  CompositeValueObject,
-  FlatBranded,
-  ValidCompositeProps,
-  ValidFlatProps,
-  VALUE_OBJECT_BRAND,
-  ValueMap,
-  ValueObject,
-  ValueObjectKind,
-  ValuePrimitive,
-  ValueSet,
-} from "./types.ts";
-
-export {
-  compositeValueObjectFromJSON,
-  createCompositeValueObject,
-  createValueMap,
-  createValueObject,
-  createValueSet,
-  getValueKind,
-  isBrandedValue,
-  isCompositeValueObject,
-  isFlatValueObject,
-  isValueObject,
-  valueObjectFromJSON,
-} from "./value.ts";
+export type { ValueObject } from "./types.ts";
