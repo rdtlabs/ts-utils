@@ -134,7 +134,7 @@ void _useTypes;
 // =============================================================================
 
 Deno.test("createValueObject produces a frozen, branded flat object", () => {
-  const addr = createValueObject({
+  const addr: Address = createValueObject({
     street: "123 Main",
     city: "NYC",
     state: "NY",
@@ -194,7 +194,7 @@ Deno.test("createValueObject rejects nested objects at runtime", () => {
 // =============================================================================
 
 Deno.test("createCompositeValueObject with pre-branded nested value objects", () => {
-  const addr = createValueObject({
+  const addr: Address = createValueObject({
     street: "123 Main",
     city: "NYC",
     state: "NY",
@@ -386,4 +386,139 @@ Deno.test("brand cannot be overwritten on frozen value object", () => {
     // Expected in strict mode
   }
   assertEquals(obj.name, "immutable");
+});
+
+// =============================================================================
+// ValueObject public API tests (types.ts const ValueObject)
+// =============================================================================
+
+import { VO } from "./index.ts";
+
+Deno.test("ValueObject.from creates a frozen, branded flat object", () => {
+  const addr: Address = VO.object({
+    street: "123 Main",
+    city: "NYC",
+    state: "NY",
+    zip: "10001",
+  });
+
+  assertEquals(addr.street, "123 Main");
+  assertEquals(Object.isFrozen(addr), true);
+  assertEquals(VO.isFlat(addr), true);
+  assertEquals(VO.getKind(addr), "flat");
+});
+
+Deno.test("ValueObject.from parses JSON string", () => {
+  const json = '{"street":"789 Pine","city":"CHI","state":"IL","zip":"60601"}';
+  const addr = VO.parseObject<Address>(json);
+
+  assertEquals(addr.street, "789 Pine");
+  assertEquals(Object.isFrozen(addr), true);
+  assertEquals(VO.isFlat(addr), true);
+});
+
+Deno.test("ValueObject.composite creates a branded composite object", () => {
+  const addr: Address = VO.object({
+    street: "1st",
+    city: "A",
+    state: "NY",
+    zip: "00001",
+  });
+
+  const person = VO.composite({
+    name: "Alice",
+    age: 30,
+    address: addr,
+  });
+
+  assertEquals(person.name, "Alice");
+  assertEquals(person.address.street, "1st");
+  assertEquals(Object.isFrozen(person), true);
+  assertEquals(VO.isComposite(person), true);
+  assertEquals(VO.getKind(person), "composite");
+});
+
+Deno.test("ValueObject.composite parses JSON string", () => {
+  const json =
+    '{"name":"Eve","address":{"street":"321 Elm","city":"SF","state":"CA","zip":"94101"}}';
+  const person = VO.parseComposite<Person>(json);
+
+  assertEquals(person.name, "Eve");
+  assertEquals(Object.isFrozen(person), true);
+  assertEquals(VO.isComposite(person), true);
+  assertEquals(VO.isFlat(person.address), true);
+});
+
+Deno.test("ValueObject.map creates a branded map", () => {
+  const addr = VO.object({
+    street: "123",
+    city: "NYC",
+    state: "NY",
+    zip: "10001",
+  });
+
+  const map = VO.map([["home", addr]]);
+
+  assertEquals(VO.isAny(map), true);
+  assertEquals(VO.getKind(map), "map");
+  assertEquals(map.get("home")?.street, "123");
+  assertEquals(map.size, 1);
+});
+
+Deno.test("ValueObject.set creates a branded set", () => {
+  const addr = VO.object({
+    street: "123",
+    city: "NYC",
+    state: "NY",
+    zip: "10001",
+  });
+
+  const set = VO.set([addr]);
+
+  assertEquals(VO.isAny(set), true);
+  assertEquals(VO.getKind(set), "set");
+  assertEquals(set.size, 1);
+});
+
+Deno.test("ValueObject.isValueObject distinguishes flat and composite from non-branded", () => {
+  const flat = VO.object({ name: "flat" });
+  const composite = VO.composite({ name: "composite", nested: flat });
+
+  assertEquals(VO.isValueObject(flat), true);
+  assertEquals(VO.isValueObject(composite), true);
+  assertEquals(VO.isValueObject({ name: "plain" }), false);
+  assertEquals(VO.isValueObject(null), false);
+  assertEquals(VO.isValueObject(42), false);
+});
+
+Deno.test("ValueObject.isAny detects all branded types including map and set", () => {
+  const flat = VO.object({ x: 1 });
+  const composite = VO.composite({ x: 1, nested: flat });
+  const map = VO.map([["a", flat]]);
+  const set = VO.set([flat]);
+
+  assertEquals(VO.isAny(flat), true);
+  assertEquals(VO.isAny(composite), true);
+  assertEquals(VO.isAny(map), true);
+  assertEquals(VO.isAny(set), true);
+  assertEquals(VO.isAny({}), false);
+});
+
+Deno.test("ValueObject.isFlat and isComposite are mutually exclusive", () => {
+  const flat = VO.object({ name: "flat" });
+  const composite = VO.composite({ name: "composite", nested: flat });
+
+  assertEquals(VO.isFlat(flat), true);
+  assertEquals(VO.isComposite(flat), false);
+  assertEquals(VO.isFlat(composite), false);
+  assertEquals(VO.isComposite(composite), true);
+});
+
+Deno.test("ValueObject.getKind returns undefined for non-branded objects", () => {
+  assertEquals(VO.getKind({}), undefined);
+  assertEquals(VO.getKind(new Map()), undefined);
+});
+
+Deno.test("ValueObject const is frozen", () => {
+  assertEquals(Object.isFrozen(VO), true);
 });

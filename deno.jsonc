@@ -9,7 +9,8 @@
     "./crypto": "./src/crypto/index.ts",
     "./encoding": "./src/encoding/index.ts",
     "./errors": "./src/errors/index.ts",
-    "./value": "./src/value/index.ts"
+    "./value": "./src/value/index.ts",
+    "./collections": "./src/collections/index.ts"
   },
   "publish": {
     "include": [

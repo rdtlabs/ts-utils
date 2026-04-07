@@ -146,83 +146,17 @@ export type AnyBrandedValue = {
   readonly [VALUE_OBJECT_BRAND]: "flat" | "composite" | "map" | "set";
 };
 
-import {
-  compositeValueObjectFromJSON,
-  createCompositeValueObject,
-  createValueMap,
-  createValueObject,
-  createValueSet,
-  getValueKind,
-  isBrandedValue,
-  isFlatValueObject,
-  isValueObject,
-  valueObjectFromJSON,
-} from "./value.ts";
+// -----------------------------------------------------------------------------
+// Exported Facade with runtime implementations
+// ---------------------------------------------------------------------------
 
-export const ValueObject = Object.freeze({
-  from<T extends ValidFlatProps<T>>(
-    props: T | string,
-  ): ValueObject<T> {
-    if (typeof props === "string") {
-      return valueObjectFromJSON(props);
-    }
-
-    return createValueObject(props);
-  },
-
-  composite<T extends ValidCompositeProps<T>>(
-    props: T | string,
-  ): CompositeValueObject<T> {
-    if (typeof props === "string") {
-      return compositeValueObjectFromJSON(props);
-    }
-
-    return createCompositeValueObject(props);
-  },
-
-  map<
-    K extends ValuePrimitive,
-    V extends FlatBranded,
-  >(
-    entries: Iterable<[K, V]>,
-  ): ValueMap<K, V> {
-    return createValueMap(entries);
-  },
-
-  set<
-    V extends FlatBranded,
-  >(
-    items: Iterable<V>,
-  ): ValueSet<V> {
-    return createValueSet(items);
-  },
-
-  isValueObject(obj: unknown): obj is AnyValueObject {
-    return isValueObject(obj);
-  },
-
-  isAny(obj: unknown): obj is AnyBrandedValue {
-    return isBrandedValue(obj);
-  },
-
-  getKind(obj: object): ValueObjectKind | undefined {
-    return getValueKind(obj);
-  },
-
-  isFlat(obj: unknown): boolean {
-    return isFlatValueObject(obj);
-  },
-
-  isComposite(obj: unknown): boolean {
-    return !isFlatValueObject(obj) && isValueObject(obj);
-  },
-}) as {
+type ValueFacade = {
   /**
    * Creates an immutable, branded flat ValueObject from the given properties.
    * All properties must be primitives or readonly arrays of primitives.
    * The returned object is deeply frozen and branded.
    */
-  from<T extends ValidFlatProps<T>>(
+  object<T extends ValidFlatProps<T>>(
     props: T,
   ): ValueObject<T>;
 
@@ -231,7 +165,7 @@ export const ValueObject = Object.freeze({
    * The type parameter T is user-asserted (same semantics as JSON.parse).
    * Runtime validation ensures the shape is correct.
    */
-  from<T extends ValidFlatProps<T>>(
+  parseObject<T extends ValidFlatProps<T>>(
     json: string,
   ): ValueObject<T>;
 
@@ -251,7 +185,7 @@ export const ValueObject = Object.freeze({
    * The type parameter T is user-asserted (same semantics as JSON.parse).
    * Defaults to `any` when no type parameter is provided.
    */
-  composite<T extends ValidCompositeProps<T>>(
+  parseComposite<T extends ValidCompositeProps<T>>(
     json: string,
   ): CompositeValueObject<T>;
 
@@ -291,3 +225,79 @@ export const ValueObject = Object.freeze({
   /** Returns true if the object is a composite value object. */
   isComposite(obj: unknown): boolean;
 };
+
+import {
+  compositeValueObjectFromJSON,
+  createCompositeValueObject,
+  createValueMap,
+  createValueObject,
+  createValueSet,
+  getValueKind,
+  isBrandedValue,
+  isFlatValueObject,
+  isValueObject,
+  valueObjectFromJSON,
+} from "./value.ts";
+
+export const ValueObject: ValueFacade = Object.freeze({
+  object<T extends ValidFlatProps<T>>(
+    props: T,
+  ): ValueObject<T> {
+    return createValueObject(props);
+  },
+
+  parseObject<T extends ValidFlatProps<T>>(
+    props: string,
+  ): ValueObject<T> {
+    return valueObjectFromJSON(props);
+  },
+
+  composite<T extends ValidCompositeProps<T>>(
+    props: T,
+  ): CompositeValueObject<T> {
+    return createCompositeValueObject(props);
+  },
+
+  parseComposite<T extends ValidCompositeProps<T>>(
+    props: string,
+  ): CompositeValueObject<T> {
+    return compositeValueObjectFromJSON(props);
+  },
+
+  map<
+    K extends ValuePrimitive,
+    V extends FlatBranded,
+  >(
+    entries: Iterable<[K, V]>,
+  ): ValueMap<K, V> {
+    return createValueMap(entries);
+  },
+
+  set<
+    V extends FlatBranded,
+  >(
+    items: Iterable<V>,
+  ): ValueSet<V> {
+    return createValueSet(items);
+  },
+
+  isValueObject(obj: unknown): obj is AnyValueObject {
+    return isValueObject(obj);
+  },
+
+  isAny(obj: unknown): obj is AnyBrandedValue {
+    return isBrandedValue(obj);
+  },
+
+  getKind(obj: object): ValueObjectKind | undefined {
+    return getValueKind(obj);
+  },
+
+  isFlat(obj: unknown): boolean {
+    return isFlatValueObject(obj);
+  },
+
+  isComposite(obj: unknown): boolean {
+    return !isFlatValueObject(obj) && isValueObject(obj);
+  },
+});

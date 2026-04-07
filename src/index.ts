@@ -25,3 +25,5 @@ export * from "./buffer/index.ts";
 export * from "./cancellation/index.ts";
 export * from "./crypto/index.ts";
 export * from "./errors/index.ts";
+export * from "./value/index.ts";
+export * from "./collections/index.ts";
