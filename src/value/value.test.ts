@@ -10,6 +10,7 @@ import {
   isCompositeValueObject,
   isFlatValueObject,
   isValueObject,
+  valueEquals,
   valueObjectFromJSON,
 } from "./value.ts";
 
@@ -386,6 +387,61 @@ Deno.test("brand cannot be overwritten on frozen value object", () => {
     // Expected in strict mode
   }
   assertEquals(obj.name, "immutable");
+});
+
+// =============================================================================
+// Equality tests
+// =============================================================================
+
+Deno.test("valueEquals returns true for structurally equal branded composites", () => {
+  const homeA = createValueObject({
+    street: "123 Main",
+    city: "NYC",
+    state: "NY",
+    zip: "10001",
+  });
+  const workA = createValueObject({
+    street: "500 Park",
+    city: "NYC",
+    state: "NY",
+    zip: "10022",
+  });
+  const personA = createCompositeValueObject({
+    name: "Alice",
+    address: homeA,
+    addresses: [homeA, workA],
+    addressBook: createValueMap([
+      ["home", homeA],
+      ["work", workA],
+    ]),
+    uniqueAddresses: createValueSet([homeA, workA]),
+  } as Parameters<typeof createCompositeValueObject>[0]);
+
+  const homeB = createValueObject({
+    street: "123 Main",
+    city: "NYC",
+    state: "NY",
+    zip: "10001",
+  });
+  const workB = createValueObject({
+    street: "500 Park",
+    city: "NYC",
+    state: "NY",
+    zip: "10022",
+  });
+  const personB = createCompositeValueObject({
+    name: "Alice",
+    address: homeB,
+    addresses: [homeB, workB],
+    addressBook: createValueMap([
+      ["home", homeB],
+      ["work", workB],
+    ]),
+    uniqueAddresses: createValueSet([workB, homeB]),
+  } as Parameters<typeof createCompositeValueObject>[0]);
+
+  assertEquals(valueEquals(personA, personB), true);
+  assertEquals(valueEquals(personA, { ...personB }), false);
 });
 
 // =============================================================================

@@ -224,6 +224,12 @@ type ValueFacade = {
 
   /** Returns true if the object is a composite value object. */
   isComposite(obj: unknown): boolean;
+
+  /**
+   * Compares two branded value objects for deep structural equality.
+   * Returns `false` if either argument is not a branded value type.
+   */
+  equals(a: unknown, b: unknown): boolean;
 };
 
 import {
@@ -236,6 +242,7 @@ import {
   isBrandedValue,
   isFlatValueObject,
   isValueObject,
+  valueEquals,
   valueObjectFromJSON,
 } from "./value.ts";
 
@@ -299,5 +306,9 @@ export const ValueObject: ValueFacade = Object.freeze({
 
   isComposite(obj: unknown): boolean {
     return !isFlatValueObject(obj) && isValueObject(obj);
+  },
+
+  equals(a: unknown, b: unknown): boolean {
+    return valueEquals(a, b);
   },
 });

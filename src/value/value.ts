@@ -196,6 +196,108 @@ export function compositeValueObjectFromJSON<
 }
 
 // -----------------------------------------------------------------------------
+// Deep structural equality
+// -----------------------------------------------------------------------------
+
+/**
+ * Compares two branded value objects (or any values within the value-object
+ * hierarchy) for deep structural equality. Returns `false` if either argument
+ * is not a branded value type.
+ */
+export function valueEquals(a: unknown, b: unknown): boolean {
+  if (a === b) return true;
+  if (!isBrandedValue(a) || !isBrandedValue(b)) return false;
+  return deepEquals(a, b);
+}
+
+function deepEquals(a: unknown, b: unknown): boolean {
+  if (a === b) return true;
+  if (a == null || b == null) return a === b;
+
+  if (typeof a !== "object" || typeof b !== "object") return false;
+
+  // Date
+  if (a instanceof Date && b instanceof Date) {
+    return a.getTime() === b.getTime();
+  }
+  if (a instanceof Date || b instanceof Date) return false;
+
+  // Array
+  if (Array.isArray(a) && Array.isArray(b)) {
+    if (a.length !== b.length) return false;
+    for (let i = 0; i < a.length; i++) {
+      if (!deepEquals(a[i], b[i])) return false;
+    }
+    return true;
+  }
+  if (Array.isArray(a) || Array.isArray(b)) return false;
+
+  // Map (includes ImmutableMap which implements Iterable<[K,V]> with entries())
+  if (isMapLike(a) && isMapLike(b)) {
+    if (a.size !== b.size) return false;
+    for (const [key, val] of a.entries()) {
+      if (!b.has(key)) return false;
+      if (!deepEquals(val, b.get(key))) return false;
+    }
+    return true;
+  }
+  if (isMapLike(a) || isMapLike(b)) return false;
+
+  // Set (includes ImmutableSet)
+  if (isSetLike(a) && isSetLike(b)) {
+    if (a.size !== b.size) return false;
+    for (const item of a) {
+      let found = false;
+      for (const other of b) {
+        if (deepEquals(item, other)) {
+          found = true;
+          break;
+        }
+      }
+      if (!found) return false;
+    }
+    return true;
+  }
+  if (isSetLike(a) || isSetLike(b)) return false;
+
+  // Plain object / value object
+  const keysA = Object.keys(a);
+  const keysB = Object.keys(b);
+  if (keysA.length !== keysB.length) return false;
+
+  for (const key of keysA) {
+    if (!Object.prototype.hasOwnProperty.call(b, key)) return false;
+    if (
+      !deepEquals(
+        (a as Record<string, unknown>)[key],
+        (b as Record<string, unknown>)[key],
+      )
+    ) {
+      return false;
+    }
+  }
+
+  return true;
+}
+
+function isMapLike(
+  v: unknown,
+): v is {
+  size: number;
+  entries(): Iterable<[unknown, unknown]>;
+  has(k: unknown): boolean;
+  get(k: unknown): unknown;
+} {
+  return (v instanceof Map || v instanceof ImmutableMap);
+}
+
+function isSetLike(
+  v: unknown,
+): v is Iterable<unknown> & { size: number } {
+  return (v instanceof Set || v instanceof ImmutableSet);
+}
+
+// -----------------------------------------------------------------------------
 // Internal helpers (not exported)
 // -----------------------------------------------------------------------------
 
