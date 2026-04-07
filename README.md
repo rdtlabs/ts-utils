@@ -146,6 +146,61 @@ try {
 }
 ```
 
+### `/collections` - Immutable Collections
+
+Persistent, immutable `Set` and `Map` implementations with a builder pattern. All mutation operations return new instances, leaving the original unchanged.
+
+- `ImmutableSet<T>` - Immutable set with `add`, `delete`, `map`, `filter`, `intersect`, and ES2024 set operations
+- `ImmutableMap<K, V>` - Immutable map with `set`, `delete`, `merge`, `map`, `filter`
+- Builder pattern for efficient batch construction
+
+```typescript
+import { ImmutableSet, ImmutableMap } from "@rdtlabs/ts-utils/collections";
+
+const set = ImmutableSet.of([1, 2, 3]);
+const withFour = set.add(4);       // new set: {1, 2, 3, 4}
+console.log(set.size);             // 3 (original unchanged)
+
+const map = ImmutableMap.builder<string, number>()
+  .set("a", 1)
+  .set("b", 2)
+  .build();
+const updated = map.set("c", 3);   // new map with entry added
+```
+
+### `/value` - Value Objects
+
+Immutable, branded value objects inspired by DDD. Enforces a max 3-level nesting hierarchy: `CompositeValueObject` → `ValueObject` → `ValuePrimitive`. Exported as `VO` for convenience.
+
+- `VO.object(props)` - Create a flat value object (primitives only)
+- `VO.composite(props)` - Create a composite containing flat value objects
+- `VO.map(entries)` / `VO.set(items)` - Branded immutable collections of value objects
+- `VO.parseObject(json)` / `VO.parseComposite(json)` - Parse from JSON
+- `VO.isValueObject()`, `VO.isFlat()`, `VO.isComposite()` - Type guards
+- `Branded<T, B>` - Nominal typing for primitives
+
+```typescript
+import { VO } from "@rdtlabs/ts-utils/value";
+import type { ValueObject, CompositeValueObject, Branded } from "@rdtlabs/ts-utils/value";
+
+type UserId = Branded<string, "UserId">;
+
+type Address = ValueObject<{
+  street: string;
+  city: string;
+  zip: string;
+}>;
+
+type Person = CompositeValueObject<{
+  name: string;
+  address: Address;
+  pastAddresses: readonly Address[];
+}>;
+
+const address = VO.object<Address>({ street: "123 Main", city: "Springfield", zip: "62704" });
+const person = VO.composite<Person>({ name: "Alice", address, pastAddresses: [] });
+```
+
 ## Development
 
 ### Prerequisites

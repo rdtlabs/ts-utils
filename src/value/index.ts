@@ -10,10 +10,10 @@ export type {
   ValidCompositeProps,
   ValidFlatProps,
   VALUE_OBJECT_BRAND,
+  ValueMap,
+  ValueObject,
   ValueObjectKind,
   ValuePrimitive,
-  ValueObject,
-  ValueMap,
   ValueSet,
 } from "./types.ts";
 

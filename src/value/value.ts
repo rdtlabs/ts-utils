@@ -169,7 +169,9 @@ export function valueObjectFromJSON<T extends ValidFlatProps<T>>(
   json: string,
 ): ValueObject<T> {
   // deno-lint-ignore no-explicit-any
-  return createValueObject(JSON.parse(json) as any) as unknown as ValueObject<T>;
+  return createValueObject(JSON.parse(json) as any) as unknown as ValueObject<
+    T
+  >;
 }
 
 /**
